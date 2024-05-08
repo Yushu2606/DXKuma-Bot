@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from util.Config import config
 from .Config import *
+from .GenB50 import get_player_data
 
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
 ttf_heavy_path = font_path / 'GenSenMaruGothicTW-Heavy.ttf'
@@ -48,15 +49,13 @@ async def music_info(song_id: str, qq: str):
 
     # 初始化用户数据
     payload = {"qq": qq, 'b50': True}
-    async with aiohttp.ClientSession() as session:
-        async with session.post("https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload) as resp:
-            if resp.status == 200:
-                data = await resp.json()
-                b50_status = True
-                b35 = data['charts']['sd']
-                b15 = data['charts']['dx']
-            else:
-                b50_status = False
+    data, status = await get_player_data(payload)
+    if status == 200:
+        b50_status = True
+        b35 = data['charts']['sd']
+        b15 = data['charts']['dx']
+    else:
+        b50_status = False
 
     # 歌曲封面
     cover_id = await format_songid(song_id)

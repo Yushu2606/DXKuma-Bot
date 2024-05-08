@@ -122,32 +122,30 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = event.get_user_id()
     payload = {"qq": target_qq, 'b50': True}
-    async with aiohttp.ClientSession() as session:
-        async with session.post("https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload) as resp:
-            if resp.status == 400:
-                msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-                await best50.finish(msg)
-            elif resp.status == 403:
-                msg = '该用户禁止了其他人获取数据'
-                await best50.finish(msg)
-            elif resp.status == 200:
-                data = await resp.json()
-                # print(data)
-                await best50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
-                b35 = sorted(data['charts']['sd'], key=cmp_to_key(compare_records), reverse=True)
-                b15 = sorted(data['charts']['dx'], key=cmp_to_key(compare_records), reverse=True)
-                nickname = data['nickname']
-                # rating = data['rating']
-                dani = data['additional_rating']
-                try:
-                    img = await generateb50(b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='b50')
-                    msg = (MessageSegment.at(qq), MessageSegment.image(img))
-                    await best50.send(msg)
-                except Exception as e:
-                    traceback_info = traceback.format_exc()
-                    print(f'生成b50时发生错误：\n{traceback_info}')
-                    msg = (MessageSegment.at(qq), MessageSegment.text(f'\n生成b50时发生错误：\n{str(e)}'))
-                    await best50.send(msg)
+    data, status = await get_player_data(payload)
+    if status == 400:
+        msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        await best50.finish(msg)
+    elif status == 403:
+        msg = '该用户禁止了其他人获取数据'
+        await best50.finish(msg)
+    elif status == 200:
+        # print(data)
+        await best50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
+        b35 = sorted(data['charts']['sd'], key=cmp_to_key(compare_records), reverse=True)
+        b15 = sorted(data['charts']['dx'], key=cmp_to_key(compare_records), reverse=True)
+        nickname = data['nickname']
+        # rating = data['rating']
+        dani = data['additional_rating']
+        try:
+            img = await generateb50(b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='b50')
+            msg = (MessageSegment.at(qq), MessageSegment.image(img))
+            await best50.send(msg)
+        except Exception as e:
+            traceback_info = traceback.format_exc()
+            print(f'生成b50时发生错误：\n{traceback_info}')
+            msg = (MessageSegment.at(qq), MessageSegment.text(f'\n生成b50时发生错误：\n{str(e)}'))
+            await best50.send(msg)
 
 
 @ap50.handle()

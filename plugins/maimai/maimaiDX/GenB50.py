@@ -19,14 +19,14 @@ ttf_regular_path = font_path / 'GenSenMaruGothicTW-Regular.ttf'
 
 
 async def get_player_data(payload):
-    async with aiohttp.request("POST", "https://www.diving-fish.com/api/maimaidxprober/query/player",
-                               json=payload) as resp:
-        if resp.status == 400:
-            return None, 400
-        if resp.status == 403:
-            return None, 403
-        obj = await resp.json()
-        return obj
+    async with aiohttp.ClientSession() as session:
+        async with session.post("https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload) as resp:
+            if resp.status == 400:
+                return None, 400
+            if resp.status == 403:
+                return None, 403
+            obj = await resp.json()
+            return obj
 
 
 async def resize_image(image, scale):
@@ -158,52 +158,6 @@ async def dxscore_proc(dxscore, sum_dxscore):
         return 2, 4
     else:
         return 3, 5
-
-
-async def rank_proc(rank: str):
-    if rank == 'clear':
-        file = 'music_icon_clear.png'
-    elif rank == 's':
-        file = 'music_icon_s.png'
-    elif rank == 'sp':
-        file = 'music_icon_sp.png'
-    elif rank == 'ss':
-        file = 'music_icon_ss.png'
-    elif rank == 'ssp':
-        file = 'music_icon_ssp.png'
-    elif rank == 'sss':
-        file = 'music_icon_sss.png'
-    elif rank == 'sssp':
-        file = 'music_icon_sssp.png'
-    else:
-        file = None
-    return file
-
-
-async def combo_proc(combo: int):
-    if combo == 0:
-        return None
-    elif combo == 1:
-        return 'music_icon_fc.png'
-    elif combo == 2:
-        return 'music_icon_fcp.png'
-    elif combo == 3:
-        return 'music_icon_ap.png'
-    elif combo == 4:
-        return 'music_icon_app.png'
-
-
-async def sync_proc(combo: int):
-    if combo == 0:
-        return None
-    elif combo == 1:
-        return 'music_icon_fs.png'
-    elif combo == 2:
-        return 'music_icon_fsp.png'
-    elif combo == 3:
-        return 'music_icon_fsd.png'
-    elif combo == 4:
-        return 'music_icon_fsdp.png'
 
 
 async def rating_proc(ra: int, rate: str):
