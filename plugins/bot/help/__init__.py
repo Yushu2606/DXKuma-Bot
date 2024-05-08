@@ -136,13 +136,14 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @zysx.handle()
 async def _():
     text = '注意事项\n' \
-           '1.本bot为娱乐性质bot，不支持更新查分器，小黑屋等科技功能\n' \
-           '2.发送dlxhelp查看指令大全\n' \
-           '3.号主随时会顶号与大家聊天解惑，介意勿用（不影响bot使用）\n' \
-           '4.大多数指令不需要@bot，直接输入指令即可（dlxhelp会标注需要@的功能）\n' \
-           '5.想让自己的群拥有bot可以直接加好友，同意之后就可以拉了\n' \
-           '6.QQ空间可查看bot的更新日志\n' \
-           '7.有任何建议或者bug反馈，可加入bot测试群：959231211\n' \
+           '❶本bot为娱乐性质bot，不支持更新查分器，小黑屋等科技功能\n' \
+           '❷发送dlxhelp查看指令大全\n' \
+           '❸号主随时会顶号与大家聊天解惑，介意勿用（不影响bot使用）\n' \
+           '❹大多数指令不需要@bot，直接输入指令即可（dlxhelp会标注需要@的功能）\n' \
+           '❺想让自己的群拥有bot可以直接加好友，同意之后就可以拉了\n' \
+           '❻QQ空间可查看bot的更新日志\n' \
+           '❼如不需要迪拉熊了，请直接私聊bot说明，不要直接踢\n' \
+           '❽有任何建议或者bug反馈，可加入bot测试群：959231211\n' \
            '希望大家用的开心~'
     msg = (MessageSegment.text(text), MessageSegment.image(Path('./src/zysx.jpg')))
     await zysx.send(msg)
