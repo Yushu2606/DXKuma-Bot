@@ -26,7 +26,7 @@ async def get_player_data(payload):
             if resp.status == 403:
                 return None, 403
             obj = await resp.json()
-            return obj
+            return obj, 200
 
 
 async def resize_image(image, scale):
