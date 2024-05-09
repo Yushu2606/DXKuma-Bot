@@ -20,9 +20,11 @@ from .MusicInfo import music_info, play_info
 
 best50 = on_regex(r'^(dlx50|dlxb50)')
 ap50 = on_regex(r'^(dlxap)')
+fc50 = on_regex(r'^(dlxfc)')
 
 songinfo = on_regex(r'^(id) ?(\d+)$')
 playinfo = on_regex(r'^(info) ?(.*)$')
+playmp3 = on_regex(r'^(dlx点歌) ?(.*)$')
 randomsong = on_regex(r'^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?')
 maiwhat = on_regex(r'^(mai什么)')
 
@@ -110,6 +112,24 @@ async def records_to_ap50(records: list):
     ap15 = (sorted(apdx, key=cmp_to_key(compare_records), reverse=True))[:15]
     return ap35, ap15
 
+async def records_to_fc50(records: list):
+    fc_records = []
+    for record in records:
+        if record['fc'] in ['fc', 'fcp']:
+            fc_records.append(record)
+
+    fcsd = []
+    fcdx = []
+    for record in fc_records:
+        song_id = record['song_id']
+        is_new = [d["basic_info"]["is_new"] for d in songList if d["id"] == str(song_id)]
+        if is_new[0]:
+            fcdx.append(record)
+        else:
+            fcsd.append(record)
+    fc35 = (sorted(fcsd, key=cmp_to_key(compare_records), reverse=True))[:35]
+    fc15 = (sorted(fcdx, key=cmp_to_key(compare_records), reverse=True))[:15]
+    return fc35, fc15
 
 @best50.handle()
 async def _(event: GroupMessageEvent):
@@ -193,6 +213,50 @@ async def _(event: GroupMessageEvent):
                 data = await resp.json()
                 await ap50.finish(data)
 
+@fc50.handle()
+async def _(event: GroupMessageEvent):
+    qq = event.get_user_id()
+    msg_text = str(event.raw_message)
+    pattern = r"\[CQ:at,qq=(\d+)\]"
+    match = re.search(pattern, msg_text)
+    if match:
+        target_qq = match.group(1)
+    else:
+        target_qq = event.get_user_id()
+    # payload = {"qq": target_qq, 'b50': True}
+    url = 'https://www.diving-fish.com/api/maimaidxprober/dev/player/records'
+    headers = {'Developer-Token': config.dev_token}
+    payload = {"qq": target_qq}
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers, params=payload) as resp:
+            if resp.status == 400:
+                msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+                await fc50.finish(msg)
+            elif resp.status == 200:
+                data = await resp.json()
+                await fc50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
+                records = data['records']
+                fc35, fc15 = await records_to_fc50(records)
+                if len(fc35) == 0 and len(fc15) == 0:
+                    if match:
+                        msg = (MessageSegment.at(qq), MessageSegment.text('他还没有ap任何一个谱面呢~'))
+                        await fc50.finish(msg)
+                    msg = (MessageSegment.at(qq), MessageSegment.text('你还没有ap任何一个谱面呢~'))
+                    await fc50.finish(msg)
+                nickname = data['nickname']
+                dani = data['additional_rating']
+                try:
+                    img = await generateb50(b35=fc35, b15=fc15, nickname=nickname, qq=target_qq, dani=dani, type='fc50')
+                    msg = (MessageSegment.at(qq), MessageSegment.image(img))
+                    await fc50.send(msg)
+                except Exception as e:
+                    traceback_info = traceback.format_exc()
+                    print(f'生成fc50时发生错误：\n{traceback_info}')
+                    msg = (MessageSegment.at(qq), MessageSegment.text(f'\n生成b50时发生错误：\n{str(e)}'))
+                    await fc50.send(msg)
+            else:
+                data = await resp.json()
+                await fc50.finish(data)
 
 @wcb.handle()
 async def _(event: GroupMessageEvent):
@@ -259,6 +323,32 @@ async def _(bot: Bot, event: GroupMessageEvent):
     else:
         await playinfo.finish(f"没找到 {song} 对应的乐曲\n请准确输入乐曲的id或别名")
 
+@playmp3.handle()
+async def _(event: GroupMessageEvent):
+    msg = str(event.get_message())
+    song = msg.replace('dlx点歌', '').strip()
+    if not song:
+        await playmp3.finish("请准确输入乐曲的id或别名")
+    rep_ids = await find_songid_by_alias(song)
+    song_info = await find_song_by_id(song)
+    if rep_ids:
+        song_id = str(rep_ids[0])
+        songinfo = await find_song_by_id(song_id=song_id)
+        songname = songinfo['title']
+        await playmp3.send(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')
+        with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
+            file_bytes = file.read()
+        await playmp3.finish(MessageSegment.record(file_bytes))
+    elif song_info:
+        song_id = song
+        songinfo = await find_song_by_id(song_id=song_id)
+        songname = songinfo['title']
+        await playmp3.send(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')
+        with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
+            file_bytes = file.read()
+        await playmp3.finish(MessageSegment.record(file_bytes))
+    else:
+        await playmp3.finish("迪拉熊好像没找到，换一个试试吧~")
 
 @randomsong.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
