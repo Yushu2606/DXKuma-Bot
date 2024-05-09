@@ -31,11 +31,12 @@ async def get_player_records(qq: str):
 
 
 async def get_player_record(qq: str, music_id):
+    headers = {'Developer-Token': config.dev_token}
     payload = {"qq": qq, 'music_id': music_id}
     async with aiohttp.ClientSession() as session:
         async with session.post(
-                "https://www.diving-fish.com/api/maimaidxprober/dev/player/record", json=payload
-        ) as resp:
+                "https://www.diving-fish.com/api/maimaidxprober/dev/player/record", headers=headers,
+                json=payload) as resp:
             if resp.status == 400:
                 return None, 400
             obj = await resp.json()

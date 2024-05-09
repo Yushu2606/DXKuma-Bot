@@ -232,18 +232,14 @@ async def play_info(song_id: str, qq: str):
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         return msg
     elif status == 200:
-        records = data['records']
+        records = data[song_id]
     with open('./src/maimai/songList.json', 'r') as f:
         song_list = json.load(f)
-    playdata = []
-    for song in records:
-        if song['song_id'] == int(song_id):
-            playdata.append(song)
-    if not playdata:
+    if not records:
         msg = '迪拉熊发现你未游玩过该乐曲'
         return msg
 
-    playdata = sorted(playdata, key=lambda x: x["level_index"])
+    playdata = sorted(records, key=lambda x: x["level_index"])
     # 底图
     bg = Image.open('./src/maimai/playinfo_bg.png')
     drawtext = ImageDraw.Draw(bg)

@@ -90,7 +90,7 @@ async def find_song_by_id(song_id):
     return None
 
 
-async def records_to_b50(records: list, rules: list | None):
+async def records_to_b50(records: list, rules: list | None = None):
     if not rules:
         b_records = records
     else:
