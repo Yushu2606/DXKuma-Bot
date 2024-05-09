@@ -61,7 +61,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
-    output = random.choice(roll_list)
+    output = random.SystemRandom().choice(roll_list)
     msg = (
         MessageSegment.at(qq),
         MessageSegment.text(f'\n迪拉熊建议你选择“{output}”呢~'),
