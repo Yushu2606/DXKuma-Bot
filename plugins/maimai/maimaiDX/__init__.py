@@ -148,10 +148,10 @@ async def _(event: GroupMessageEvent):
     payload = {"qq": target_qq, 'b50': True}
     data, status = await get_player_data(payload)
     if status == 400:
-        msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await best50.finish(msg)
     elif status == 403:
-        msg = '该用户禁止了其他人获取数据'
+        msg = '该用户禁止了迪拉熊获取数据'
         await best50.finish(msg)
     elif status == 200:
         # print(data)
@@ -176,7 +176,7 @@ async def _(event: GroupMessageEvent):
             print(f'生成b50时发生错误：\n{traceback_info}')
             msg = (
                 MessageSegment.at(qq),
-                MessageSegment.text(f'\n生成b50时发生错误：\n{str(e)}'),
+                MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
             )
             await best50.send(msg)
 
@@ -198,7 +198,7 @@ async def _(event: GroupMessageEvent):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=payload) as resp:
             if resp.status == 400:
-                msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
                 await ap50.finish(msg)
             elif resp.status == 200:
                 data = await resp.json()
@@ -235,7 +235,7 @@ async def _(event: GroupMessageEvent):
                     print(f'生成ap50时发生错误：\n{traceback_info}')
                     msg = (
                         MessageSegment.at(qq),
-                        MessageSegment.text(f'\n生成b50时发生错误：\n{str(e)}'),
+                        MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
                     )
                     await ap50.send(msg)
             else:
@@ -260,7 +260,7 @@ async def _(event: GroupMessageEvent):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=payload) as resp:
             if resp.status == 400:
-                msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
                 await fc50.finish(msg)
             elif resp.status == 200:
                 data = await resp.json()
@@ -271,12 +271,12 @@ async def _(event: GroupMessageEvent):
                     if match:
                         msg = (
                             MessageSegment.at(qq),
-                            MessageSegment.text('他还没有ap任何一个谱面呢~'),
+                            MessageSegment.text('他还没有fc任何一个谱面呢~'),
                         )
                         await fc50.finish(msg)
                     msg = (
                         MessageSegment.at(qq),
-                        MessageSegment.text('你还没有ap任何一个谱面呢~'),
+                        MessageSegment.text('你还没有fc任何一个谱面呢~'),
                     )
                     await fc50.finish(msg)
                 nickname = data['nickname']
@@ -297,7 +297,7 @@ async def _(event: GroupMessageEvent):
                     print(f'生成fc50时发生错误：\n{traceback_info}')
                     msg = (
                         MessageSegment.at(qq),
-                        MessageSegment.text(f'\n生成b50时发生错误：\n{str(e)}'),
+                        MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
                     )
                     await fc50.send(msg)
             else:
@@ -334,7 +334,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     song_id = re.search(r'\d+', msg).group(0)
     song_info = await find_song_by_id(song_id)
     if not song_info:
-        await songinfo.finish(f"没找到 {song_id} 对应的乐曲")
+        await songinfo.finish(f"迪拉熊没找到 {song_id} 对应的乐曲")
     else:
         img = await music_info(song_id=song_id, qq=qq)
         msg = (MessageSegment.at(qq), MessageSegment.image(img))
@@ -347,7 +347,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     msg = str(event.get_message())
     song = msg.replace('info', '').strip()
     if not song:
-        await playinfo.finish("请准确输入乐曲的id或别名")
+        await playinfo.finish("请准确输入乐曲的id或别名哦")
     rep_ids = await find_songid_by_alias(song)
     song_info = await find_song_by_id(song)
     if rep_ids:
@@ -368,7 +368,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         msg = (MessageSegment.at(qq), MessageSegment.image(img))
         await playinfo.finish(msg)
     else:
-        await playinfo.finish(f"没找到 {song} 对应的乐曲\n请准确输入乐曲的id或别名")
+        await playinfo.finish(f"迪拉熊没找到 {song} 对应的乐曲\n请准确输入乐曲的id或别名")
 
 
 @playmp3.handle()
@@ -376,7 +376,7 @@ async def _(event: GroupMessageEvent):
     msg = str(event.get_message())
     song = msg.replace('dlx点歌', '').strip()
     if not song:
-        await playmp3.finish("请准确输入乐曲的id或别名")
+        await playmp3.finish("请准确输入乐曲的id或别名哦")
     rep_ids = await find_songid_by_alias(song)
     song_info = await find_song_by_id(song)
     if rep_ids:
@@ -439,7 +439,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         elif level in s_list:
             s_songs.append(song_id)
     if len(s_songs) == 0:
-        msg = (MessageSegment.at(qq), MessageSegment.text(' 没有符合条件的乐曲'))
+        msg = (MessageSegment.at(qq), MessageSegment.text(' 迪拉熊没有找到符合条件的乐曲'))
         await randomsong.finish(msg)
     song_id = random.choice(s_songs)
     img = await music_info(song_id=song_id, qq=qq)
@@ -470,18 +470,18 @@ async def _(bot: Bot, event: GroupMessageEvent):
         elif match.group(3):
             name = match.group(3)
         else:
-            await whatSong.finish("什么都没找到……")
+            await whatSong.finish("迪拉熊什么都没找到……")
             return
 
         rep_ids = await find_songid_by_alias(name)
         if not rep_ids:
-            await whatSong.finish("什么都没找到……")
+            await whatSong.finish("迪拉熊什么都没找到……")
         elif len(rep_ids) == 1:
             img = await music_info(rep_ids[0], qq=qq)
             msg = (MessageSegment.at(qq), MessageSegment.image(img))
             await whatSong.finish(msg)
         else:
-            output_lst = f'{name} 的搜索结果如下：'
+            output_lst = f'迪拉熊找到的 {name} 结果如下：'
             for song_id in rep_ids:
                 song_info = await find_song_by_id(song_id)
                 if song_info:
@@ -499,11 +499,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
         alias_list = json.load(f)
     alias = alias_list.get(song_id, None)
     if not alias:
-        await aliasSearch.finish(f"没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
+        await aliasSearch.finish(f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
     else:
         song_name = alias['Name']
         song_alias = '\n'.join(alias['Alias'])
-        msg = f'{song_id}.{song_name} 的别名有：\n{song_alias}'
+        msg = f'迪拉熊找到的 {song_id}.{song_name} 的别名有：\n{song_alias}'
         await aliasSearch.finish(msg)
 
 
@@ -520,17 +520,17 @@ async def _(
         alias_list = json.load(f)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
-        await aliasAdd.finish(f"没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
+        await aliasAdd.finish(f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
     elif alias_name in alias_list[str(song_id)]['Alias']:
         await aliasAdd.finish(
-            f"{song_id}.{song_alias['Name']} 已有该别名：{alias_name}"
+            f"迪拉熊发现 {song_id}.{song_alias['Name']} 已有该别名：{alias_name}"
         )
     else:
         alias_list[str(song_id)]['Alias'].append(alias_name)
         with open('./src/maimai/aliasList.json', 'w', encoding='utf-8') as f:
             json.dump(alias_list, f, ensure_ascii=False, indent=4)
         await aliasAdd.finish(
-            f"已将 {alias_name} 添加到 {song_id}.{song_alias['Name']} 的别名"
+            f"迪拉熊已将 {alias_name} 添加到 {song_id}.{song_alias['Name']} 的别名"
         )
 
 
@@ -545,17 +545,17 @@ async def _(
         alias_list = json.load(f)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
-        await aliasDel.finish(f"没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
+        await aliasDel.finish(f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
     elif alias_name not in alias_list[str(song_id)]['Alias']:
         await aliasDel.finish(
-            f"{song_id}.{song_alias['Name']} 没有该别名：{alias_name}"
+            f"迪拉熊发现 {song_id}.{song_alias['Name']} 没有该别名：{alias_name}"
         )
     else:
         alias_list[str(song_id)]['Alias'].remove(alias_name)
         with open('./src/maimai/aliasList.json', 'w', encoding='utf-8') as f:
             json.dump(alias_list, f, ensure_ascii=False, indent=4)
         await aliasDel.finish(
-            f"已从 {song_id}.{song_alias['Name']} 的别名中移除 {alias_name}"
+            f"迪拉熊已从 {song_id}.{song_alias['Name']} 的别名中移除 {alias_name}"
         )
 
 
@@ -645,7 +645,7 @@ async def _(event: GroupMessageEvent):
     with open('./data/maimai/b50_config.json', 'w') as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
 
-    msg = (MessageSegment.at(qq), MessageSegment.text(' 已为你开启分数推荐'))
+    msg = (MessageSegment.at(qq), MessageSegment.text(' 迪拉熊已为你开启分数推荐'))
     await ratj_on.finish(msg)
 
 
@@ -662,5 +662,5 @@ async def _(event: GroupMessageEvent):
     with open('./data/maimai/b50_config.json', 'w') as f:
         json.dump(config, f, ensure_ascii=False, indent=4)
 
-    msg = (MessageSegment.at(qq), MessageSegment.text(' 已为你关闭分数推荐'))
+    msg = (MessageSegment.at(qq), MessageSegment.text(' 迪拉熊已为你关闭分数推荐'))
     await ratj_off.finish(msg)

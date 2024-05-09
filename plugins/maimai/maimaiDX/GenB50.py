@@ -564,7 +564,7 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
         (208, 148),
-        f'旧版本: {b35_ra} + 新版本: {b15_ra} = {rating}',
+        f'过往版本: {b35_ra} + 现行版本: {b15_ra} = {rating}',
         font=ttf,
         fill=(255, 255, 255),
     )
@@ -596,7 +596,7 @@ async def generate_wcb(qq: str, level: str, page: int):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=payload) as resp:
             if resp.status == 400:
-                msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
                 return msg
             elif resp.status == 200:
                 data = await resp.json()
@@ -606,12 +606,12 @@ async def generate_wcb(qq: str, level: str, page: int):
     dani = data['additional_rating']
     filted_records = await records_filter(records=records, level=level)
     if len(filted_records) == 0:
-        msg = '未找到该难度或未游玩过该难度的歌曲'
+        msg = '迪拉熊未找到该难度或未游玩过该难度的歌曲'
         return msg
 
     all_page_num = math.ceil(len(filted_records) / 55)
     if page > all_page_num:
-        msg = f'你的 {level} 完成表的最大页码为{all_page_num}'
+        msg = f'迪拉熊找到你的 {level} 完成表的最大页码为{all_page_num}'
         return msg
     input_records = await get_page_records(filted_records, page=page)
     bg = Image.open('./src/maimai/wcb_bg.png')

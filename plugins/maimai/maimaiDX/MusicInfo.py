@@ -236,7 +236,7 @@ async def play_info(song_id: str, qq: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=payload) as resp:
             if resp.status == 400:
-                msg = '未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
                 return msg
             elif resp.status == 200:
                 data = await resp.json()
@@ -248,7 +248,7 @@ async def play_info(song_id: str, qq: str):
         if song['song_id'] == int(song_id):
             playdata.append(song)
     if not playdata:
-        msg = '你未游玩过该乐曲'
+        msg = '迪拉熊发现你未游玩过该乐曲'
         return msg
 
     playdata = sorted(playdata, key=lambda x: x["level_index"])
