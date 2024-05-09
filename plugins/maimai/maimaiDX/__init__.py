@@ -124,7 +124,7 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    data, status = await get_player_records(qq)
+    data, status = await get_player_records(target_qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await best50.finish(msg)
@@ -139,12 +139,12 @@ async def _(event: GroupMessageEvent):
                     MessageSegment.at(qq),
                     MessageSegment.text('他还没有游玩任何一个谱面呢~'),
                 )
-                await ap50.finish(msg)
+                await best50.finish(msg)
             msg = (
                 MessageSegment.at(qq),
                 MessageSegment.text('你还没有游玩任何一个谱面呢~'),
             )
-            await ap50.finish(msg)
+            await best50.finish(msg)
         nickname = data['nickname']
         dani = data['additional_rating']
         try:
@@ -173,7 +173,7 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    data, status = await get_player_records(qq)
+    data, status = await get_player_records(target_qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await ap50.finish(msg)
@@ -226,7 +226,7 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    data, status = await get_player_records(qq)
+    data, status = await get_player_records(target_qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await fc50.finish(msg)
