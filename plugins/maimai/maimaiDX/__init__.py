@@ -6,7 +6,6 @@ import traceback
 from functools import cmp_to_key
 from pathlib import Path
 
-import aiohttp
 import requests
 from arclet.alconna import Alconna, Args
 from nonebot import on_regex, on_fullmatch
@@ -14,8 +13,8 @@ from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot_plugin_alconna import on_alconna, Match, AlconnaMatch
 
-from util.Config import config
-from .GenB50 import generateb50, get_player_data, generate_wcb, compare_records
+from util.DivingFish import get_player_records
+from .GenB50 import generateb50, generate_wcb, compare_records
 from .MusicInfo import music_info, play_info
 
 best50 = on_regex(r'^(dlx50|dlxb50)')
@@ -91,48 +90,29 @@ async def find_song_by_id(song_id):
     return None
 
 
-async def records_to_ap50(records: list):
-    ap_records = []
-    for record in records:
-        if record['fc'] in ['ap', 'app']:
-            ap_records.append(record)
+async def records_to_b50(records: list, rules: list | None):
+    if not rules:
+        b_records = records
+    else:
+        b_records = []
+        for record in records:
+            if record['fc'] in rules:
+                b_records.append(record)
 
-    apsd = []
-    apdx = []
-    for record in ap_records:
+    sd = []
+    dx = []
+    for record in b_records:
         song_id = record['song_id']
         is_new = [
             d["basic_info"]["is_new"] for d in songList if d["id"] == str(song_id)
         ]
         if is_new[0]:
-            apdx.append(record)
+            dx.append(record)
         else:
-            apsd.append(record)
-    ap35 = (sorted(apsd, key=cmp_to_key(compare_records), reverse=True))[:35]
-    ap15 = (sorted(apdx, key=cmp_to_key(compare_records), reverse=True))[:15]
-    return ap35, ap15
-
-
-async def records_to_fc50(records: list):
-    fc_records = []
-    for record in records:
-        if record['fc'] in ['fc', 'fcp']:
-            fc_records.append(record)
-
-    fcsd = []
-    fcdx = []
-    for record in fc_records:
-        song_id = record['song_id']
-        is_new = [
-            d["basic_info"]["is_new"] for d in songList if d["id"] == str(song_id)
-        ]
-        if is_new[0]:
-            fcdx.append(record)
-        else:
-            fcsd.append(record)
-    fc35 = (sorted(fcsd, key=cmp_to_key(compare_records), reverse=True))[:35]
-    fc15 = (sorted(fcdx, key=cmp_to_key(compare_records), reverse=True))[:15]
-    return fc35, fc15
+            sd.append(record)
+    b35 = (sorted(sd, key=cmp_to_key(compare_records), reverse=True))[:35]
+    b15 = (sorted(dx, key=cmp_to_key(compare_records), reverse=True))[:15]
+    return b35, b15
 
 
 @best50.handle()
@@ -145,25 +125,28 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    payload = {"qq": target_qq, 'b50': True}
-    data, status = await get_player_data(payload)
+    data, status = get_player_records(qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-        await best50.finish(msg)
-    elif status == 403:
-        msg = '该用户禁止了迪拉熊获取数据'
         await best50.finish(msg)
     elif status == 200:
         # print(data)
         await best50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
-        b35 = sorted(
-            data['charts']['sd'], key=cmp_to_key(compare_records), reverse=True
-        )
-        b15 = sorted(
-            data['charts']['dx'], key=cmp_to_key(compare_records), reverse=True
-        )
+        records = data['records']
+        b35, b15 = await records_to_b50(records)
+        if len(b35) == 0 and len(b15) == 0:
+            if match:
+                msg = (
+                    MessageSegment.at(qq),
+                    MessageSegment.text('他还没有游玩任何一个谱面呢~'),
+                )
+                await ap50.finish(msg)
+            msg = (
+                MessageSegment.at(qq),
+                MessageSegment.text('你还没有游玩任何一个谱面呢~'),
+            )
+            await ap50.finish(msg)
         nickname = data['nickname']
-        # rating = data['rating']
         dani = data['additional_rating']
         try:
             img = await generateb50(
@@ -191,56 +174,47 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    # payload = {'qq': target_qq, 'b50': True}
-    url = 'https://www.diving-fish.com/api/maimaidxprober/dev/player/records'
-    headers = {'Developer-Token': config.dev_token}
-    payload = {"qq": target_qq}
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=payload) as resp:
-            if resp.status == 400:
-                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+    data, status = get_player_records(qq)
+    if status == 400:
+        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        await ap50.finish(msg)
+    elif status == 200:
+        await ap50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
+        records = data['records']
+        ap35, ap15 = await records_to_b50(records, ['ap', 'app'])
+        if len(ap35) == 0 and len(ap15) == 0:
+            if match:
+                msg = (
+                    MessageSegment.at(qq),
+                    MessageSegment.text('他还没有ap任何一个谱面呢~'),
+                )
                 await ap50.finish(msg)
-            elif resp.status == 200:
-                data = await resp.json()
-                await ap50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
-                records = data['records']
-                ap35, ap15 = await records_to_ap50(records)
-                if len(ap35) == 0 and len(ap15) == 0:
-                    if match:
-                        msg = (
-                            MessageSegment.at(qq),
-                            MessageSegment.text('他还没有ap任何一个谱面呢~'),
-                        )
-                        await ap50.finish(msg)
-                    msg = (
-                        MessageSegment.at(qq),
-                        MessageSegment.text('你还没有ap任何一个谱面呢~'),
-                    )
-                    await ap50.finish(msg)
-                nickname = data['nickname']
-                dani = data['additional_rating']
-                try:
-                    img = await generateb50(
-                        b35=ap35,
-                        b15=ap15,
-                        nickname=nickname,
-                        qq=target_qq,
-                        dani=dani,
-                        type='ap50',
-                    )
-                    msg = (MessageSegment.at(qq), MessageSegment.image(img))
-                    await ap50.send(msg)
-                except Exception as e:
-                    traceback_info = traceback.format_exc()
-                    print(f'生成ap50时发生错误：\n{traceback_info}')
-                    msg = (
-                        MessageSegment.at(qq),
-                        MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
-                    )
-                    await ap50.send(msg)
-            else:
-                data = await resp.json()
-                await ap50.finish(data)
+            msg = (
+                MessageSegment.at(qq),
+                MessageSegment.text('你还没有ap任何一个谱面呢~'),
+            )
+            await ap50.finish(msg)
+        nickname = data['nickname']
+        dani = data['additional_rating']
+        try:
+            img = await generateb50(
+                b35=ap35,
+                b15=ap15,
+                nickname=nickname,
+                qq=target_qq,
+                dani=dani,
+                type='ap50',
+            )
+            msg = (MessageSegment.at(qq), MessageSegment.image(img))
+            await ap50.send(msg)
+        except Exception as e:
+            traceback_info = traceback.format_exc()
+            print(f'生成ap50时发生错误：\n{traceback_info}')
+            msg = (
+                MessageSegment.at(qq),
+                MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
+            )
+            await ap50.send(msg)
 
 
 @fc50.handle()
@@ -253,56 +227,47 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    # payload = {'qq': target_qq, 'b50': True}
-    url = 'https://www.diving-fish.com/api/maimaidxprober/dev/player/records'
-    headers = {'Developer-Token': config.dev_token}
-    payload = {"qq": target_qq}
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=payload) as resp:
-            if resp.status == 400:
-                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+    data, status = get_player_records(qq)
+    if status == 400:
+        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        await fc50.finish(msg)
+    elif status == 200:
+        await fc50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
+        records = data['records']
+        fc35, fc15 = await records_to_b50(records, ['fc', 'fcp'])
+        if len(fc35) == 0 and len(fc15) == 0:
+            if match:
+                msg = (
+                    MessageSegment.at(qq),
+                    MessageSegment.text('他还没有fc任何一个谱面呢~'),
+                )
                 await fc50.finish(msg)
-            elif resp.status == 200:
-                data = await resp.json()
-                await fc50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
-                records = data['records']
-                fc35, fc15 = await records_to_fc50(records)
-                if len(fc35) == 0 and len(fc15) == 0:
-                    if match:
-                        msg = (
-                            MessageSegment.at(qq),
-                            MessageSegment.text('他还没有fc任何一个谱面呢~'),
-                        )
-                        await fc50.finish(msg)
-                    msg = (
-                        MessageSegment.at(qq),
-                        MessageSegment.text('你还没有fc任何一个谱面呢~'),
-                    )
-                    await fc50.finish(msg)
-                nickname = data['nickname']
-                dani = data['additional_rating']
-                try:
-                    img = await generateb50(
-                        b35=fc35,
-                        b15=fc15,
-                        nickname=nickname,
-                        qq=target_qq,
-                        dani=dani,
-                        type='fc50',
-                    )
-                    msg = (MessageSegment.at(qq), MessageSegment.image(img))
-                    await fc50.send(msg)
-                except Exception as e:
-                    traceback_info = traceback.format_exc()
-                    print(f'生成fc50时发生错误：\n{traceback_info}')
-                    msg = (
-                        MessageSegment.at(qq),
-                        MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
-                    )
-                    await fc50.send(msg)
-            else:
-                data = await resp.json()
-                await fc50.finish(data)
+            msg = (
+                MessageSegment.at(qq),
+                MessageSegment.text('你还没有fc任何一个谱面呢~'),
+            )
+            await fc50.finish(msg)
+        nickname = data['nickname']
+        dani = data['additional_rating']
+        try:
+            img = await generateb50(
+                b35=fc35,
+                b15=fc15,
+                nickname=nickname,
+                qq=target_qq,
+                dani=dani,
+                type='fc50',
+            )
+            msg = (MessageSegment.at(qq), MessageSegment.image(img))
+            await fc50.send(msg)
+        except Exception as e:
+            traceback_info = traceback.format_exc()
+            print(f'生成fc50时发生错误：\n{traceback_info}')
+            msg = (
+                MessageSegment.at(qq),
+                MessageSegment.text(f'\n迪拉熊画图时晕倒了：\n{str(e)}'),
+            )
+            await fc50.send(msg)
 
 
 @wcb.handle()

@@ -18,19 +18,6 @@ ttf_heavy_path = font_path / 'GenSenMaruGothicTW-Heavy.ttf'
 ttf_regular_path = font_path / 'GenSenMaruGothicTW-Regular.ttf'
 
 
-async def get_player_data(payload):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-                "https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload
-        ) as resp:
-            if resp.status == 400:
-                return None, 400
-            if resp.status == 403:
-                return None, 403
-            obj = await resp.json()
-            return obj, 200
-
-
 async def resize_image(image, scale):
     # 计算缩放后的目标尺寸
     width = int(image.width * scale)

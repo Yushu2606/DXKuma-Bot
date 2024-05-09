@@ -1,12 +1,10 @@
 import json
 from io import BytesIO
 
-import aiohttp
 from PIL import Image, ImageDraw, ImageFont
 
-from util.Config import config
+from util.DivingFish import get_player_data, get_player_record
 from .Config import *
-from .GenB50 import get_player_data
 
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
 ttf_heavy_path = font_path / 'GenSenMaruGothicTW-Heavy.ttf'
@@ -48,8 +46,7 @@ async def music_info(song_id: str, qq: str):
     song_data = next((d for d in song_list if d['id'] == song_id), None)
 
     # 初始化用户数据
-    payload = {"qq": qq, 'b50': True}
-    data, status = await get_player_data(payload)
+    data, status = await get_player_data(qq)
     if status == 200:
         b50_status = True
         b35 = data['charts']['sd']
@@ -230,17 +227,12 @@ async def music_info(song_id: str, qq: str):
 
 
 async def play_info(song_id: str, qq: str):
-    url = 'https://www.diving-fish.com/api/maimaidxprober/dev/player/records'
-    headers = {'Developer-Token': config.dev_token}
-    payload = {"qq": qq}
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=payload) as resp:
-            if resp.status == 400:
-                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-                return msg
-            elif resp.status == 200:
-                data = await resp.json()
-                records = data['records']
+    data, status = get_player_record(qq, song_id)
+    if status == 400:
+        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        return msg
+    elif status == 200:
+        records = data['records']
     with open('./src/maimai/songList.json', 'r') as f:
         song_list = json.load(f)
     playdata = []
