@@ -564,7 +564,7 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
         (196, 148),
-        f'过往版本: {b35_ra} + 现行版本: {b15_ra} = {rating}',
+        f'过往版本：{b35_ra} + 现行版本：{b15_ra} = {rating}',
         font=ttf,
         fill=(255, 255, 255),
     )
