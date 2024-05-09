@@ -113,7 +113,7 @@ async def records_filter(records: list, level: str):
         if record['level'] == level:
             filted_records.append(record)
     filted_records = sorted(
-        filted_records, key=lambda x: (x["achievements"], x["ds"]), reverse=True
+        filted_records, key=lambda x: (x["ra"], x["achievements"], x["ds"]), reverse=True
     )
     return filted_records
 
@@ -197,17 +197,6 @@ async def compute_ra(ra: int):
         return 10
     else:
         return 11
-
-
-def compare_records(record1, record2):
-    if record1['ra'] != record2['ra']:
-        return 1 if record1['ra'] > record2['ra'] else -1
-    elif record1['achievements'] != record2['achievements']:
-        return 1 if record1['achievements'] > record2['achievements'] else -1
-    elif record1['ds'] != record2['ds']:
-        return 1 if record1['ds'] > record2['ds'] else -1
-    else:
-        return 0
 
 
 async def music_to_part(

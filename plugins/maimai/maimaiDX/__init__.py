@@ -3,7 +3,6 @@ import os
 import random
 import re
 import traceback
-from functools import cmp_to_key
 from pathlib import Path
 
 import requests
@@ -14,7 +13,7 @@ from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot_plugin_alconna import on_alconna, Match, AlconnaMatch
 
 from util.DivingFish import get_player_records
-from .GenB50 import generateb50, generate_wcb, compare_records
+from .GenB50 import generateb50, generate_wcb
 from .MusicInfo import music_info, play_info
 
 best50 = on_regex(r'^(dlx50|dlxb50)')
@@ -110,8 +109,8 @@ async def records_to_b50(records: list, rules: list | None = None):
             dx.append(record)
         else:
             sd.append(record)
-    b35 = (sorted(sd, key=cmp_to_key(compare_records), reverse=True))[:35]
-    b15 = (sorted(dx, key=cmp_to_key(compare_records), reverse=True))[:15]
+    b35 = (sorted(sd, key=lambda x: (x["ra"], x["achievements"], x["ds"]), reverse=True))[:35]
+    b15 = (sorted(dx, key=lambda x: (x["ra"], x["achievements"], x["ds"]), reverse=True))[:15]
     return b35, b15
 
 
