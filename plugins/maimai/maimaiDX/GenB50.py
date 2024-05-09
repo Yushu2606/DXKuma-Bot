@@ -2,11 +2,11 @@ import json
 import random
 from io import BytesIO
 
-import aiohttp
 import math
 import requests
 from PIL import Image, ImageFont, ImageDraw
 
+from util.DivingFish import get_player_records
 from .Config import *
 
 with open('./src/maimai/songList.json', 'r') as f:
@@ -550,7 +550,7 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     # rating合计
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
-        (196, 148),
+        (188, 148),
         f'过往版本：{b35_ra} + 现行版本：{b15_ra} = {rating}',
         font=ttf,
         fill=(255, 255, 255),
@@ -577,16 +577,10 @@ async def generate_wcb(qq: str, level: str, page: int):
         plate = '000101'
     else:
         plate = config[qq]['plate']
-    url = 'https://www.diving-fish.com/api/maimaidxprober/dev/player/records'
-    headers = {'Developer-Token': config.dev_token}
-    payload = {"qq": qq}
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=payload) as resp:
-            if resp.status == 400:
-                msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-                return msg
-            elif resp.status == 200:
-                data = await resp.json()
+    data, status = await get_player_records(qq)
+    if status == 400:
+        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        return msg
     records = data['records']
     nickname = data['nickname']
     rating = data['rating']
