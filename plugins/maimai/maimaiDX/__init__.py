@@ -125,7 +125,7 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    data, status = get_player_records(qq)
+    data, status = await get_player_records(qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await best50.finish(msg)
@@ -174,7 +174,7 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    data, status = get_player_records(qq)
+    data, status = await get_player_records(qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await ap50.finish(msg)
@@ -227,7 +227,7 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
-    data, status = get_player_records(qq)
+    data, status = await get_player_records(qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         await fc50.finish(msg)

@@ -227,7 +227,7 @@ async def music_info(song_id: str, qq: str):
 
 
 async def play_info(song_id: str, qq: str):
-    data, status = get_player_record(qq, song_id)
+    data, status = await get_player_record(qq, song_id)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         return msg
