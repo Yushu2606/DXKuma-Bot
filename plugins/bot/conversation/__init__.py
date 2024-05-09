@@ -23,7 +23,7 @@ conversations = {
     7: "你不能这样对迪拉熊！",
     8: "迪拉熊不想理你了，哼！",
     9: "不把白潘AP了就别想！",
-    10: "……你会对迪拉熊负责的，对吧？"
+    10: "……你会对迪拉熊负责的，对吧？",
 }
 
 
@@ -48,16 +48,25 @@ async def _(event: GroupMessageEvent):
     text = str(event.raw_message)
     roll_list = text[1:].split('还是')
     if not roll_list:
-        msg = (MessageSegment.at(qq), MessageSegment.text('\n没有选项要让迪拉熊怎么选嘛~'),
-               MessageSegment.image(Path('./src/选不了.png')))
+        msg = (
+            MessageSegment.at(qq),
+            MessageSegment.text('\n没有选项要让迪拉熊怎么选嘛~'),
+            MessageSegment.image(Path('./src/选不了.png')),
+        )
         await roll.finish(msg)
     if len(set(roll_list)) == 1:
-        msg = (MessageSegment.at(qq), MessageSegment.text('\n就一个选项要让迪拉熊怎么选嘛~'),
-               MessageSegment.image(Path('./src/选不了.png')))
+        msg = (
+            MessageSegment.at(qq),
+            MessageSegment.text('\n就一个选项要让迪拉熊怎么选嘛~'),
+            MessageSegment.image(Path('./src/选不了.png')),
+        )
         await roll.finish(msg)
     output = random.choice(roll_list)
-    msg = (MessageSegment.at(qq), MessageSegment.text(f'\n迪拉熊建议你选择“{output}”呢~'),
-           MessageSegment.image(Path('./src/选择.png')))
+    msg = (
+        MessageSegment.at(qq),
+        MessageSegment.text(f'\n迪拉熊建议你选择“{output}”呢~'),
+        MessageSegment.image(Path('./src/选择.png')),
+    )
     await roll.finish(msg)
 
 # @morning.handle()

@@ -78,8 +78,12 @@ async def music_info(song_id: str, qq: str):
         truncated_title = song_title
         while text_bbox[2] > max_width and len(truncated_title) > 0:
             truncated_title = truncated_title[:-1]
-            text_bbox = drawtext.textbbox(title_position, truncated_title + ellipsis, font=ttf)
-        drawtext.text(title_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0))
+            text_bbox = drawtext.textbbox(
+                title_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            title_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
 
     # 绘制曲师
     song_artist = song_data['basic_info']['artist']
@@ -97,8 +101,12 @@ async def music_info(song_id: str, qq: str):
         truncated_title = song_artist
         while text_bbox[2] > max_width and len(truncated_title) > 0:
             truncated_title = truncated_title[:-1]
-            text_bbox = drawtext.textbbox(artist_position, truncated_title + ellipsis, font=ttf)
-        drawtext.text(artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0))
+            text_bbox = drawtext.textbbox(
+                artist_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
 
     # id
     ttf = ImageFont.truetype(ttf_bold_path, size=28)
@@ -125,20 +133,28 @@ async def music_info(song_id: str, qq: str):
 
     # 等级
     ttf = ImageFont.truetype(ttf_heavy_path, size=50)
-    song_level = song_data['level']
-    level_color = [(14, 117, 54), (214, 148, 19), (192, 33, 56), (103, 20, 141), (186, 126, 232)]
+    songs_level = song_data['level']
+    level_color = [
+        (14, 117, 54),
+        (214, 148, 19),
+        (192, 33, 56),
+        (103, 20, 141),
+        (186, 126, 232),
+    ]
     level_x = 395
     level_y = 1050
-    for i in range(len(song_level)):
+    for i, song_level in enumerate(songs_level):
         level_position = (level_x, level_y)
-        drawtext.text(level_position, song_level[i], anchor='mm', font=ttf, fill=level_color[i])
+        drawtext.text(
+            level_position, song_level, anchor='mm', font=ttf, fill=level_color[i]
+        )
         level_x += 170
 
     # 定数->ra
     ttf = ImageFont.truetype(ttf_bold_path, size=18)
-    song_ds = song_data['ds']
+    songs_ds = song_data['ds']
     is_new = song_data['basic_info']['is_new']
-    song_ra = [int(value * 1.005 * 22.4) for value in song_ds]  # 该ds鸟加的ra值
+    song_ra = [int(value * 1.005 * 22.4) for value in songs_ds]  # 该ds鸟加的ra值
     ds_x = 395
     ds_y = 1125
     if b50_status:
@@ -147,13 +163,24 @@ async def music_info(song_id: str, qq: str):
             basic_ra = b15[-1]['ra']
     else:
         return
-    for i in range(len(song_ds)):
+    for i, song_ds in enumerate(songs_ds):
         ds_position = (ds_x, ds_y)
         if b50_status:
-            drawtext.text(ds_position, f'{song_ds[i]} -> +{song_ra[i] - basic_ra if song_ra[i] - basic_ra >= 0 else 0}',
-                          anchor='mm', font=ttf, fill=(28, 43, 110))
+            drawtext.text(
+                ds_position,
+                f'{song_ds} -> +{song_ra[i] - basic_ra if song_ra[i] - basic_ra >= 0 else 0}',
+                anchor='mm',
+                font=ttf,
+                fill=(28, 43, 110),
+            )
         else:
-            drawtext.text(ds_position, f'{song_ds[i]} -> +{song_ra[i]}', anchor='mm', font=ttf, fill=(28, 43, 110))
+            drawtext.text(
+                ds_position,
+                f'{song_ds} -> +{song_ra[i]}',
+                anchor='mm',
+                font=ttf,
+                fill=(28, 43, 110),
+            )
         ds_x += 170
 
     # 物量
@@ -169,9 +196,11 @@ async def music_info(song_id: str, qq: str):
         dx_num = total_num * 3
         notes.insert(0, total_num)
         notes.append(dx_num)
-        for i in range(len(notes)):
+        for i, note in enumerate(notes):
             notes_position = (notes_x, notes_y)
-            drawtext.text(notes_position, str(notes[i]), anchor='mm', font=ttf, fill=(28, 43, 110))
+            drawtext.text(
+                notes_position, str(note), anchor='mm', font=ttf, fill=(28, 43, 110)
+            )
             notes_y += 80
         notes_x += 170
 
@@ -181,9 +210,15 @@ async def music_info(song_id: str, qq: str):
     charter_x = 448
     charter_y = 1796
     charter_color = [(192, 33, 56), (103, 20, 141), (186, 126, 232)]
-    for i in range(len(song_charters)):
+    for i, song_charter in enumerate(song_charters):
         charter_position = (charter_x, charter_y)
-        drawtext.text(charter_position, song_charters[i], anchor='mm', font=ttf, fill=charter_color[i])
+        drawtext.text(
+            charter_position,
+            song_charter,
+            anchor='mm',
+            font=ttf,
+            fill=charter_color[i],
+        )
         charter_x += 292
 
     img_byte_arr = BytesIO()
@@ -245,8 +280,12 @@ async def play_info(song_id: str, qq: str):
         truncated_title = song_title
         while text_bbox[2] > max_width and len(truncated_title) > 0:
             truncated_title = truncated_title[:-1]
-            text_bbox = drawtext.textbbox(title_position, truncated_title + ellipsis, font=ttf)
-        drawtext.text(title_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0))
+            text_bbox = drawtext.textbbox(
+                title_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            title_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
 
     # 绘制曲师
     song_artist = song_data['basic_info']['artist']
@@ -264,8 +303,12 @@ async def play_info(song_id: str, qq: str):
         truncated_title = song_artist
         while text_bbox[2] > max_width and len(truncated_title) > 0:
             truncated_title = truncated_title[:-1]
-            text_bbox = drawtext.textbbox(artist_position, truncated_title + ellipsis, font=ttf)
-        drawtext.text(artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0))
+            text_bbox = drawtext.textbbox(
+                artist_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
 
     # id
     ttf = ImageFont.truetype(ttf_bold_path, size=28)
@@ -291,8 +334,14 @@ async def play_info(song_id: str, qq: str):
     bg.paste(song_ver, (865, 765), song_ver)
 
     # 绘制成绩
-    score_color = [(14, 117, 54), (214, 148, 19), (192, 33, 56), (103, 20, 141), (186, 126, 232)]
-    for i in range(len(playdata)):
+    score_color = [
+        (14, 117, 54),
+        (214, 148, 19),
+        (192, 33, 56),
+        (103, 20, 141),
+        (186, 126, 232),
+    ]
+    for _, play_datum in enumerate(playdata):
         level_x = 229
         level_y = 1104
         achieve_x = 471
@@ -307,7 +356,7 @@ async def play_info(song_id: str, qq: str):
         dsra_y = 1104
         plus_x = 262
         plus_y = 1030
-        score = playdata[i]
+        score = play_datum
         achieve = str(score['achievements'])
         if '.' not in achieve:
             achieve = f'{achieve}.0'
@@ -343,7 +392,9 @@ async def play_info(song_id: str, qq: str):
 
         # 达成率
         ttf = ImageFont.truetype(ttf_bold_path, size=43)
-        drawtext.text((achieve_x, achieve_y), achieve, font=ttf, fill=color, anchor='mm')
+        drawtext.text(
+            (achieve_x, achieve_y), achieve, font=ttf, fill=color, anchor='mm'
+        )
 
         # 评价
         rate_path = maimai_Static / f'bud_music_icon_{rate}.png'
@@ -366,7 +417,9 @@ async def play_info(song_id: str, qq: str):
 
         # 定数->ra
         ttf = ImageFont.truetype(ttf_bold_path, size=20)
-        drawtext.text((dsra_x, dsra_y), f'{ds}->{ra}', font=ttf, fill=color, anchor='mm')
+        drawtext.text(
+            (dsra_x, dsra_y), f'{ds}->{ra}', font=ttf, fill=color, anchor='mm'
+        )
 
     img_byte_arr = BytesIO()
     bg.save(img_byte_arr, format='PNG', quality=90)

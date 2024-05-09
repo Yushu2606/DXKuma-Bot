@@ -20,7 +20,9 @@ ttf_regular_path = font_path / 'GenSenMaruGothicTW-Regular.ttf'
 
 async def get_player_data(payload):
     async with aiohttp.ClientSession() as session:
-        async with session.post("https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload) as resp:
+        async with session.post(
+                "https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload
+        ) as resp:
             if resp.status == 400:
                 return None, 400
             if resp.status == 403:
@@ -54,22 +56,23 @@ async def format_songid(id):
 
 
 async def compute_record(records: list):
-    output = {'sssp': 0,
-              'sss': 0,
-              'ssp': 0,
-              'ss': 0,
-              'sp': 0,
-              's': 0,
-              'clear': 0,
-              'app': 0,
-              'ap': 0,
-              'fcp': 0,
-              'fc': 0,
-              'fsdp': 0,
-              'fsd': 0,
-              'fsp': 0,
-              'fs': 0
-              }
+    output = {
+        'sssp': 0,
+        'sss': 0,
+        'ssp': 0,
+        'ss': 0,
+        'sp': 0,
+        's': 0,
+        'clear': 0,
+        'app': 0,
+        'ap': 0,
+        'fcp': 0,
+        'fc': 0,
+        'fsdp': 0,
+        'fsd': 0,
+        'fsp': 0,
+        'fs': 0,
+    }
 
     for record in records:
         achieve = record['achievements']
@@ -122,7 +125,9 @@ async def records_filter(records: list, level: str):
     for record in records:
         if record['level'] == level:
             filted_records.append(record)
-    filted_records = sorted(filted_records, key=lambda x: (x["achievements"], x["ds"]), reverse=True)
+    filted_records = sorted(
+        filted_records, key=lambda x: (x["achievements"], x["ds"]), reverse=True
+    )
     return filted_records
 
 
@@ -208,18 +213,32 @@ async def compute_ra(ra: int):
 
 
 def compare_records(record1, record2):
-    if record1["ra"] != record2["ra"]:
-        return 1 if record1["ra"] > record2["ra"] else -1
-    elif record1["achievements"] != record2["achievements"]:
-        return 1 if record1["achievements"] > record2["achievements"] else -1
-    elif record1["ds"] != record2["ds"]:
-        return 1 if record1["ds"] > record2["ds"] else -1
+    if record1['ra'] != record2['ra']:
+        return 1 if record1['ra'] > record2['ra'] else -1
+    elif record1['achievements'] != record2['achievements']:
+        return 1 if record1['achievements'] > record2['achievements'] else -1
+    elif record1['ds'] != record2['ds']:
+        return 1 if record1['ds'] > record2['ds'] else -1
     else:
         return 0
 
 
-async def music_to_part(achievements: float, ds: float, dxScore: int, fc: str, fs: str, level: str, level_index: int,
-                        level_label: str, ra: int, rate: str, song_id: str, title: str, type: str, index: int):
+async def music_to_part(
+        achievements: float,
+        ds: float,
+        dxScore: int,
+        fc: str,
+        fs: str,
+        level: str,
+        level_index: int,
+        level_label: str,
+        ra: int,
+        rate: str,
+        song_id: str,
+        title: str,
+        type: str,
+        index: int,
+):
     color = (255, 255, 255)
     if level_index == 4:
         color = (166, 125, 199)
@@ -256,7 +275,9 @@ async def music_to_part(achievements: float, ds: float, dxScore: int, fc: str, f
         truncated_title = title
         while text_bbox[2] > max_width and len(truncated_title) > 0:
             truncated_title = truncated_title[:-1]
-            text_bbox = draw.textbbox(text_position, truncated_title + ellipsis, font=ttf)
+            text_bbox = draw.textbbox(
+                text_position, truncated_title + ellipsis, font=ttf
+            )
         draw.text(text_position, truncated_title + ellipsis, font=ttf, fill=color)
 
     # 达成率
@@ -273,7 +294,10 @@ async def music_to_part(achievements: float, ds: float, dxScore: int, fc: str, f
     shadow_offset = (2, 4)  # 阴影偏移量
     text_position = (375, 90)
     text_content = f'{achievements1}'
-    shadow_position = (text_position[0] + shadow_offset[0], text_position[1] + shadow_offset[1])
+    shadow_position = (
+        text_position[0] + shadow_offset[0],
+        text_position[1] + shadow_offset[1],
+    )
     draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
     draw.text(text_position, text_content, font=ttf, fill=color)
     ttf = ImageFont.truetype(ttf_heavy_path, size=55)
@@ -283,22 +307,31 @@ async def music_to_part(achievements: float, ds: float, dxScore: int, fc: str, f
     else:
         text_position = (488, 105)
     text_content = f'{achievements2}'
-    shadow_position = (text_position[0] + shadow_offset[0], text_position[1] + shadow_offset[1])
+    shadow_position = (
+        text_position[0] + shadow_offset[0],
+        text_position[1] + shadow_offset[1],
+    )
     draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
     ttf = ImageFont.truetype(ttf_bold_path, size=32)
     # best序号
-    ImageDraw.Draw(partbase).text((310, 245), f'#{index}', font=ttf, fill=(255, 255, 255))
+    ImageDraw.Draw(partbase).text(
+        (310, 245), f'#{index}', font=ttf, fill=(255, 255, 255)
+    )
     # 乐曲ID
-    ImageDraw.Draw(partbase).text((385, 245), f'ID:{song_id}', font=ttf, fill=(28, 43, 120))
+    ImageDraw.Draw(partbase).text(
+        (385, 245), f'ID:{song_id}', font=ttf, fill=(28, 43, 120)
+    )
     # 定数和ra
     ImageDraw.Draw(partbase).text((385, 182), f'{ds} -> {ra}', font=ttf, fill=color)
     # dx分数和星星
     song_data = next((d for d in songList if d['id'] == str(song_id)), None)
     sum_dxscore = sum(song_data['charts'][level_index]['notes']) * 3
-    ImageDraw.Draw(partbase).text((580, 245), f'{dxScore}/{sum_dxscore}', font=ttf, fill=(28, 43, 120))
+    ImageDraw.Draw(partbase).text(
+        (580, 245), f'{dxScore}/{sum_dxscore}', font=ttf, fill=(28, 43, 120)
+    )
     star_level, stars = await dxscore_proc(dxScore, sum_dxscore)
     if star_level:
         star_width = 30
@@ -341,7 +374,9 @@ async def draw_best(bests: list):
     x = 350
     y = 0
     # 初始化底图
-    base = Image.new('RGBA', (1440, queue_nums * 110 + (queue_nums - 1) * 10), (0, 0, 0, 0))
+    base = Image.new(
+        'RGBA', (1440, queue_nums * 110 + (queue_nums - 1) * 10), (0, 0, 0, 0)
+    )
     # 通过循环构建列表并传入数据
     # 遍历列表中的选项
     # 循环生成列
@@ -378,7 +413,7 @@ async def draw_best(bests: list):
 
 
 async def rating_tj(b35max, b35min, b15max, b15min):
-    ratingbase_path = maimai_Static / f'rating_base.png'
+    ratingbase_path = maimai_Static / 'rating_base.png'
     ratingbase = Image.open(ratingbase_path)
     ttf = ImageFont.truetype(ttf_bold_path, size=30)
 
@@ -468,17 +503,19 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     b50.paste(plate, (60, 60), plate)
 
     # 头像框
-    iconbase_path = maimai_Static / f'icon_base.png'
+    iconbase_path = maimai_Static / 'icon_base.png'
     iconbase = Image.open(iconbase_path)
     iconbase = await resize_image(iconbase, 0.308)
     b50.paste(iconbase, (60, 46), iconbase)
     # 头像
-    icon = requests.get(f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png")
+    icon = requests.get(
+        f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
+    )
     icon = Image.open(BytesIO(icon.content)).resize((88, 88))
     b50.paste(icon, (73, 75))
 
     # 姓名框
-    namebase_path = maimai_Static / f'namebase.png'
+    namebase_path = maimai_Static / 'namebase.png'
     namebase = Image.open(namebase_path)
     b50.paste(namebase, (0, 0), namebase)
 
@@ -525,8 +562,12 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
 
     # rating合计
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
-    ImageDraw.Draw(b50).text((208, 148), f'旧版本: {b35_ra} + 新版本: {b15_ra} = {rating}', font=ttf,
-                             fill=(255, 255, 255))
+    ImageDraw.Draw(b50).text(
+        (208, 148),
+        f'旧版本: {b35_ra} + 新版本: {b15_ra} = {rating}',
+        font=ttf,
+        fill=(255, 255, 255),
+    )
 
     # b50
     b35 = await draw_best(b35)
@@ -550,7 +591,7 @@ async def generate_wcb(qq: str, level: str, page: int):
     else:
         plate = config[qq]['plate']
     url = 'https://www.diving-fish.com/api/maimaidxprober/dev/player/records'
-    headers = {'Developer-Token': "Y3L0FHjD8oaSUsInybexzg697GATBhm2"}
+    headers = {'Developer-Token': config.dev_token}
     payload = {"qq": qq}
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=payload) as resp:
@@ -587,17 +628,19 @@ async def generate_wcb(qq: str, level: str, page: int):
     bg.paste(plate, (60, 60), plate)
 
     # 头像框
-    iconbase_path = maimai_Static / f'icon_base.png'
+    iconbase_path = maimai_Static / 'icon_base.png'
     iconbase = Image.open(iconbase_path)
     iconbase = await resize_image(iconbase, 0.308)
     bg.paste(iconbase, (60, 46), iconbase)
     # 头像
-    icon = requests.get(f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png")
+    icon = requests.get(
+        f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
+    )
     icon = Image.open(BytesIO(icon.content)).resize((88, 88))
     bg.paste(icon, (73, 75))
 
     # 姓名框
-    namebase_path = maimai_Static / f'namebase.png'
+    namebase_path = maimai_Static / 'namebase.png'
     namebase = Image.open(namebase_path)
     bg.paste(namebase, (0, 0), namebase)
 
@@ -650,19 +693,31 @@ async def generate_wcb(qq: str, level: str, page: int):
     fcfs_y = 362
     for rate in rate_list:
         rate_num = rate_count[rate]
-        ImageDraw.Draw(bg).text((rate_x, rate_y), f'{rate_num}/{all_count}', font=ttf, fill=(255, 255, 255),
-                                anchor='mm')
+        ImageDraw.Draw(bg).text(
+            (rate_x, rate_y),
+            f'{rate_num}/{all_count}',
+            font=ttf,
+            fill=(255, 255, 255),
+            anchor='mm',
+        )
         rate_x += 118
     for fcfs in fcfs_list:
         fcfs_num = rate_count[fcfs]
-        ImageDraw.Draw(bg).text((fcfs_x, fcfs_y), f'{fcfs_num}/{all_count}', font=ttf, fill=(255, 255, 255),
-                                anchor='mm')
+        ImageDraw.Draw(bg).text(
+            (fcfs_x, fcfs_y),
+            f'{fcfs_num}/{all_count}',
+            font=ttf,
+            fill=(255, 255, 255),
+            anchor='mm',
+        )
         fcfs_x += 102
 
     # 页码
     page_text = f'{page} / {all_page_num}'
     ttf = ImageFont.truetype(font=ttf_heavy_path, size=70)
-    ImageDraw.Draw(bg).text((260, 850), page_text, font=ttf, fill=(255, 255, 255), anchor='mm')
+    ImageDraw.Draw(bg).text(
+        (260, 850), page_text, font=ttf, fill=(255, 255, 255), anchor='mm'
+    )
 
     # 绘制当前页面的成绩
     records_parts = await draw_best(input_records)

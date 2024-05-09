@@ -88,8 +88,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
     weight = random.randint(1, 100)
     if group_id == 967611986:  # 不被限制的 group_id
         pass
-    elif type == 'kuma_r18' and group_id not in [236030263]:  # type 为 'kuma_r18' 且非指定 group_id
-        msg = (MessageSegment.text('迪拉熊不许你看'), MessageSegment.image(Path('./src/notplay.png')))
+    elif type == 'kuma_r18' and group_id not in [
+        236030263
+    ]:  # type 为 'kuma_r18' 且非指定 group_id
+        msg = (
+            MessageSegment.text('迪拉熊不许你看'),
+            MessageSegment.image(Path('./src/notplay.png')),
+        )
         await kuma_pic.finish(msg)
     else:
         if weight <= 10:
@@ -121,7 +126,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
     leaderboard = await gen_rank(count_data, time)
     count = min(len(leaderboard), 5)  # 最多显示5个人，取实际人数和5的较小值
     for i, (qq, total_count) in enumerate(leaderboard[:count], start=1):
-        user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))['nickname']
+        user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
+            'nickname'
+        ]
         rank_str = f"{i}. {user_name} - {total_count}"
         leaderboard_output.append(rank_str)
 

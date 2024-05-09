@@ -32,7 +32,7 @@ class Logger:
             ["WARNING", Fore.YELLOW],
             ["FAIL", Fore.RED],
             ["ERROR", Back.RED + Fore.YELLOW],
-            ["CRITICAL", Back.LIGHTYELLOW_EX + Fore.RED]
+            ["CRITICAL", Back.LIGHTYELLOW_EX + Fore.RED],
         ]
         self.log_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
@@ -43,7 +43,9 @@ class Logger:
         now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 检测传入的日志等级和预设的日志等级之间的大小，然后输出到终端中
         if level >= self.level:
-            print(f"{self.level_color[level][1]}{now} [{self.level_color[level][0]}] | {text}")
+            print(
+                f"{self.level_color[level][1]}{now} [{self.level_color[level][0]}] | {text}"
+            )
         # 追加保存日志文件
         with open(f'./logs/log{self.log_time}.log', 'a+', encoding='utf-8') as f:
             f.write(f"{now} [{self.level_color[level][0]}] | {text}\n")

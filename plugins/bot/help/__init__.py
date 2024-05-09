@@ -56,7 +56,7 @@ zysx = on_regex(r'^(注意事项)$', rule=to_me())
 #     b50_bnt = Buttons().add(b50).add(ap50).add(b50cfg)
 #     if group_id == 967611986:
 #         pic_bnt = Buttons().add(dlxpic).add(dlxpicst).add(dlxlist)
-#     else:  
+#     else:
 #         pic_bnt = Buttons().add(dlxpic).add(dlxlist)
 #     poke_bnt = Buttons().add(poke)
 #     dont_bnt = Buttons().add(dontpress)
@@ -104,6 +104,7 @@ zysx = on_regex(r'^(注意事项)$', rule=to_me())
 #     keyboard = KeyBoard().add(all_bnt).add(set_bnt).add(ratj_switch_bnt)
 #     await send_markdown(bot=bot,group_id=event.group_id,markdown=res,keyboard=keyboard)
 
+
 @all_help.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     qq = event.get_user_id()
@@ -129,21 +130,26 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @eatbreak.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     # qq = event.user_id
-    msg = (MessageSegment.text('谢谢~'), MessageSegment.image(Path('./src/eatbreak.png')))
+    msg = (
+        MessageSegment.text('谢谢~'),
+        MessageSegment.image(Path('./src/eatbreak.png')),
+    )
     await eatbreak.finish(msg)
 
 
 @zysx.handle()
 async def _():
-    text = '注意事项\n' \
-           '❶本bot为娱乐性质bot，不支持更新查分器，小黑屋等科技功能\n' \
-           '❷发送dlxhelp查看指令大全\n' \
-           '❸号主随时会顶号与大家聊天解惑，介意勿用（不影响bot使用）\n' \
-           '❹大多数指令不需要@bot，直接输入指令即可（dlxhelp会标注需要@的功能）\n' \
-           '❺想让自己的群拥有bot可以直接加好友，同意之后就可以拉了\n' \
-           '❻QQ空间可查看bot的更新日志\n' \
-           '❼如不需要迪拉熊了，请直接私聊bot说明，不要直接踢\n' \
-           '❽有任何建议或者bug反馈，可加入bot测试群：959231211\n' \
-           '希望大家用的开心~'
+    text = (
+        '注意事项\n'
+        '❶本bot为娱乐性质bot，不支持更新查分器，小黑屋等科技功能\n'
+        '❷发送dlxhelp查看指令大全\n'
+        '❸号主随时会顶号与大家聊天解惑，介意勿用（不影响bot使用）\n'
+        '❹大多数指令不需要@bot，直接输入指令即可（dlxhelp会标注需要@的功能）\n'
+        '❺想让自己的群拥有bot可以直接加好友，同意之后就可以拉了\n'
+        '❻QQ空间可查看bot的更新日志\n'
+        '❼如不需要迪拉熊了，请直接私聊bot说明，不要直接踢\n'
+        '❽有任何建议或者bug反馈，可加入bot测试群：959231211\n'
+        '希望大家用的开心~'
+    )
     msg = (MessageSegment.text(text), MessageSegment.image(Path('./src/zysx.jpg')))
     await zysx.send(msg)

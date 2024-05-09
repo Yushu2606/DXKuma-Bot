@@ -28,8 +28,8 @@ def message_preprocess(message: str):
         if image_url and pattern_match:
             contained_images.update({i: [image_url[0], pattern_match[0]]})
 
-    for i in contained_images:
-        message = message.replace(i, f'[{contained_images[i][1]}]')
+    for i, v in contained_images.items():
+        message = message.replace(i, f'[{v[1]}]')
 
     return message, raw_message
 
@@ -50,9 +50,13 @@ async def repeater(bot: Bot, event: GroupMessageEvent):
             message_times[gid] = 1
         else:
             message_times[gid] += 1
-        logger.debug(f'[复读姬] 已重复次数: {message_times.get(gid)}/{config.shortest_times}')
+        logger.debug(
+            f'[复读姬] 已重复次数: {message_times.get(gid)}/{config.shortest_times}'
+        )
         if message_times.get(gid) == config.shortest_times:
             logger.debug(f'[复读姬] 原始的消息: {str(event.message)}')
             logger.debug(f"[复读姬] 欲发送信息: {raw_message}")
-            await bot.send_group_msg(group_id=event.group_id, message=raw_message, auto_escape=False)
+            await bot.send_group_msg(
+                group_id=event.group_id, message=raw_message, auto_escape=False
+            )
         last_message[gid] = message
