@@ -113,7 +113,7 @@ async def records_filter(records: list, level: str):
         if record['level'] == level:
             filted_records.append(record)
     filted_records = sorted(
-        filted_records, key=lambda x: (x["ra"], x["achievements"], x["ds"]), reverse=True
+        filted_records, key=lambda x: (x["achievements"], x["ra"], x["ds"]), reverse=True
     )
     return filted_records
 
