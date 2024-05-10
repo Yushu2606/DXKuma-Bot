@@ -217,7 +217,7 @@ async def music_to_part(
 ):
     color = (255, 255, 255)
     if level_index == 4:
-        color = (166, 125, 199)
+        color = (88, 140, 204)
 
     # 根据难度 底图
     partbase_path = maimai_Static / f'PartBase_{level_label}.png'
@@ -266,7 +266,7 @@ async def music_to_part(
     achievements2 = (str(achievements[1]).ljust(4, '0'))[:4]
     shadow_color = (0, 0, 0)  # 阴影颜色
     if level_index == 4:
-        shadow_color = (188, 163, 209)
+        shadow_color = (45, 92, 150)
     shadow_offset = (2, 4)  # 阴影偏移量
     text_position = (375, 90)
     text_content = f'{achievements1}'
