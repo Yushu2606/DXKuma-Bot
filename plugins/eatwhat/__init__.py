@@ -18,7 +18,7 @@ async def _(event: GroupMessageEvent):
     pic_path = os.path.join(path, file)
     msg = (
         MessageSegment.reply(event.message_id),
-        MessageSegment.text(f' 迪拉熊推荐你试一下：\n{name}\n{price}元'),
+        MessageSegment.text(f'迪拉熊推荐你试一下：\n{name}\n{price}元'),
         MessageSegment.image(Path(pic_path)),
         MessageSegment.text('*价格以广州地区为准'),
     )

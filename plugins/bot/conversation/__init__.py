@@ -37,7 +37,7 @@ async def _():
 
 @wxhn.handle()
 async def _(event: GroupMessageEvent):
-    msg = (MessageSegment.reply(event.message_id), MessageSegment.text(' 迪拉熊也喜欢你❤️'))
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.text('迪拉熊也喜欢你❤️'))
     await wxhn.send(msg)
 
 
@@ -48,21 +48,21 @@ async def _(event: GroupMessageEvent):
     if not roll_list:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text(' 没有选项要让迪拉熊怎么选嘛~'),
+            MessageSegment.text('没有选项要让迪拉熊怎么选嘛~'),
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
     if len(set(roll_list)) == 1:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text(' 就一个选项要让迪拉熊怎么选嘛~'),
+            MessageSegment.text('就一个选项要让迪拉熊怎么选嘛~'),
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
     output = random.SystemRandom().choice(roll_list)
     msg = (
         MessageSegment.reply(event.message_id),
-        MessageSegment.text(f' 迪拉熊建议你选择“{output}”呢~'),
+        MessageSegment.text(f'迪拉熊建议你选择“{output}”呢~'),
         MessageSegment.image(Path('./src/选择.png')),
     )
     await roll.send(msg)
@@ -102,5 +102,5 @@ async def _(event: GroupMessageEvent):
 #         weights = [9, 1]
 #         text = random.choices(texts, weights=weights)[0]
 
-#     msg = (MessageSegment.reply(event.message_id), MessageSegment.text(f' {text}'))
+#     msg = (MessageSegment.reply(event.message_id), MessageSegment.text(text))
 #     await morning.finish(msg)
