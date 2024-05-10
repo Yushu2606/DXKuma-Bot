@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from nonebot import on_regex
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.rule import to_me
 
@@ -106,8 +106,7 @@ zysx = on_regex(r'^(注意事项)$', rule=to_me())
 
 
 @all_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    qq = event.get_user_id()
+async def _():
     #  text = '迪拉熊bot指令使用指南（临时）\n' \
     #         '-dlx50-生成迪拉熊主题的b50\n' \
     #         '-dlx-随机生成迪拉熊绘图作品\n' \
@@ -123,18 +122,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
     #         '-开启分数推荐-开启b50分数推荐\n' \
     #         '-关闭分数推荐-关闭b50分数推荐'
     #  msg = (MessageSegment.text(text), MessageSegment.image(Path('./src/pleasewait.jpg')))
-    msg = (MessageSegment.at(qq), MessageSegment.image(Path('./src/allcommands.png')))
-    await all_help.finish(msg)
+    msg = MessageSegment.image(Path('./src/allcommands.png'))
+    await all_help.send(msg)
 
 
 @eatbreak.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    # qq = event.user_id
+async def _(event: GroupMessageEvent):
+    qq = event.get_user_id()
     msg = (
+        MessageSegment.at(qq),
         MessageSegment.text('谢谢~'),
         MessageSegment.image(Path('./src/eatbreak.png')),
     )
-    await eatbreak.finish(msg)
+    await eatbreak.send(msg)
 
 
 @zysx.handle()

@@ -28,18 +28,20 @@ conversations = {
 
 
 @xc.handle()
-async def _():
+async def _(event: GroupMessageEvent):
+    qq = event.get_user_id()
     weights = [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.1]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
-    await xc.finish(text)
+    msg = (MessageSegment.at(qq), MessageSegment.text(f" {text}"))
+    await xc.send(msg)
 
 
 @wxhn.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = (MessageSegment.at(qq), MessageSegment.text(' 迪拉熊也喜欢你❤️'))
-    await wxhn.finish(msg)
+    await wxhn.send(msg)
 
 
 @roll.handle()
@@ -50,24 +52,24 @@ async def _(event: GroupMessageEvent):
     if not roll_list:
         msg = (
             MessageSegment.at(qq),
-            MessageSegment.text('\n没有选项要让迪拉熊怎么选嘛~'),
+            MessageSegment.text(' 没有选项要让迪拉熊怎么选嘛~'),
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
     if len(set(roll_list)) == 1:
         msg = (
             MessageSegment.at(qq),
-            MessageSegment.text('\n就一个选项要让迪拉熊怎么选嘛~'),
+            MessageSegment.text(' 就一个选项要让迪拉熊怎么选嘛~'),
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
     output = random.SystemRandom().choice(roll_list)
     msg = (
         MessageSegment.at(qq),
-        MessageSegment.text(f'\n迪拉熊建议你选择“{output}”呢~'),
+        MessageSegment.text(f' 迪拉熊建议你选择“{output}”呢~'),
         MessageSegment.image(Path('./src/选择.png')),
     )
-    await roll.finish(msg)
+    await roll.send(msg)
 
 # @morning.handle()
 # async def _(event:GroupMessageEvent):

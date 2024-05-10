@@ -581,7 +581,7 @@ async def generate_wcb(qq: str, level: str, page: int):
 
     all_page_num = math.ceil(len(filted_records) / 55)
     if page > all_page_num:
-        msg = f'迪拉熊找到你的 {level} 完成表的最大页码为{all_page_num}'
+        msg = f'迪拉熊发现你的 {level} 完成表的最大页码为{all_page_num}'
         return msg
     input_records = await get_page_records(filted_records, page=page)
     bg = Image.open('./src/maimai/wcb_bg.png')
