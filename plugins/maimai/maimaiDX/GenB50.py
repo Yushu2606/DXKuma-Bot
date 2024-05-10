@@ -265,17 +265,17 @@ async def music_to_part(
     achievements = f'{achievements}'.split('.')
     achievements1 = f'{achievements[0]}.        %'
     achievements2 = (str(achievements[1]).ljust(4, '0'))[:4]
-    shadow_color = (0, 0, 0)  # 阴影颜色
-    if level_index == 4:
-        shadow_color = (45, 92, 150)
-    shadow_offset = (2, 4)  # 阴影偏移量
+    # shadow_color = (0, 0, 0)  # 阴影颜色
+    # if level_index == 4:
+    #     shadow_color = (45, 92, 150)
+    # shadow_offset = (2, 4)  # 阴影偏移量
     text_position = (375, 90)
     text_content = f'{achievements1}'
-    shadow_position = (
-        text_position[0] + shadow_offset[0],
-        text_position[1] + shadow_offset[1],
-    )
-    draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
+    # shadow_position = (
+    #     text_position[0] + shadow_offset[0],
+    #     text_position[1] + shadow_offset[1],
+    # )
+    # draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
     draw.text(text_position, text_content, font=ttf, fill=color)
     ttf = ImageFont.truetype(ttf_heavy_path, size=55)
     draw = ImageDraw.Draw(partbase)
@@ -284,11 +284,11 @@ async def music_to_part(
     else:
         text_position = (488, 105)
     text_content = f'{achievements2}'
-    shadow_position = (
-        text_position[0] + shadow_offset[0],
-        text_position[1] + shadow_offset[1],
-    )
-    draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
+    # shadow_position = (
+    #     text_position[0] + shadow_offset[0],
+    #     text_position[1] + shadow_offset[1],
+    # )
+    # draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
