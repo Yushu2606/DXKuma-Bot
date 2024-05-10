@@ -7,7 +7,8 @@ import requests
 from PIL import Image, ImageFont, ImageDraw
 
 from util.DivingFish import get_player_records
-from .Config import *
+from .Config import font_path, maimai_src, maimai_Static, maimai_Jacket, maimai_Frame, maimai_Plate, maimai_Dani, \
+    maimai_Rating
 
 with open('./src/maimai/songList.json', 'r') as f:
     songList = json.load(f)

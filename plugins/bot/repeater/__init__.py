@@ -1,9 +1,10 @@
 import re
 
-from nonebot import on_message, logger
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot import on_message, Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 
-from . import config
+from util.Config import config
+from util.Logger import logger
 
 repeater_group = config.repeater_group
 shortest = config.shortest_length

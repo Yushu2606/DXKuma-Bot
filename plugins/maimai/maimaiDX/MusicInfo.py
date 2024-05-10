@@ -4,7 +4,7 @@ from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
 from util.DivingFish import get_player_data, get_player_record
-from .Config import *
+from .Config import font_path, maimai_Jacket, maimai_Static
 
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
 ttf_heavy_path = font_path / 'GenSenMaruGothicTW-Heavy.ttf'

@@ -8,9 +8,8 @@ import time
 from pathlib import Path
 
 import requests
-from nonebot import on_regex
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot import on_regex, Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
 from util.Config import config
 

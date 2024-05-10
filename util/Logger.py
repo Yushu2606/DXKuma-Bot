@@ -1,5 +1,5 @@
 import datetime
-import os.path
+import os
 
 from colorama import Fore, Back, init
 

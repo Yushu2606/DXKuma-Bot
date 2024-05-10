@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from nonebot import on_regex
-from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent
 from nonebot.rule import to_me
 
 all_help = on_regex(r'(dlxhelp|迪拉熊指令|迪拉熊帮助|指令大全)$')
@@ -128,9 +127,8 @@ async def _():
 
 @eatbreak.handle()
 async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
     msg = (
-        MessageSegment.at(qq),
+        MessageSegment.reply(event.message_id),
         MessageSegment.text('谢谢~'),
         MessageSegment.image(Path('./src/eatbreak.png')),
     )

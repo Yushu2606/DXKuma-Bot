@@ -2,8 +2,7 @@ import random
 from pathlib import Path
 
 from nonebot import on_regex
-from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent
 from nonebot.rule import to_me
 
 xc = on_regex(r'(香草|想草)(迪拉熊|滴蜡熊|dlx)')
@@ -38,33 +37,31 @@ async def _():
 
 @wxhn.handle()
 async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
-    msg = (MessageSegment.at(qq), MessageSegment.text(' 迪拉熊也喜欢你❤️'))
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.text(' 迪拉熊也喜欢你❤️'))
     await wxhn.send(msg)
 
 
 @roll.handle()
 async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
     text = str(event.raw_message)
     roll_list = text[1:].split('还是')
     if not roll_list:
         msg = (
-            MessageSegment.at(qq),
+            MessageSegment.reply(event.message_id),
             MessageSegment.text(' 没有选项要让迪拉熊怎么选嘛~'),
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
     if len(set(roll_list)) == 1:
         msg = (
-            MessageSegment.at(qq),
+            MessageSegment.reply(event.message_id),
             MessageSegment.text(' 就一个选项要让迪拉熊怎么选嘛~'),
             MessageSegment.image(Path('./src/选不了.png')),
         )
         await roll.finish(msg)
     output = random.SystemRandom().choice(roll_list)
     msg = (
-        MessageSegment.at(qq),
+        MessageSegment.reply(event.message_id),
         MessageSegment.text(f' 迪拉熊建议你选择“{output}”呢~'),
         MessageSegment.image(Path('./src/选择.png')),
     )
@@ -72,7 +69,6 @@ async def _(event: GroupMessageEvent):
 
 # @morning.handle()
 # async def _(event:GroupMessageEvent):
-#     qq = event.get_user_id()
 #     msg = str(event.message)
 #     current_hour = datetime.now().hour
 #     if current_hour >= 6 and current_hour < 9:
@@ -106,5 +102,5 @@ async def _(event: GroupMessageEvent):
 #         weights = [9, 1]
 #         text = random.choices(texts, weights=weights)[0]
 
-#     msg = (MessageSegment.at(qq), MessageSegment.text(f' {text}'))
+#     msg = (MessageSegment.reply(event.message_id), MessageSegment.text(f' {text}'))
 #     await morning.finish(msg)
