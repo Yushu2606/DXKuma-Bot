@@ -126,7 +126,10 @@ async def _(event: GroupMessageEvent):
         target_qq = event.get_user_id()
     data, status = await get_player_records(target_qq)
     if status == 400:
-        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        msg = (
+            MessageSegment.at(qq),
+            ' 迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/',
+        )
         await best50.finish(msg)
     elif status == 200:
         records = data['records']
@@ -134,12 +137,12 @@ async def _(event: GroupMessageEvent):
             if match:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('他还没有游玩任何一个谱面呢~'),
+                    MessageSegment.text(' 他还没有游玩任何一个谱面呢~'),
                 )
             else:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('你还没有游玩任何一个谱面呢~'),
+                    MessageSegment.text(' 你还没有游玩任何一个谱面呢~'),
                 )
             await best50.finish(msg)
         await best50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
@@ -173,7 +176,10 @@ async def _(event: GroupMessageEvent):
         target_qq = event.get_user_id()
     data, status = await get_player_records(target_qq)
     if status == 400:
-        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        msg = (
+            MessageSegment.at(qq),
+            ' 迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/',
+        )
         await ap50.finish(msg)
     elif status == 200:
         records = data['records']
@@ -181,12 +187,12 @@ async def _(event: GroupMessageEvent):
             if match:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('他还没有游玩任何一个谱面呢~'),
+                    MessageSegment.text(' 他还没有游玩任何一个谱面呢~'),
                 )
             else:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('你还没有游玩任何一个谱面呢~'),
+                    MessageSegment.text(' 你还没有游玩任何一个谱面呢~'),
                 )
             await best50.finish(msg)
         ap35, ap15 = await records_to_b50(records, ['ap', 'app'])
@@ -194,12 +200,12 @@ async def _(event: GroupMessageEvent):
             if match:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('他还没有ap任何一个谱面呢~'),
+                    MessageSegment.text(' 他还没有ap任何一个谱面呢~'),
                 )
             else:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('你还没有ap任何一个谱面呢~'),
+                    MessageSegment.text(' 你还没有ap任何一个谱面呢~'),
                 )
             await ap50.finish(msg)
         await ap50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
@@ -237,7 +243,10 @@ async def _(event: GroupMessageEvent):
         target_qq = event.get_user_id()
     data, status = await get_player_records(target_qq)
     if status == 400:
-        msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+        msg = (
+            MessageSegment.at(qq),
+            ' 迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/',
+        )
         await fc50.finish(msg)
     elif status == 200:
         records = data['records']
@@ -245,12 +254,12 @@ async def _(event: GroupMessageEvent):
             if match:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('他还没有游玩任何一个谱面呢~'),
+                    MessageSegment.text(' 他还没有游玩任何一个谱面呢~'),
                 )
             else:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('你还没有游玩任何一个谱面呢~'),
+                    MessageSegment.text(' 你还没有游玩任何一个谱面呢~'),
                 )
             await best50.finish(msg)
         fc35, fc15 = await records_to_b50(records, ['fc', 'fcp'])
@@ -258,12 +267,12 @@ async def _(event: GroupMessageEvent):
             if match:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('他还没有fc任何一个谱面呢~'),
+                    MessageSegment.text(' 他还没有fc任何一个谱面呢~'),
                 )
             else:
                 msg = (
                     MessageSegment.at(qq),
-                    MessageSegment.text('你还没有fc任何一个谱面呢~'),
+                    MessageSegment.text(' 你还没有fc任何一个谱面呢~'),
                 )
             await fc50.finish(msg)
         await fc50.send(MessageSegment.text('迪拉熊绘制中，稍等一下mai~'))
