@@ -28,12 +28,11 @@ conversations = {
 
 
 @xc.handle()
-async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
+async def _():
     weights = [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.1]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
-    msg = (MessageSegment.at(qq), MessageSegment.text(f" {text}"))
+    msg = MessageSegment.text(text)
     await xc.send(msg)
 
 
