@@ -21,9 +21,11 @@ groupDecrease = on_notice(rule=is_group_decrease)
 async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     qq = event.get_user_id()
     group_id = event.group_id
-    user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
-        'nickname'
-    ]
+    user_info = await bot.get_stranger_info(user_id=int(qq), no_cache=False)
+    if user_info:
+        user_name = user_info['nickname']
+    else:
+        user_name = "新人"
     msg = (
         MessageSegment.text(
             f'欢迎{user_name}（{qq}）加入本群，发送dlxhelp和迪拉熊一起玩吧~'

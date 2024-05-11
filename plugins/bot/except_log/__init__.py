@@ -11,7 +11,5 @@ async def _(event, matcher, exception):
         return
     bot = get_bot()
     trace = "".join(traceback.format_exception(exception)).replace("\\n", "\n")
-    msg = MessageSegment.text(
-        f"检测到未捕获的异常：\n{trace}"
-    )
+    msg = MessageSegment.text(trace)
     await bot.send_msg(group_id=236030263, message=msg)

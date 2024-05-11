@@ -232,6 +232,9 @@ async def play_info(song_id: str, qq: str):
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         return msg
     elif status == 200:
+        if not data:
+            msg = '迪拉熊发现你未游玩过该乐曲'
+            return msg
         records = data[song_id]
     with open('./src/maimai/songList.json', 'r') as f:
         song_list = json.load(f)

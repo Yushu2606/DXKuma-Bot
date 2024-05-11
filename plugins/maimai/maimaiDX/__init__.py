@@ -336,6 +336,9 @@ async def _(event: GroupMessageEvent):
     if rep_ids:
         song_id = str(rep_ids[0])
         songinfo = await find_song_by_id(song_id=song_id)
+        if not songinfo:
+            await playmp3.finish(
+                (MessageSegment.reply(event.message_id), MessageSegment.text("请准确输入乐曲的id或别名哦")))
         songname = songinfo['title']
         await playmp3.send(
             (MessageSegment.reply(event.message_id),
