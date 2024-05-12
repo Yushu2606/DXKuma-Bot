@@ -1,10 +1,10 @@
-import json
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
 from util.DivingFish import get_player_data, get_player_record
 from .Config import font_path, maimai_Jacket, maimai_Static
+from .GenB50 import songList
 
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
 ttf_heavy_path = font_path / 'GenSenMaruGothicTW-Heavy.ttf'
@@ -36,14 +36,12 @@ async def format_songid(id):
 
 
 async def music_info(song_id: str, qq: str):
-    with open('./src/maimai/songList.json', 'r') as f:
-        song_list = json.load(f)
     # 底图
     bg = Image.open('./src/maimai/musicinfo_bg.png')
     drawtext = ImageDraw.Draw(bg)
 
     # 获取该曲信息
-    song_data = next((d for d in song_list if d['id'] == song_id), None)
+    song_data = next((d for d in songList if d['id'] == song_id), None)
 
     # 初始化用户数据
     data, status = await get_player_data(qq)
@@ -154,15 +152,18 @@ async def music_info(song_id: str, qq: str):
     song_ra = [int(value * 1.005 * 22.4) for value in songs_ds]  # 该ds鸟加的ra值
     ds_x = 395
     ds_y = 1125
+    basic_ra = 0
     if b50_status:
-        basic_ra = b35[-1]['ra']
+        if b35:
+            basic_ra = b35[-1]['ra']
         if is_new:
-            basic_ra = b15[-1]['ra']
+            if b15:
+                basic_ra = b15[-1]['ra']
     else:
         return
     for i, song_ds in enumerate(songs_ds):
         ds_position = (ds_x, ds_y)
-        if b50_status:
+        if b50_status and basic_ra > 0:
             drawtext.text(
                 ds_position,
                 f'{song_ds} -> +{song_ra[i] - basic_ra if song_ra[i] - basic_ra >= 0 else 0}',
@@ -236,8 +237,6 @@ async def play_info(song_id: str, qq: str):
             msg = '迪拉熊发现你未游玩过该乐曲'
             return msg
         records = data[song_id]
-    with open('./src/maimai/songList.json', 'r') as f:
-        song_list = json.load(f)
     if not records:
         msg = '迪拉熊发现你未游玩过该乐曲'
         return msg
@@ -248,7 +247,7 @@ async def play_info(song_id: str, qq: str):
     drawtext = ImageDraw.Draw(bg)
 
     # 获取该曲信息
-    song_data = next((d for d in song_list if d['id'] == song_id), None)
+    song_data = next((d for d in songList if d['id'] == song_id), None)
 
     # 歌曲封面
     cover_id = await format_songid(song_id)

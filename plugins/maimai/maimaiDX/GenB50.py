@@ -18,11 +18,9 @@ from .Config import (
     maimai_Rating,
 )
 
-with open('./src/maimai/songList.json', 'r') as f:
-    songList = json.load(f)
-with open('./src/maimai/charts.json', 'r') as f:
-    charts = json.load(f)
-with open('./src/maimai/ratings.json', 'r') as f:
+songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
+charts = requests.get('https://www.diving-fish.com/api/maimaidxprober/chart_stats').json()
+with open(maimai_src / 'ratings.json', 'r') as f:
     ratings = json.load(f)
 
 # 字体路径
@@ -172,12 +170,8 @@ async def rating_proc(ra: int, rate: str):
         if ra < 232:
             return '------'
 
-        path = maimai_src / 'ratings.json'
-        with open(path, 'r') as f:
-            ra_data = json.load(f)
-
-        achive = ra_data[rate][0]
-        num = ra_data[rate][1]
+        achive = ratings[rate][0]
+        num = ratings[rate][1]
 
         result = math.ceil((ra / (achive * num)) * 10) / 10
 

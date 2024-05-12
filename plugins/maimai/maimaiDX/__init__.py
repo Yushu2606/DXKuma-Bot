@@ -2,17 +2,15 @@ import json
 import os
 import random
 import re
-import traceback
 from pathlib import Path
 
-import requests
 from arclet.alconna import Alconna, Args
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot_plugin_alconna import on_alconna, AlconnaMatch, Match
 
 from util.DivingFish import get_player_records
-from .GenB50 import generateb50, generate_wcb, charts, ratings
+from .GenB50 import generateb50, generate_wcb, songList, charts, ratings
 from .MusicInfo import music_info, play_info
 
 best50 = on_regex(r'^(dlx50|dlxb50)')
@@ -46,10 +44,6 @@ set_frame = on_regex(r'(setframe|设置底板) ?(\d{6})$')
 ratj_on = on_fullmatch('开启分数推荐')
 ratj_off = on_fullmatch('关闭分数推荐')
 
-songList = requests.get(
-    'https://www.diving-fish.com/api/maimaidxprober/music_data'
-).json()
-
 
 # 根据乐曲别名查询乐曲id列表
 async def find_songid_by_alias(name):
@@ -78,10 +72,7 @@ async def find_songid_by_alias(name):
 
 # id查歌
 async def find_song_by_id(song_id):
-    with open('./src/maimai/songList.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    for song in data:
+    for song in songList:
         if song['id'] == song_id:
             return song
 
@@ -120,19 +111,19 @@ async def records_to_b50(
         else:
             sd.append(record)
     b35 = (
-        sorted(
-            sd,
-            key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
-            reverse=True,
-        )
-    )[:35]
+              sorted(
+                  sd,
+                  key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
+                  reverse=True,
+              )
+          )[:35]
     b15 = (
-        sorted(
-            dx,
-            key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
-            reverse=True,
-        )
-    )[:15]
+              sorted(
+                  dx,
+                  key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
+                  reverse=True,
+              )
+          )[:15]
     return b35, b15
 
 
@@ -499,10 +490,7 @@ async def _(event: GroupMessageEvent):
     if '.' in level:
         s_type = 'ds'
     s_songs = []
-    with open('./src/maimai/songList.json', 'r', encoding='utf-8') as f:
-        song_list = json.load(f)
-
-    for song in song_list:
+    for song in songList:
         song_id = song['id']
         s_list = song[s_type]
         if s_type == 'ds':
@@ -525,9 +513,7 @@ async def _(event: GroupMessageEvent):
 @maiwhat.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with open('./src/maimai/songList.json', 'r', encoding='utf-8') as f:
-        song_list = json.load(f)
-    song = random.choice(song_list)
+    song = random.choice(songList)
     song_id = song['id']
     img = await music_info(song_id=song_id, qq=qq)
     msg = MessageSegment.image(img)
