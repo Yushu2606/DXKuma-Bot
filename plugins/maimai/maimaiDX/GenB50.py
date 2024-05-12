@@ -7,11 +7,23 @@ import requests
 from PIL import Image, ImageFont, ImageDraw
 
 from util.DivingFish import get_player_records
-from .Config import font_path, maimai_src, maimai_Static, maimai_Jacket, maimai_Frame, maimai_Plate, maimai_Dani, \
-    maimai_Rating
+from .Config import (
+    font_path,
+    maimai_src,
+    maimai_Static,
+    maimai_Jacket,
+    maimai_Frame,
+    maimai_Plate,
+    maimai_Dani,
+    maimai_Rating,
+)
 
 with open('./src/maimai/songList.json', 'r') as f:
     songList = json.load(f)
+with open('./src/maimai/charts.json', 'r') as f:
+    charts = json.load(f)
+with open('./src/maimai/ratings.json', 'r') as f:
+    ratings = json.load(f)
 
 # 字体路径
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
@@ -114,7 +126,9 @@ async def records_filter(records: list, level: str):
         if record['level'] == level:
             filted_records.append(record)
     filted_records = sorted(
-        filted_records, key=lambda x: (x["achievements"], x["ra"], x["ds"]), reverse=True
+        filted_records,
+        key=lambda x: (x["achievements"], x["ra"]),
+        reverse=True,
     )
     return filted_records
 

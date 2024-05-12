@@ -12,12 +12,13 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot_plugin_alconna import on_alconna, AlconnaMatch, Match
 
 from util.DivingFish import get_player_records
-from .GenB50 import generateb50, generate_wcb
+from .GenB50 import generateb50, generate_wcb, charts, ratings
 from .MusicInfo import music_info, play_info
 
 best50 = on_regex(r'^(dlx50|dlxb50)')
 ap50 = on_regex(r'^(dlxap)')
 fc50 = on_regex(r'^(dlxfc)')
+fit50 = on_regex(r'^(dlxfit)')
 
 songinfo = on_regex(r'^(id) ?(\d+)$')
 playinfo = on_regex(r'^(info) ?(.*)$')
@@ -88,7 +89,9 @@ async def find_song_by_id(song_id):
     return None
 
 
-async def records_to_b50(records: list, rules: list | None = None):
+async def records_to_b50(
+        records: list, rules: list | None = None, is_fit: bool = False
+):
     if not rules:
         b_records = records
     else:
@@ -104,17 +107,47 @@ async def records_to_b50(records: list, rules: list | None = None):
         is_new = [
             d["basic_info"]["is_new"] for d in songList if d["id"] == str(song_id)
         ]
+        if is_fit:
+            fit_diff = get_fit_diff(
+                str(record["song_id"]), record["level_index"], record["ds"]
+            )
+            record["ds"] = round(fit_diff, 2)
+            record["ra"] = int(
+                fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
+            )
         if is_new[0]:
             dx.append(record)
         else:
             sd.append(record)
     b35 = (
-              sorted(sd, key=lambda x: (x["ra"], x["achievements"], x["ds"]), reverse=True)
-          )[:35]
+        sorted(
+            sd,
+            key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
+            reverse=True,
+        )
+    )[:35]
     b15 = (
-              sorted(dx, key=lambda x: (x["ra"], x["achievements"], x["ds"]), reverse=True)
-          )[:15]
+        sorted(
+            dx,
+            key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
+            reverse=True,
+        )
+    )[:15]
     return b35, b15
+
+
+def get_fit_diff(song_id: str, level_index: int, ds: float) -> float:
+    if not song_id in charts["charts"]:
+        return ds
+    level_data = charts["charts"][song_id][level_index]
+    if not "fit_diff" in level_data:
+        return ds
+    fit_diff = level_data["fit_diff"]
+    return fit_diff
+
+
+def get_ra_in(rate: str) -> float:
+    return ratings[rate][1]
 
 
 @best50.handle()
@@ -132,7 +165,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
                 '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-            )
+            ),
         )
     elif status == 200:
         records = data['records']
@@ -142,7 +175,12 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有游玩任何一个谱面呢~')
             await best50.finish((MessageSegment.reply(event.message_id), msg))
-        await best50.send((MessageSegment.reply(event.message_id), MessageSegment.text('迪拉熊绘制中，稍等一下mai~')))
+        await best50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         nickname = data['nickname']
         dani = data['additional_rating']
         try:
@@ -173,7 +211,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
                 '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-            )
+            ),
         )
     elif status == 200:
         records = data['records']
@@ -190,7 +228,12 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有ap任何一个谱面呢~')
             await ap50.finish((MessageSegment.reply(event.message_id), msg))
-        await ap50.send((MessageSegment.reply(event.message_id), MessageSegment.text('迪拉熊绘制中，稍等一下mai~')))
+        await ap50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         nickname = data['nickname']
         dani = data['additional_rating']
         try:
@@ -225,7 +268,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
                 '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
-            )
+            ),
         )
     elif status == 200:
         records = data['records']
@@ -242,7 +285,12 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有fc任何一个谱面呢~')
             await fc50.finish((MessageSegment.reply(event.message_id), msg))
-        await fc50.send((MessageSegment.reply(event.message_id), MessageSegment.text('迪拉熊绘制中，稍等一下mai~')))
+        await fc50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         nickname = data['nickname']
         dani = data['additional_rating']
         try:
@@ -262,12 +310,60 @@ async def _(event: GroupMessageEvent):
     await fc50.send(msg)
 
 
+@fit50.handle()
+async def _(event: GroupMessageEvent):
+    msg_text = str(event.raw_message)
+    pattern = r"\[CQ:at,qq=(\d+)\]"
+    match = re.search(pattern, msg_text)
+    if match:
+        target_qq = match.group(1)
+    else:
+        target_qq = event.get_user_id()
+    data, status = await get_player_records(target_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+            ),
+        )
+    elif status == 200:
+        records = data['records']
+        if not records:
+            if match:
+                msg = MessageSegment.text('他还没有游玩任何一个谱面呢~')
+            else:
+                msg = MessageSegment.text('你还没有游玩任何一个谱面呢~')
+            await fit50.finish((MessageSegment.reply(event.message_id), msg))
+        await fit50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
+        nickname = data['nickname']
+        dani = data['additional_rating']
+        b35, b15 = await records_to_b50(records, is_fit=True)
+        img = await generateb50(
+            b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='fit50'
+        )
+        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await fit50.send(msg)
+
+
 @wcb.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = str(event.message)
     pattern = r'^(完成表) ?((\d+)(\.\d|\+)?)( ([0-9]+))?'
     match = re.match(pattern, msg)
+    if match is None:
+        wcb.finish(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊觉得输入的信息好像有点问题呢'),
+            )
+        )
     level = match.group(2)
     if match.group(5) is not None:
         page = int(match.group(5).strip())
@@ -275,7 +371,12 @@ async def _(event: GroupMessageEvent):
             page = 1
     else:
         page = 1
-    await wcb.send((MessageSegment.reply(event.message_id), MessageSegment.text('迪拉熊绘制中，稍等一下mai~')))
+    await wcb.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+        )
+    )
     img = await generate_wcb(qq=qq, level=level, page=page)
     if isinstance(img, str):
         msg = MessageSegment.text(img)
@@ -305,7 +406,11 @@ async def _(event: GroupMessageEvent):
     song = msg.replace('info', '').strip()
     if not song:
         await playinfo.finish(
-            (MessageSegment.reply(event.message_id), MessageSegment.text("请准确输入乐曲的id或别名哦")))
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("请准确输入乐曲的id或别名哦"),
+            )
+        )
     rep_ids = await find_songid_by_alias(song)
     song_info = await find_song_by_id(song)
     if rep_ids:
@@ -314,8 +419,13 @@ async def _(event: GroupMessageEvent):
         song_id = song
     else:
         await playinfo.finish(
-            (MessageSegment.reply(event.message_id),
-             MessageSegment.text(f"迪拉熊没找到 {song} 对应的乐曲\n请准确输入乐曲的id或别名")))
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text(
+                    f"迪拉熊没找到 {song} 对应的乐曲\n请准确输入乐曲的id或别名"
+                ),
+            )
+        )
     img = await play_info(song_id=str(song_id), qq=qq)
     if isinstance(img, str):
         msg = MessageSegment.text(img)
@@ -330,7 +440,11 @@ async def _(event: GroupMessageEvent):
     song = msg.replace('dlx点歌', '').strip()
     if not song:
         await playmp3.finish(
-            (MessageSegment.reply(event.message_id), MessageSegment.text("请准确输入乐曲的id或别名哦")))
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("请准确输入乐曲的id或别名哦"),
+            )
+        )
     rep_ids = await find_songid_by_alias(song)
     song_info = await find_song_by_id(song)
     if rep_ids:
@@ -338,11 +452,18 @@ async def _(event: GroupMessageEvent):
         songinfo = await find_song_by_id(song_id=song_id)
         if not songinfo:
             await playmp3.finish(
-                (MessageSegment.reply(event.message_id), MessageSegment.text("请准确输入乐曲的id或别名哦")))
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("请准确输入乐曲的id或别名哦"),
+                )
+            )
         songname = songinfo['title']
         await playmp3.send(
-            (MessageSegment.reply(event.message_id),
-             MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')))
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}'),
+            )
+        )
         with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
             file_bytes = file.read()
         await playmp3.send(MessageSegment.record(file_bytes))
@@ -351,14 +472,21 @@ async def _(event: GroupMessageEvent):
         songinfo = await find_song_by_id(song_id=song_id)
         songname = songinfo['title']
         await playmp3.send(
-            (MessageSegment.reply(event.message_id),
-             MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')))
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}'),
+            )
+        )
         with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
             file_bytes = file.read()
         await playmp3.send(MessageSegment.record(file_bytes))
     else:
         await playmp3.send(
-            (MessageSegment.reply(event.message_id), MessageSegment.text("迪拉熊好像没找到，换一个试试吧~")))
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+            )
+        )
 
 
 @randomsong.handle()
@@ -433,11 +561,18 @@ async def _(event: GroupMessageEvent):
             name = match.group(3)
         else:
             await whatSong.finish(
-                (MessageSegment.reply(event.message_id), MessageSegment.text("迪拉熊什么都没找到……")))
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("迪拉熊什么都没找到……"),
+                )
+            )
 
         rep_ids = await find_songid_by_alias(name)
         if not rep_ids:
-            msg = (MessageSegment.reply(event.message_id), MessageSegment.text("迪拉熊什么都没找到……"))
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("迪拉熊什么都没找到……"),
+            )
         elif len(rep_ids) == 1:
             img = await music_info(rep_ids[0], qq=qq)
             msg = MessageSegment.image(img)
@@ -461,12 +596,18 @@ async def _(event: GroupMessageEvent):
         alias_list = json.load(f)
     alias = alias_list.get(song_id, None)
     if not alias:
-        msg = (MessageSegment.reply(event.message_id),
-               MessageSegment.text(f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id"))
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id"
+            ),
+        )
     else:
         song_name = alias['Name']
         song_alias = '\n'.join(alias['Alias'])
-        msg = MessageSegment.text(f'迪拉熊找到的 {song_id}.{song_name} 的别名有：\n{song_alias}')
+        msg = MessageSegment.text(
+            f'迪拉熊找到的 {song_id}.{song_name} 的别名有：\n{song_alias}'
+        )
     await aliasSearch.send(msg)
 
 
@@ -482,14 +623,20 @@ async def _(
         alias_list = json.load(f)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
-        msg = MessageSegment.text(f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
+        msg = MessageSegment.text(
+            f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id"
+        )
     elif alias_name in alias_list[str(song_id)]['Alias']:
-        msg = MessageSegment.text(f"迪拉熊发现 {song_id}.{song_alias['Name']} 已有该别名：{alias_name}")
+        msg = MessageSegment.text(
+            f"迪拉熊发现 {song_id}.{song_alias['Name']} 已有该别名：{alias_name}"
+        )
     else:
         alias_list[str(song_id)]['Alias'].append(alias_name)
         with open('./src/maimai/aliasList.json', 'w', encoding='utf-8') as f:
             json.dump(alias_list, f, ensure_ascii=False, indent=4)
-        msg = MessageSegment.text(f"迪拉熊已将 {alias_name} 添加到 {song_id}.{song_alias['Name']} 的别名")
+        msg = MessageSegment.text(
+            f"迪拉熊已将 {alias_name} 添加到 {song_id}.{song_alias['Name']} 的别名"
+        )
     await aliasAdd.send((MessageSegment.reply(event.message_id), msg))
 
 
@@ -505,14 +652,20 @@ async def _(
         alias_list = json.load(f)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
-        msg = MessageSegment.text(f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id")
+        msg = MessageSegment.text(
+            f"迪拉熊没找到 {song_id} 对应的乐曲\n请准确输入乐曲的id"
+        )
     elif alias_name not in alias_list[str(song_id)]['Alias']:
-        msg = MessageSegment.text(f"迪拉熊发现 {song_id}.{song_alias['Name']} 没有该别名：{alias_name}")
+        msg = MessageSegment.text(
+            f"迪拉熊发现 {song_id}.{song_alias['Name']} 没有该别名：{alias_name}"
+        )
     else:
         alias_list[str(song_id)]['Alias'].remove(alias_name)
         with open('./src/maimai/aliasList.json', 'w', encoding='utf-8') as f:
             json.dump(alias_list, f, ensure_ascii=False, indent=4)
-        msg = MessageSegment.text(f"迪拉熊已从 {song_id}.{song_alias['Name']} 的别名中移除 {alias_name}")
+        msg = MessageSegment.text(
+            f"迪拉熊已从 {song_id}.{song_alias['Name']} 的别名中移除 {alias_name}"
+        )
     await aliasDel.send((MessageSegment.reply(event.message_id), msg))
 
 
