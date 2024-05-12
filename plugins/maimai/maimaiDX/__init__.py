@@ -137,10 +137,10 @@ async def records_to_b50(
 
 
 def get_fit_diff(song_id: str, level_index: int, ds: float) -> float:
-    if not song_id in charts["charts"]:
+    if song_id not in charts["charts"]:
         return ds
     level_data = charts["charts"][song_id][level_index]
-    if not "fit_diff" in level_data:
+    if "fit_diff" not in level_data:
         return ds
     fit_diff = level_data["fit_diff"]
     return fit_diff
@@ -183,16 +183,11 @@ async def _(event: GroupMessageEvent):
         )
         nickname = data['nickname']
         dani = data['additional_rating']
-        try:
-            b35, b15 = await records_to_b50(records)
-            img = await generateb50(
-                b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='b50'
-            )
-            msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
-        except Exception as e:
-            traceback_info = traceback.format_exc()
-            print(f'生成b50时发生错误：\n{traceback_info}')
-            msg = MessageSegment.text(f'迪拉熊画图时晕倒了：\n{str(e)}')
+        b35, b15 = await records_to_b50(records)
+        img = await generateb50(
+            b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='b50'
+        )
+        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await best50.send(msg)
 
 
@@ -236,20 +231,15 @@ async def _(event: GroupMessageEvent):
         )
         nickname = data['nickname']
         dani = data['additional_rating']
-        try:
-            img = await generateb50(
-                b35=ap35,
-                b15=ap15,
-                nickname=nickname,
-                qq=target_qq,
-                dani=dani,
-                type='ap50',
-            )
-            msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
-        except Exception as e:
-            traceback_info = traceback.format_exc()
-            print(f'生成ap50时发生错误：\n{traceback_info}')
-            msg = MessageSegment.text(f'迪拉熊画图时晕倒了：\n{str(e)}')
+        img = await generateb50(
+            b35=ap35,
+            b15=ap15,
+            nickname=nickname,
+            qq=target_qq,
+            dani=dani,
+            type='ap50',
+        )
+        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await ap50.send(msg)
 
 
@@ -293,20 +283,15 @@ async def _(event: GroupMessageEvent):
         )
         nickname = data['nickname']
         dani = data['additional_rating']
-        try:
-            img = await generateb50(
-                b35=fc35,
-                b15=fc15,
-                nickname=nickname,
-                qq=target_qq,
-                dani=dani,
-                type='fc50',
-            )
-            msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
-        except Exception as e:
-            traceback_info = traceback.format_exc()
-            print(f'生成fc50时发生错误：\n{traceback_info}')
-            msg = MessageSegment.text(f'迪拉熊画图时晕倒了：\n{str(e)}')
+        img = await generateb50(
+            b35=fc35,
+            b15=fc15,
+            nickname=nickname,
+            qq=target_qq,
+            dani=dani,
+            type='fc50',
+        )
+        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await fc50.send(msg)
 
 
