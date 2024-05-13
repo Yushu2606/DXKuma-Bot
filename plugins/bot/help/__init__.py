@@ -126,9 +126,8 @@ async def _():
 
 
 @eatbreak.handle()
-async def _(event: GroupMessageEvent):
+async def _():
     msg = (
-        MessageSegment.reply(event.message_id),
         MessageSegment.text('谢谢~'),
         MessageSegment.image(Path('./src/eatbreak.png')),
     )

@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from util.DivingFish import get_player_data, get_player_record
 from .Config import font_path, maimai_Jacket, maimai_Static
 from .GenB50 import songList
+from copy import deepcopy
 
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
 ttf_heavy_path = font_path / 'GenSenMaruGothicTW-Heavy.ttf'
@@ -27,12 +28,11 @@ async def format_songid(id):
     if len(id_str) == 5 and id_str.startswith("10"):
         # 五位数且以"10"开头,去掉"10"然后补齐前导零
         return id_str[2:].zfill(6)
-    elif len(id_str) == 5 and id_str.startswith("1"):
+    if len(id_str) == 5 and id_str.startswith("1"):
         # 五位数且以"1"开头,去掉"1"然后补齐前导零
         return id_str[1:].zfill(6)
-    else:
-        # 直接补齐前导零至六位
-        return id_str.zfill(6)
+    # 直接补齐前导零至六位
+    return id_str.zfill(6)
 
 
 async def music_info(song_id: str, qq: str):
@@ -41,7 +41,7 @@ async def music_info(song_id: str, qq: str):
     drawtext = ImageDraw.Draw(bg)
 
     # 获取该曲信息
-    song_data = next((d for d in songList if d['id'] == song_id), None)
+    song_data = next((deepcopy(d) for d in songList if d['id'] == song_id), None)
 
     # 初始化用户数据
     data, status = await get_player_data(qq)
@@ -232,7 +232,7 @@ async def play_info(song_id: str, qq: str):
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
         return msg
-    elif status == 200:
+    if status == 200:
         if not data:
             msg = '迪拉熊发现你未游玩过该乐曲'
             return msg

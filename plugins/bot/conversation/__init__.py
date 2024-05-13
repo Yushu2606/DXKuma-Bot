@@ -36,8 +36,8 @@ async def _():
 
 
 @wxhn.handle()
-async def _(event: GroupMessageEvent):
-    msg = (MessageSegment.reply(event.message_id), MessageSegment.text('迪拉熊也喜欢你❤️'))
+async def _():
+    msg = MessageSegment.text('迪拉熊也喜欢你❤️')
     await wxhn.send(msg)
 
 

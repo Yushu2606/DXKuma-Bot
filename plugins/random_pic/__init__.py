@@ -91,16 +91,16 @@ async def _(bot: Bot, event: GroupMessageEvent):
         236030263
     ]:  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
-            MessageSegment.text('迪拉熊不许你看'),
+            MessageSegment.text('迪拉熊不准你看'),
             MessageSegment.image(Path('./src/notplay.png')),
         )
         await kuma_pic.finish(msg)
     else:
         if weight <= 10:
             if type == 'kuma':
-                msg = '迪拉熊怕你沉溺其中，所以图就不发了~'
+                msg = MessageSegment.text('迪拉熊怕你沉溺其中，所以图就先不发了~')
             elif type == 'kuma_r18':
-                msg = '迪拉熊关心你的身体健康，所以图就不发了~'
+                msg = MessageSegment.text('迪拉熊关心你的身体健康，所以图就先不发了~')
             await kuma_pic.finish(msg)
 
     files = os.listdir(path)
@@ -115,7 +115,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @rank.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot):
     # qq = event.get_user_id()
     with open(DATA_PATH, 'r') as f:
         count_data = json.load(f)

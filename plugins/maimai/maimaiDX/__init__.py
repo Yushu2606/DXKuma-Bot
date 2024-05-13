@@ -14,48 +14,44 @@ from .GenB50 import generateb50, generate_wcb, songList, charts, ratings
 from .MusicInfo import music_info, play_info
 
 best50 = on_regex(r'^(dlx50|dlxb50)')
-ap50 = on_regex(r'^(dlxap)')
-fc50 = on_regex(r'^(dlxfc)')
-fit50 = on_regex(r'^(dlxfit)')
+ap50 = on_regex(r'^dlxap')
+fc50 = on_regex(r'^dlxfc')
+fit50 = on_regex(r'^dlxfit')
 
-songinfo = on_regex(r'^(id) ?(\d+)$')
-playinfo = on_regex(r'^(info) ?(.*)$')
-playmp3 = on_regex(r'^(dlx点歌) ?(.*)$')
-randomsong = on_regex(r'^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?')
-maiwhat = on_regex(r'^(mai什么)')
+songinfo = on_regex(r'^id ?(\d+)$')
+playinfo = on_regex(r'^info ?(.+)$')
+playmp3 = on_regex(r'^dlx点歌 ?(.+)$')
+randomsong = on_regex(r'^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?$')
+maiwhat = on_fullmatch('mai什么')
 
-wcb = on_regex(r'^(完成表)')
+wcb = on_regex(r'^完成表 ?((\d+)(\.\d|\+)?)( ([0-9]+))?$')
 
-whatSong = on_regex(r'/?(search|查歌)\s*(.*)|(.*?)是什么歌')
-aliasSearch = on_regex(r'^(查看别名) ?(\d+)$|(\d+)(有什么别名)$')
+whatSong = on_regex(r'^((search|查歌) ?(.+)|(.+)是什么歌)$')
+aliasSearch = on_regex(r'^(查看别名 ?(\d+)|(\d+)有什么别名)$')
 
-aliasAdd_alc = Alconna('添加别名', Args["songId", int], Args['alias', str])
-aliasAdd = on_alconna(aliasAdd_alc, auto_send_output=True)
-
-aliasDel_alc = Alconna('删除别名', Args["songId", int], Args['alias', str])
-aliasDel = on_alconna(aliasDel_alc, auto_send_output=True)
+aliasAdd = on_regex(r'^添加别名 ?(\d+) ?(.+)$')
+aliasDel = on_regex(r'^删除别名 ?(\d+) ?(.+)$')
 
 all_plate = on_regex(r'^(plate|看牌子)$')
 all_frame = on_regex(r'^(frame|看底板)$')
 
-set_plate = on_regex(r'(setplate|设置牌子) ?(\d{6})$')
-set_frame = on_regex(r'(setframe|设置底板) ?(\d{6})$')
+set_plate = on_regex(r'^(setplate|设置牌子) ?(\d{6})$')
+set_frame = on_regex(r'^(setframe|设置底板) ?(\d{6})$')
 
 ratj_on = on_fullmatch('开启分数推荐')
 ratj_off = on_fullmatch('关闭分数推荐')
 
+with open('./src/maimai/aliasList.json', 'r') as f:
+    alias_list = json.load(f)
+
 
 # 根据乐曲别名查询乐曲id列表
 async def find_songid_by_alias(name):
-    # 读取别名文件
-    with open('./src/maimai/aliasList.json', 'r', encoding='utf-8') as file:
-        data = json.load(file)
-
     # 芝士id列表
     matched_ids = []
 
     # 芝士查找
-    for id, info in data.items():
+    for id, info in alias_list.items():
         if (
                 name in info['Alias']
                 or name in info['Name']
@@ -106,6 +102,8 @@ async def records_to_b50(
             record["ra"] = int(
                 fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
             )
+        if record["ra"] <= 0:
+            continue
         if is_new[0]:
             dx.append(record)
         else:
@@ -166,12 +164,6 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有游玩任何一个谱面呢~')
             await best50.finish((MessageSegment.reply(event.message_id), msg))
-        await best50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
-            )
-        )
         nickname = data['nickname']
         dani = data['additional_rating']
         b35, b15 = await records_to_b50(records)
@@ -214,12 +206,6 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有ap任何一个谱面呢~')
             await ap50.finish((MessageSegment.reply(event.message_id), msg))
-        await ap50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
-            )
-        )
         nickname = data['nickname']
         dani = data['additional_rating']
         img = await generateb50(
@@ -266,12 +252,6 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有fc任何一个谱面呢~')
             await fc50.finish((MessageSegment.reply(event.message_id), msg))
-        await fc50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
-            )
-        )
         nickname = data['nickname']
         dani = data['additional_rating']
         img = await generateb50(
@@ -311,12 +291,6 @@ async def _(event: GroupMessageEvent):
             else:
                 msg = MessageSegment.text('你还没有游玩任何一个谱面呢~')
             await fit50.finish((MessageSegment.reply(event.message_id), msg))
-        await fit50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
-            )
-        )
         nickname = data['nickname']
         dani = data['additional_rating']
         b35, b15 = await records_to_b50(records, is_fit=True)
@@ -334,7 +308,7 @@ async def _(event: GroupMessageEvent):
     pattern = r'^(完成表) ?((\d+)(\.\d|\+)?)( ([0-9]+))?'
     match = re.match(pattern, msg)
     if match is None:
-        wcb.finish(
+        await wcb.finish(
             (
                 MessageSegment.reply(event.message_id),
                 MessageSegment.text('迪拉熊觉得输入的信息好像有点问题呢'),
@@ -347,12 +321,6 @@ async def _(event: GroupMessageEvent):
             page = 1
     else:
         page = 1
-    await wcb.send(
-        (
-            MessageSegment.reply(event.message_id),
-            MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
-        )
-    )
     img = await generate_wcb(qq=qq, level=level, page=page)
     if isinstance(img, str):
         msg = MessageSegment.text(img)
@@ -435,10 +403,7 @@ async def _(event: GroupMessageEvent):
             )
         songname = songinfo['title']
         await playmp3.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}'),
-            )
+            MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')
         )
         with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
             file_bytes = file.read()
@@ -448,10 +413,7 @@ async def _(event: GroupMessageEvent):
         songinfo = await find_song_by_id(song_id=song_id)
         songname = songinfo['title']
         await playmp3.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}'),
-            )
+            MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')
         )
         with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
             file_bytes = file.read()
@@ -546,7 +508,10 @@ async def _(event: GroupMessageEvent):
             )
         elif len(rep_ids) == 1:
             img = await music_info(rep_ids[0], qq=qq)
-            msg = MessageSegment.image(img)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.image(img),
+            )
         else:
             output_lst = f'迪拉熊找到的 {name} 结果如下：'
             for song_id in rep_ids:
@@ -563,8 +528,6 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     msg = str(event.get_message())
     song_id = re.search(r'\d+', msg).group(0)
-    with open('./src/maimai/aliasList.json', 'r') as f:
-        alias_list = json.load(f)
     alias = alias_list.get(song_id, None)
     if not alias:
         msg = (
@@ -583,15 +546,11 @@ async def _(event: GroupMessageEvent):
 
 
 @aliasAdd.handle()
-async def _(
-        event: GroupMessageEvent,
-        song_id: Match[int] = AlconnaMatch("songId"),
-        alias: Match[str] = AlconnaMatch("alias"),
-):
-    song_id = str(song_id.result)
-    alias_name = alias.result
-    with open('./src/maimai/aliasList.json', 'r') as f:
-        alias_list = json.load(f)
+async def _(event: GroupMessageEvent):
+    msg = str(event.get_message())
+    args = re.search(r'^添加别名 ?(\d+) ?(.+)$', msg)
+    song_id = args.group(1)
+    alias_name = args.group(2)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
         msg = MessageSegment.text(
@@ -612,15 +571,11 @@ async def _(
 
 
 @aliasDel.handle()
-async def _(
-        event: GroupMessageEvent,
-        song_id: Match[int] = AlconnaMatch("songId"),
-        alias: Match[str] = AlconnaMatch("alias"),
-):
-    song_id = str(song_id.result)
-    alias_name = alias.result
-    with open('./src/maimai/aliasList.json', 'r') as f:
-        alias_list = json.load(f)
+async def _(event: GroupMessageEvent):
+    msg = str(event.get_message())
+    args = re.search(r'^删除别名 ?(\d+) ?(.+)$', msg)
+    song_id = args.group(1)
+    alias_name = args.group(2)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
         msg = MessageSegment.text(
