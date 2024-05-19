@@ -88,7 +88,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if group_id == 967611986:  # 不被限制的 group_id
         pass
     elif type == 'kuma_r18' and group_id not in [
-        236030263
+        236030263,
+        938593095,
     ]:  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
             MessageSegment.text('迪拉熊不准你看'),

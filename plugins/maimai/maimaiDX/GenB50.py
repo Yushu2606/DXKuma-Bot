@@ -223,6 +223,7 @@ async def music_to_part(
         title: str,
         type: str,
         index: int,
+        b_type: str,
 ):
     color = (255, 255, 255)
     if level_index == 4:
@@ -241,14 +242,15 @@ async def music_to_part(
     # 歌曲分类 DX / SD
     icon_path = maimai_Static / f'music_{type}.png'
     icon = Image.open(icon_path)
-    partbase.paste(icon, (40, 230), icon)
+    icon = await resize_image(icon, 1.39)
+    partbase.paste(icon, (797, 16), icon)
 
     # 歌名
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
     text_position = (305.4, 16.8)
     draw = ImageDraw.Draw(partbase)
     text_bbox = draw.textbbox(text_position, title, font=ttf)
-    max_width = 850
+    max_width = 750
     ellipsis = "..."
 
     # 检查文本的宽度是否超过最大宽度
@@ -288,9 +290,9 @@ async def music_to_part(
     ttf = ImageFont.truetype(ttf_heavy_path, size=55)
     draw = ImageDraw.Draw(partbase)
     if len(achievements[0]) == 3:
-        text_position = (529, 105)
+        text_position = (532, 106)
     else:
-        text_position = (488, 105)
+        text_position = (488, 106)
     text_content = f'{achievements2}'
     # shadow_position = (
     #     text_position[0] + shadow_offset[0],
@@ -303,19 +305,23 @@ async def music_to_part(
     ttf = ImageFont.truetype(ttf_bold_path, size=32)
     # best序号
     ImageDraw.Draw(partbase).text(
-        (310, 245), f'#{index}', font=ttf, fill=(255, 255, 255)
+        (308, 245), f'#{index}', font=ttf, fill=(255, 255, 255)
     )
     # 乐曲ID
     ImageDraw.Draw(partbase).text(
-        (385, 245), f'ID:{song_id}', font=ttf, fill=(28, 43, 120)
+        (388, 245), f'ID:{song_id}', font=ttf, fill=(28, 43, 120)
     )
     # 定数和ra
-    ImageDraw.Draw(partbase).text((385, 182), f'{ds} -> {ra}', font=ttf, fill=color)
+    if b_type == "fit50" and ((ds * 10) % 1) <= 0:
+        ds_str = f"{ds}0"
+    else:
+        ds_str = str(ds)
+    ImageDraw.Draw(partbase).text((375, 182), f'{ds_str} -> {ra}', font=ttf, fill=color)
     # dx分数和星星
     song_data = next((d for d in songList if d['id'] == str(song_id)), None)
     sum_dxscore = sum(song_data['charts'][level_index]['notes']) * 3
     ImageDraw.Draw(partbase).text(
-        (580, 245), f'{dxScore}/{sum_dxscore}', font=ttf, fill=(28, 43, 120)
+        (568, 245), f'{dxScore}/{sum_dxscore}', font=ttf, fill=(28, 43, 120)
     )
     star_level, stars = await dxscore_proc(dxScore, sum_dxscore)
     if star_level:
@@ -330,25 +336,26 @@ async def music_to_part(
     # 评价
     rate_path = maimai_Static / f'bud_music_icon_{rate}.png'
     rate = Image.open(rate_path)
-    partbase.paste(rate, (735, 100), rate)
+    rate = await resize_image(rate, 0.87)
+    partbase.paste(rate, (770, 72), rate)
 
     # fc ap
     if fc:
         fc_path = maimai_Static / f'music_icon_{fc}.png'
         fc = Image.open(fc_path)
-        fc = await resize_image(fc, 1.1)
-        partbase.paste(fc, (850, 233), fc)
+        fc = await resize_image(fc, 2.22)
+        partbase.paste(fc, (782, 187), fc)
     if fs:
         fs_path = maimai_Static / f'music_icon_{fs}.png'
         fs = Image.open(fs_path)
-        fs = await resize_image(fs, 1.1)
-        partbase.paste(fs, (900, 233), fs)
+        fs = await resize_image(fs, 2.22)
+        partbase.paste(fs, (876, 187), fs)
 
     partbase = partbase.resize((340, 110))
     return partbase
 
 
-async def draw_best(bests: list):
+async def draw_best(bests: list, type: str):
     index = 0
     # 计算列数
     queue_nums = int(len(bests) / 4) + 1
@@ -378,7 +385,7 @@ async def draw_best(bests: list):
                 # 根据索引从列表中抽取数据
                 song_data = bests[index]
                 # 传入数据生成图片
-                part = await music_to_part(**song_data, index=index + 1)
+                part = await music_to_part(**song_data, index=index + 1, b_type=type)
                 # 将图片粘贴到底图上
                 base.paste(part, (x, y), part)
                 # 增加x坐标，序列自增
@@ -513,10 +520,10 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     # rating推荐
     if type == 'b50':
         if is_rating_tj:
-            b35max = b35[0]['ra']
-            b35min = b35[-1]['ra']
-            b15max = b15[0]['ra']
-            b15min = b15[-1]['ra']
+            b35max = b35[0]['ra'] if b35 else 0
+            b35min = b35[-1]['ra'] if b35 else 0
+            b15max = b15[0]['ra'] if b15 else 0
+            b15min = b15[-1]['ra'] if b15 else 0
             ratingbase = await rating_tj(b35max, b35min, b15max, b15min)
             b50.paste(ratingbase, (60, 197), ratingbase)
 
@@ -555,8 +562,8 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     )
 
     # b50
-    b35 = await draw_best(b35)
-    b15 = await draw_best(b15)
+    b35 = await draw_best(b35, type)
+    b15 = await draw_best(b15, type)
     b50.paste(b35, (25, 795), b35)
     b50.paste(b15, (25, 1985), b15)
 
@@ -699,7 +706,7 @@ async def generate_wcb(qq: str, level: str, page: int):
     )
 
     # 绘制当前页面的成绩
-    records_parts = await draw_best(input_records)
+    records_parts = await draw_best(input_records, type="wcb")
     bg.paste(records_parts, (25, 795), records_parts)
 
     img_byte_arr = BytesIO()

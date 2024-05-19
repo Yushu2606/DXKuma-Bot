@@ -7,6 +7,7 @@ from nonebot.rule import to_me
 
 xc = on_regex(r'(香草|想草)(迪拉熊|滴蜡熊|dlx)')
 wxhn = on_regex(r'^(我喜欢你)$', rule=to_me())
+wxhn2 = on_regex(r'^(迪拉熊|dlx)我喜欢你$')
 
 roll = on_regex(r'^(?:是)(.+)(?:还是(.+))+')
 
@@ -31,14 +32,32 @@ async def _():
     weights = [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.1]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
-    msg = MessageSegment.text(text)
+    if ran_number >= 10:
+        pic_path = "./src/可怜.png"
+    else:
+        pic_path = "./src/啊.png"
+    msg = (MessageSegment.text(text), MessageSegment.image(Path(pic_path)))
     await xc.send(msg)
 
 
 @wxhn.handle()
-async def _():
-    msg = MessageSegment.text('迪拉熊也喜欢你❤️')
+async def _(event: GroupMessageEvent):
+    msg = (
+        MessageSegment.reply(event.message_id),
+        MessageSegment.text('迪拉熊也喜欢你❤️'),
+        MessageSegment.image(Path('./src/like.png')),
+    )
     await wxhn.send(msg)
+
+
+@wxhn2.handle()
+async def _(event: GroupMessageEvent):
+    msg = (
+        MessageSegment.reply(event.message_id),
+        MessageSegment.text('迪拉熊也喜欢你❤️'),
+        MessageSegment.image(Path('./src/like.png')),
+    )
+    await wxhn2.send(msg)
 
 
 @roll.handle()

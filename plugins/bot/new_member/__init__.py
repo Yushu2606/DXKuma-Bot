@@ -46,7 +46,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
 async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     qq = event.get_user_id()
     group_id = event.group_id
-    user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
+    user_name = await bot.get_stranger_info(user_id=int(qq), no_cache=False)[
         'nickname'
     ]
     msg = (

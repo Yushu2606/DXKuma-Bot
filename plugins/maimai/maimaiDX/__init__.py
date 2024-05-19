@@ -4,19 +4,26 @@ import random
 import re
 from pathlib import Path
 
-from arclet.alconna import Alconna, Args
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
-from nonebot_plugin_alconna import on_alconna, AlconnaMatch, Match
 
 from util.DivingFish import get_player_records
 from .GenB50 import generateb50, generate_wcb, songList, charts, ratings
+from .GenB50new import newgenb50
 from .MusicInfo import music_info, play_info
 
-best50 = on_regex(r'^(dlx50|dlxb50)')
-ap50 = on_regex(r'^dlxap')
-fc50 = on_regex(r'^dlxfc')
-fit50 = on_regex(r'^dlxfit')
+def is_test_group(event:GroupMessageEvent):
+    groupid = event.group_id
+    if groupid in [236030263]:
+        return True
+    return False
+
+
+best50 = on_regex(r'^(dlx50|dlxb50)( ?\[at:qq=(\d+)\] ?)?$')
+test50 = on_regex(r'^tes50( ?\[at:qq=(\d+)\] ?)?$', rule=is_test_group)
+ap50 = on_regex(r'^dlxap( ?\[at:qq=(\d+)\] ?)?$')
+fc50 = on_regex(r'^dlxfc( ?\[at:qq=(\d+)\] ?)?$')
+fit50 = on_regex(r'^dlxfit( ?\[at:qq=(\d+)\] ?)?$')
 
 songinfo = on_regex(r'^id ?(\d+)$')
 playinfo = on_regex(r'^info ?(.+)$')
@@ -173,6 +180,39 @@ async def _(event: GroupMessageEvent):
         msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await best50.send(msg)
 
+@test50.handle()
+async def _(event: GroupMessageEvent):
+    msg_text = str(event.raw_message)
+    pattern = r"\[CQ:at,qq=(\d+)\]"
+    match = re.search(pattern, msg_text)
+    if match:
+        target_qq = match.group(1)
+    else:
+        target_qq = event.get_user_id()
+    data, status = await get_player_records(target_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'
+            ),
+        )
+    elif status == 200:
+        records = data['records']
+        if not records:
+            if match:
+                msg = MessageSegment.text('他还没有游玩任何一个谱面呢~')
+            else:
+                msg = MessageSegment.text('你还没有游玩任何一个谱面呢~')
+            await test50.finish((MessageSegment.reply(event.message_id), msg))
+        nickname = data['nickname']
+        dani = data['additional_rating']
+        b35, b15 = await records_to_b50(records)
+        img = await newgenb50(
+            b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='test50'
+        )
+        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await test50.send(msg)
 
 @ap50.handle()
 async def _(event: GroupMessageEvent):

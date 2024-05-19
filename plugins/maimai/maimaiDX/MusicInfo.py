@@ -119,7 +119,7 @@ async def music_info(song_id: str, qq: str):
     song_type = song_data['type']
     type_path = maimai_Static / f'music_{song_type}.png'
     type = Image.open(type_path)
-    bg.paste(type, (703, 855), type)
+    bg.paste(type, (708, 858), type)
     # version
     song_ver = song_data['basic_info']['from']
     song_ver = Image.open(maimai_Static / f'{song_ver}.png')
@@ -316,7 +316,7 @@ async def play_info(song_id: str, qq: str):
     song_type = song_data['type']
     type_path = maimai_Static / f'music_{song_type}.png'
     type = Image.open(type_path)
-    bg.paste(type, (703, 855), type)
+    bg.paste(type, (708, 858), type)
     # version
     song_ver = song_data['basic_info']['from']
     song_ver = Image.open(maimai_Static / f'{song_ver}.png')
