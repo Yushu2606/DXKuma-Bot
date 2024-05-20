@@ -19,11 +19,11 @@ def is_test_group(event:GroupMessageEvent):
     return False
 
 
-best50 = on_regex(r'^(dlx50|dlxb50)( ?\[at:qq=(\d+)\] ?)?$')
-test50 = on_regex(r'^tes50( ?\[at:qq=(\d+)\] ?)?$', rule=is_test_group)
-ap50 = on_regex(r'^dlxap( ?\[at:qq=(\d+)\] ?)?$')
-fc50 = on_regex(r'^dlxfc( ?\[at:qq=(\d+)\] ?)?$')
-fit50 = on_regex(r'^dlxfit( ?\[at:qq=(\d+)\] ?)?$')
+best50 = on_regex(r'^(dlx50|dlxb50)( ?\[CQ:at,qq=(\d+)\] ?)?$')
+test50 = on_regex(r'^tes50( ?\[CQ:at,qq=(\d+)\] ?)?$', rule=is_test_group)
+ap50 = on_regex(r'^dlxap( ?\[CQ:at,qq=(\d+)\] ?)?$')
+fc50 = on_regex(r'^dlxfc( ?\[CQ:at,qq=(\d+)\] ?)?$')
+fit50 = on_regex(r'^dlxfit( ?\[CQ:at,qq=(\d+)\] ?)?$')
 
 songinfo = on_regex(r'^id ?(\d+)$')
 playinfo = on_regex(r'^info ?(.+)$')
