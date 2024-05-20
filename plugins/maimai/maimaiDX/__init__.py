@@ -192,6 +192,12 @@ async def _(event: GroupMessageEvent):
         nickname = data['nickname']
         dani = data['additional_rating']
         b35, b15 = await records_to_b50(records)
+        await best50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         img = await generateb50(
             b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='b50'
         )
@@ -240,6 +246,12 @@ async def _(event: GroupMessageEvent):
         nickname = data['nickname']
         dani = data['additional_rating']
         b35, b15 = await records_to_b50(records)
+        await test50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         img = await newgenb50(
             b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='test50'
         )
@@ -294,6 +306,12 @@ async def _(event: GroupMessageEvent):
             await ap50.finish((MessageSegment.reply(event.message_id), msg))
         nickname = data['nickname']
         dani = data['additional_rating']
+        await ap50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         img = await generateb50(
             b35=ap35,
             b15=ap15,
@@ -354,6 +372,12 @@ async def _(event: GroupMessageEvent):
             await fc50.finish((MessageSegment.reply(event.message_id), msg))
         nickname = data['nickname']
         dani = data['additional_rating']
+        await fc50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         img = await generateb50(
             b35=fc35,
             b15=fc15,
@@ -408,6 +432,12 @@ async def _(event: GroupMessageEvent):
         nickname = data['nickname']
         dani = data['additional_rating']
         b35, b15 = await records_to_b50(records, is_fit=True)
+        await fit50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         img = await generateb50(
             b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type='fit50'
         )
@@ -452,6 +482,12 @@ async def _(event: GroupMessageEvent):
     if not song_info:
         msg = MessageSegment.text(f"迪拉熊没找到 {song_id} 对应的乐曲")
     else:
+        await songinfo.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text('迪拉熊绘制中，稍等一下mai~'),
+            )
+        )
         img = await music_info(song_id=song_id, qq=qq)
         msg = MessageSegment.image(img)
     await songinfo.send((MessageSegment.reply(event.message_id), msg))
