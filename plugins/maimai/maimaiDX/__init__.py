@@ -49,6 +49,9 @@ set_frame = on_regex(r'^(setframe|设置底板) ?(\d{6})$')
 ratj_on = on_fullmatch('开启分数推荐')
 ratj_off = on_fullmatch('关闭分数推荐')
 
+allow_other_on = on_fullmatch('允许代查')
+allow_other_off = on_fullmatch('禁止代查')
+
 with open('./src/maimai/aliasList.json', 'r') as f:
     alias_list = json.load(f)
 
@@ -156,6 +159,20 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
+    if target_qq != event.get_user_id():
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if target_qq not in config:
+                cfg = config.setdefault(target_qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[target_qq]
+            if "allow_other" not in config[target_qq]:
+                allow_other = cfg.setdefault("allow_other", False)
+                config[target_qq] = cfg
+            else:
+                allow_other = cfg["allow_other"]
+        if not allow_other:
+            msg = (MessageSegment.reply(event.message_id), MessageSegment.text('他还没有允许其他人查询他的成绩呢'))
+            await best50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -190,6 +207,20 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
+    if target_qq != event.get_user_id():
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if target_qq not in config:
+                cfg = config.setdefault(target_qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[target_qq]
+            if "allow_other" not in config[target_qq]:
+                allow_other = cfg.setdefault("allow_other", False)
+                config[target_qq] = cfg
+            else:
+                allow_other = cfg["allow_other"]
+        if not allow_other:
+            msg = (MessageSegment.reply(event.message_id), MessageSegment.text('他还没有允许其他人查询他的成绩呢'))
+            await best50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -224,6 +255,20 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
+    if target_qq != event.get_user_id():
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if target_qq not in config:
+                cfg = config.setdefault(target_qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[target_qq]
+            if "allow_other" not in config[target_qq]:
+                allow_other = cfg.setdefault("allow_other", False)
+                config[target_qq] = cfg
+            else:
+                allow_other = cfg["allow_other"]
+        if not allow_other:
+            msg = (MessageSegment.reply(event.message_id), MessageSegment.text('他还没有允许其他人查询他的成绩呢'))
+            await best50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -270,6 +315,20 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
+    if target_qq != event.get_user_id():
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if target_qq not in config:
+                cfg = config.setdefault(target_qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[target_qq]
+            if "allow_other" not in config[target_qq]:
+                allow_other = cfg.setdefault("allow_other", False)
+                config[target_qq] = cfg
+            else:
+                allow_other = cfg["allow_other"]
+        if not allow_other:
+            msg = (MessageSegment.reply(event.message_id), MessageSegment.text('他还没有允许其他人查询他的成绩呢'))
+            await best50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -316,6 +375,20 @@ async def _(event: GroupMessageEvent):
         target_qq = match.group(1)
     else:
         target_qq = event.get_user_id()
+    if target_qq != event.get_user_id():
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if target_qq not in config:
+                cfg = config.setdefault(target_qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[target_qq]
+            if "allow_other" not in config[target_qq]:
+                allow_other = cfg.setdefault("allow_other", False)
+                config[target_qq] = cfg
+            else:
+                allow_other = cfg["allow_other"]
+        if not allow_other:
+            msg = (MessageSegment.reply(event.message_id), MessageSegment.text('他还没有允许其他人查询他的成绩呢'))
+            await best50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -659,10 +732,14 @@ async def _(event: GroupMessageEvent):
     if os.path.exists(file_path):
         with shelve.open('./data/maimai/b50_config.db') as config:
             if qq not in config:
-                config.setdefault(
-                    qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True}
-                )
-            config[qq]['plate'] = id
+                cfg = config.setdefault(qq, {'frame': '200502', 'plate': id, 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[qq]
+            if "plate" not in config[qq]:
+                cfg.setdefault("plate", id)
+            else:
+                cfg['plate'] = id
+            config[qq] = cfg
 
         msg = MessageSegment.text('迪拉熊帮你换好啦~')
     else:
@@ -681,10 +758,14 @@ async def _(event: GroupMessageEvent):
     if os.path.exists(file_path):
         with shelve.open('./data/maimai/b50_config.db') as config:
             if qq not in config:
-                config.setdefault(
-                    qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True}
-                )
-            config[qq]['frame'] = id
+                cfg = config.setdefault(qq, {'frame': id, 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+            else:
+                cfg = config[qq]
+            if "frame" not in config[qq]:
+                cfg.setdefault("frame", id)
+            else:
+                cfg['frame'] = id
+            config[qq] = cfg
 
         msg = MessageSegment.text('迪拉熊帮你换好啦~')
     else:
@@ -697,8 +778,14 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     with shelve.open('./data/maimai/b50_config.db') as config:
         if qq not in config:
-            config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True})
-        config[qq]['rating_tj'] = True
+            cfg = config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+        else:
+            cfg = config[qq]
+        if "rating_tj" not in config[qq]:
+            cfg.setdefault("rating_tj", True)
+        else:
+            cfg['rating_tj'] = True
+        config[qq] = cfg
 
     msg = MessageSegment.text('迪拉熊已为你开启分数推荐')
     await ratj_on.send((MessageSegment.reply(event.message_id), msg))
@@ -709,8 +796,50 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     with shelve.open('./data/maimai/b50_config.db') as config:
         if qq not in config:
-            config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True})
-        config[qq]['rating_tj'] = False
+            cfg = config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': False, 'allow_other': False})
+        else:
+            cfg = config[qq]
+        if "rating_tj" not in config[qq]:
+            cfg.setdefault("rating_tj", False)
+        else:
+            cfg['rating_tj'] = False
+        config[qq] = cfg
 
     msg = MessageSegment.text('迪拉熊已为你关闭分数推荐')
     await ratj_off.send((MessageSegment.reply(event.message_id), msg))
+
+
+@allow_other_on.handle()
+async def _(event: GroupMessageEvent):
+    qq = event.get_user_id()
+    with shelve.open('./data/maimai/b50_config.db') as config:
+        if qq not in config:
+            cfg = config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': True})
+        else:
+            cfg = config[qq]
+        if "allow_other" not in config[qq]:
+            cfg.setdefault("allow_other", True)
+        else:
+            cfg['allow_other'] = True
+        config[qq] = cfg
+
+    msg = MessageSegment.text('迪拉熊已为你启用代查')
+    await allow_other_on.send((MessageSegment.reply(event.message_id), msg))
+
+
+@allow_other_off.handle()
+async def _(event: GroupMessageEvent):
+    qq = event.get_user_id()
+    with shelve.open('./data/maimai/b50_config.db') as config:
+        if qq not in config:
+            cfg = config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True, 'allow_other': False})
+        else:
+            cfg = config[qq]
+        if "allow_other" not in config[qq]:
+            cfg.setdefault("allow_other", False)
+        else:
+            cfg['allow_other'] = False
+        config[qq] = cfg
+
+    msg = MessageSegment.text('迪拉熊已为你禁用代查')
+    await allow_other_off.send((MessageSegment.reply(event.message_id), msg))
