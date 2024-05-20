@@ -3,6 +3,7 @@ import random
 from io import BytesIO
 
 import math
+import shelve
 import requests
 from PIL import Image, ImageFont, ImageDraw
 
@@ -275,17 +276,8 @@ async def music_to_part(
     achievements = f'{achievements}'.split('.')
     achievements1 = f'{achievements[0]}.        %'
     achievements2 = (str(achievements[1]).ljust(4, '0'))[:4]
-    # shadow_color = (0, 0, 0)  # 阴影颜色
-    # if level_index == 4:
-    #     shadow_color = (45, 92, 150)
-    # shadow_offset = (2, 4)  # 阴影偏移量
     text_position = (375, 90)
     text_content = f'{achievements1}'
-    # shadow_position = (
-    #     text_position[0] + shadow_offset[0],
-    #     text_position[1] + shadow_offset[1],
-    # )
-    # draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
     draw.text(text_position, text_content, font=ttf, fill=color)
     ttf = ImageFont.truetype(ttf_heavy_path, size=55)
     draw = ImageDraw.Draw(partbase)
@@ -294,11 +286,6 @@ async def music_to_part(
     else:
         text_position = (488, 106)
     text_content = f'{achievements2}'
-    # shadow_position = (
-    #     text_position[0] + shadow_offset[0],
-    #     text_position[1] + shadow_offset[1],
-    # )
-    # draw.text(shadow_position, text_content, font=ttf, fill=shadow_color)
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
@@ -460,16 +447,15 @@ async def rating_tj(b35max, b35min, b15max, b15min):
 
 
 async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
-    with open('./data/maimai/b50_config.json', 'r') as f:
-        config = json.load(f)
-    if qq not in config:
-        frame = '200502'
-        plate = '000101'
-        is_rating_tj = True
-    else:
-        frame = config[qq]['frame']
-        plate = config[qq]['plate']
-        is_rating_tj = config[qq]['rating_tj']
+    with shelve.open('./data/maimai/b50_config.db') as config:
+        if qq not in config:
+            frame = '200502'
+            plate = '000101'
+            is_rating_tj = True
+        else:
+            frame = config[qq]['frame']
+            plate = config[qq]['plate']
+            is_rating_tj = config[qq]['rating_tj']
 
     b35_ra = sum(item['ra'] for item in b35)
     b15_ra = sum(item['ra'] for item in b15)
@@ -576,12 +562,11 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
 
 
 async def generate_wcb(qq: str, level: str, page: int):
-    with open('./data/maimai/b50_config.json', 'r') as f:
-        config = json.load(f)
-    if qq not in config:
-        plate = '000101'
-    else:
-        plate = config[qq]['plate']
+    with shelve.open('./data/maimai/b50_config.db') as config:
+        if qq not in config:
+            plate = '000101'
+        else:
+            plate = config[qq]['plate']
     data, status = await get_player_records(qq)
     if status == 400:
         msg = '迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/'

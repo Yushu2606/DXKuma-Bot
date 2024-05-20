@@ -1,9 +1,9 @@
 import asyncio
 import datetime
-import json
 import os
 import random
 import re
+import shelve
 import time
 from pathlib import Path
 
@@ -28,7 +28,7 @@ upload = on_regex(r'^(upload)-(dlx|dlxst)', rule=is_admin)
 
 KUMAPIC = './src/kuma-pic/normal'
 KUMAPIC_R18 = './src/kuma-pic/r18'
-DATA_PATH = './data/random_pic/count.json'
+DATA_PATH = './data/random_pic/count.db'
 
 
 def get_time():
@@ -46,19 +46,15 @@ def get_time():
 
 
 async def update_count(qq: str, type: str):
-    with open(DATA_PATH, 'r') as f:
-        count_data = json.load(f)
-
     time = get_time()
 
-    if qq not in count_data or time not in count_data:
-        count_data.setdefault(qq, {})
-        count_data[qq].setdefault(time, {"kuma": 0, "kuma_r18": 0})
+    with shelve.open(DATA_PATH) as count_data:
+        if qq not in count_data:
+            count_data.setdefault(qq, {})
+        if time not in count_data[qq]:
+            count_data[qq].setdefault({time: {"kuma": 0, "kuma_r18": 0}})
 
-    count_data[qq][time][type] += 1
-
-    with open(DATA_PATH, 'w') as f:
-        json.dump(count_data, f, ensure_ascii=False, indent=4)
+        count_data[qq][time][type] += 1
 
 
 async def gen_rank(data, time):
@@ -117,13 +113,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @rank.handle()
 async def _(bot: Bot):
-    # qq = event.get_user_id()
-    with open(DATA_PATH, 'r') as f:
-        count_data = json.load(f)
-
     time = get_time()
+
+    with shelve.open(DATA_PATH) as count_data:
+        leaderboard = await gen_rank(count_data, time)
+
     leaderboard_output = []
-    leaderboard = await gen_rank(count_data, time)
     count = min(len(leaderboard), 5)  # 最多显示5个人，取实际人数和5的较小值
     for i, (qq, total_count) in enumerate(leaderboard[:count], start=1):
         user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[

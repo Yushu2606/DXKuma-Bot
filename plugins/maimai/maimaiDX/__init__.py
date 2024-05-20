@@ -3,6 +3,7 @@ import os
 import random
 import re
 from pathlib import Path
+import shelve
 
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
@@ -656,17 +657,13 @@ async def _(event: GroupMessageEvent):
     file_name = f"UI_Plate_{id}.png"
     file_path = Path(dir_path) / file_name
     if os.path.exists(file_path):
-        with open('./data/maimai/b50_config.json', 'r') as f:
-            config = json.load(f)
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if qq not in config:
+                config.setdefault(
+                    qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True}
+                )
+            config[qq]['plate'] = id
 
-        if qq not in config:
-            config.setdefault(
-                qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True}
-            )
-        config[qq]['plate'] = id
-
-        with open('./data/maimai/b50_config.json', 'w') as f:
-            json.dump(config, f, ensure_ascii=False, indent=4)
         msg = MessageSegment.text('迪拉熊帮你换好啦~')
     else:
         msg = MessageSegment.text('迪拉熊没换成功，再试试吧~（输入id有误）')
@@ -682,17 +679,12 @@ async def _(event: GroupMessageEvent):
     file_name = f"UI_Frame_{id}.png"
     file_path = Path(dir_path) / file_name
     if os.path.exists(file_path):
-        with open('./data/maimai/b50_config.json', 'r') as f:
-            config = json.load(f)
-
-        if qq not in config:
-            config.setdefault(
-                qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True}
-            )
-        config[qq]['frame'] = id
-
-        with open('./data/maimai/b50_config.json', 'w') as f:
-            json.dump(config, f, ensure_ascii=False, indent=4)
+        with shelve.open('./data/maimai/b50_config.db') as config:
+            if qq not in config:
+                config.setdefault(
+                    qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True}
+                )
+            config[qq]['frame'] = id
 
         msg = MessageSegment.text('迪拉熊帮你换好啦~')
     else:
@@ -703,15 +695,10 @@ async def _(event: GroupMessageEvent):
 @ratj_on.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with open('./data/maimai/b50_config.json', 'r') as f:
-        config = json.load(f)
-
-    if qq not in config:
-        config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True})
-    config[qq]['rating_tj'] = True
-
-    with open('./data/maimai/b50_config.json', 'w') as f:
-        json.dump(config, f, ensure_ascii=False, indent=4)
+    with shelve.open('./data/maimai/b50_config.db') as config:
+        if qq not in config:
+            config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True})
+        config[qq]['rating_tj'] = True
 
     msg = MessageSegment.text('迪拉熊已为你开启分数推荐')
     await ratj_on.send((MessageSegment.reply(event.message_id), msg))
@@ -720,15 +707,10 @@ async def _(event: GroupMessageEvent):
 @ratj_off.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with open('./data/maimai/b50_config.json', 'r') as f:
-        config = json.load(f)
-
-    if qq not in config:
-        config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True})
-    config[qq]['rating_tj'] = False
-
-    with open('./data/maimai/b50_config.json', 'w') as f:
-        json.dump(config, f, ensure_ascii=False, indent=4)
+    with shelve.open('./data/maimai/b50_config.db') as config:
+        if qq not in config:
+            config.setdefault(qq, {'frame': '200502', 'plate': '000101', 'rating_tj': True})
+        config[qq]['rating_tj'] = False
 
     msg = MessageSegment.text('迪拉熊已为你关闭分数推荐')
     await ratj_off.send((MessageSegment.reply(event.message_id), msg))
