@@ -50,11 +50,16 @@ async def update_count(qq: str, type: str):
 
     with shelve.open(DATA_PATH) as count_data:
         if qq not in count_data:
-            count_data.setdefault(qq, {})
+            count = count_data.setdefault(qq, {})
+        else:
+            count = count_data[qq]
         if time not in count_data[qq]:
-            count_data[qq].setdefault({time: {"kuma": 0, "kuma_r18": 0}})
+            times = count.setdefault(time, {"kuma": 0, "kuma_r18": 0})
+        else:
+            times = count[time]
 
-        count_data[qq][time][type] += 1
+        times[type] += 1
+        count_data[qq] = count
 
 
 async def gen_rank(data, time):
