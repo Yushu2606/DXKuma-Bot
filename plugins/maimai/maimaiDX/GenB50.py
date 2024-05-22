@@ -19,8 +19,6 @@ from .Config import (
     maimai_Rating,
 )
 
-songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
-charts = requests.get('https://www.diving-fish.com/api/maimaidxprober/chart_stats').json()
 with open(maimai_src / 'ratings.json', 'r') as f:
     ratings = json.load(f)
 
@@ -134,6 +132,7 @@ async def records_filter(records: list, level: str):
 
 async def song_list_filter(level: str):
     filted_song_list = []
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     for song in songList:
         for song_level in song['level']:
             if level == song_level:
@@ -225,6 +224,7 @@ async def music_to_part(
         type: str,
         index: int,
         b_type: str,
+        songList
 ):
     color = (255, 255, 255)
     if level_index == 4:
@@ -342,7 +342,7 @@ async def music_to_part(
     return partbase
 
 
-async def draw_best(bests: list, type: str):
+async def draw_best(bests: list, type: str, songList):
     index = 0
     # 计算列数
     queue_nums = int(len(bests) / 4) + 1
@@ -372,7 +372,7 @@ async def draw_best(bests: list, type: str):
                 # 根据索引从列表中抽取数据
                 song_data = bests[index]
                 # 传入数据生成图片
-                part = await music_to_part(**song_data, index=index + 1, b_type=type)
+                part = await music_to_part(**song_data, index=index + 1, b_type=type, songList=songList)
                 # 将图片粘贴到底图上
                 base.paste(part, (x, y), part)
                 # 增加x坐标，序列自增
@@ -551,9 +551,10 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
         fill=(255, 255, 255),
     )
 
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     # b50
-    b35 = await draw_best(b35, type)
-    b15 = await draw_best(b15, type)
+    b35 = await draw_best(b35, type, songList)
+    b15 = await draw_best(b15, type, songList)
     b50.paste(b35, (25, 795), b35)
     b50.paste(b15, (25, 1985), b15)
 
@@ -694,8 +695,9 @@ async def generate_wcb(qq: str, level: str, page: int):
         (260, 850), page_text, font=ttf, fill=(255, 255, 255), anchor='mm'
     )
 
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     # 绘制当前页面的成绩
-    records_parts = await draw_best(input_records, type="wcb")
+    records_parts = await draw_best(input_records, type="wcb", songList=songList)
     bg.paste(records_parts, (25, 795), records_parts)
 
     img_byte_arr = BytesIO()

@@ -1,10 +1,10 @@
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
+import requests
 
 from util.DivingFish import get_player_data, get_player_record
 from .Config import font_path, maimai_Jacket, maimai_Static
-from .GenB50 import songList
 from copy import deepcopy
 
 ttf_bold_path = font_path / 'GenSenMaruGothicTW-Bold.ttf'
@@ -40,6 +40,7 @@ async def music_info(song_id: str, qq: str):
     bg = Image.open('./src/maimai/musicinfo_bg.png')
     drawtext = ImageDraw.Draw(bg)
 
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     # 获取该曲信息
     song_data = next((deepcopy(d) for d in songList if d['id'] == song_id), None)
 
@@ -246,6 +247,7 @@ async def play_info(song_id: str, qq: str):
     bg = Image.open('./src/maimai/playinfo_bg.png')
     drawtext = ImageDraw.Draw(bg)
 
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     # 获取该曲信息
     song_data = next((d for d in songList if d['id'] == song_id), None)
 

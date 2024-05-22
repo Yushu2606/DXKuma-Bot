@@ -31,7 +31,7 @@ conversations = {
 
 @poke.handle()
 async def _():
-    weights = [1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5]
+    weights = [9, 9, 9, 9, 9, 9, 9, 9, 4, 4]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
     filename = str(ran_number).zfill(2) + '.png'

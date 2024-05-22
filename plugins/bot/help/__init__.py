@@ -8,7 +8,7 @@ all_help = on_regex(r'(dlxhelp|迪拉熊指令|迪拉熊帮助|指令大全)$')
 # b50cfg_help = on_fullmatch('dlxhelp2')
 # all_help = on_fullmatch('指令大全')
 eatbreak = on_regex(r'^(绝赞给你吃|绝赞请你吃|给你吃绝赞|请你吃绝赞)$', rule=to_me())
-zysx = on_regex(r'^(注意事项)$', rule=to_me())
+# zysx = on_regex(r'^(注意事项)$', rule=to_me())
 
 
 # @help.handle()
@@ -65,12 +65,11 @@ zysx = on_regex(r'^(注意事项)$', rule=to_me())
 # @b50cfg_help.handle()
 # async def _(bot: Bot, event: GroupMessageEvent):
 #     qq = event.get_user_id()
-#     with open('./data/maimai/b50_config.json', 'r') as f:
-#             b50config = json.load(f)
-#     if qq not in b50config:
-#         b50config = {'frame': '200502', 'plate': '000101', 'rating_tj': True}
-#     else:
-#         b50config = b50config[qq]
+#     with shelve.open('./data/maimai/b50_config.db') as b50config:
+#         if qq not in b50config:
+#             b50config = {'frame': '200502', 'plate': '000101', 'rating_tj': True}
+#         else:
+#             b50config = b50config[qq]
 #     ratj = '✅' if b50config['rating_tj'] else '❌'
 #     ratj_switch = '关闭分数推荐' if b50config['rating_tj'] else '开启分数推荐'
 #     res = "# 设置你的b50"
@@ -135,19 +134,19 @@ async def _(event: GroupMessageEvent):
     await eatbreak.send(msg)
 
 
-@zysx.handle()
-async def _():
-    text = (
-        '注意事项\n'
-        '❶本bot为娱乐性质bot，不支持更新查分器，小黑屋等科技功能\n'
-        '❷发送dlxhelp查看指令大全\n'
-        '❸号主随时会顶号与大家聊天解惑，介意勿用（不影响bot使用）\n'
-        '❹大多数指令不需要@bot，直接输入指令即可（dlxhelp会标注需要@的功能）\n'
-        '❺想让自己的群拥有bot可以直接加好友，同意之后就可以拉了\n'
-        '❻QQ空间可查看bot的更新日志\n'
-        '❼如不需要迪拉熊了，请直接私聊bot说明，不要直接踢\n'
-        '❽有任何建议或者bug反馈，可加入bot测试群：959231211\n'
-        '希望大家用的开心~'
-    )
-    msg = (MessageSegment.text(text), MessageSegment.image(Path('./src/zysx.jpg')))
-    await zysx.send(msg)
+# @zysx.handle()
+# async def _():
+#     text = (
+#         '注意事项\n'
+#         '❶本bot为娱乐性质bot，不支持更新查分器，小黑屋等科技功能\n'
+#         '❷发送dlxhelp查看指令大全\n'
+#         '❸号主随时会顶号与大家聊天解惑，介意勿用（不影响bot使用）\n'
+#         '❹大多数指令不需要@bot，直接输入指令即可（dlxhelp会标注需要@的功能）\n'
+#         '❺想让自己的群拥有bot可以直接加好友，同意之后就可以拉了\n'
+#         '❻QQ空间可查看bot的更新日志\n'
+#         '❼如不需要迪拉熊了，请直接私聊bot说明，不要直接踢\n'
+#         '❽有任何建议或者bug反馈，可加入bot测试群：959231211\n'
+#         '希望大家用的开心~'
+#     )
+#     msg = (MessageSegment.text(text), MessageSegment.image(Path('./src/zysx.jpg')))
+#     await zysx.send(msg)

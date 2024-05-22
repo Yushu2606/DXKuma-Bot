@@ -7,9 +7,10 @@ import shelve
 
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+import requests
 
 from util.DivingFish import get_player_records
-from .GenB50 import generateb50, generate_wcb, songList, charts, ratings
+from .GenB50 import generateb50, generate_wcb, ratings
 from .GenB50new import newgenb50
 from .MusicInfo import music_info, play_info
 
@@ -52,14 +53,14 @@ ratj_off = on_regex(r'^(关闭|禁用)分数推荐$')
 allow_other_on = on_regex(r'^(开启|启用|允许)代查$')
 allow_other_off = on_regex(r'^(关闭|禁用|禁止)代查$')
 
-with open('./src/maimai/aliasList.json', 'r') as f:
-    alias_list = json.load(f)
-
 
 # 根据乐曲别名查询乐曲id列表
 async def find_songid_by_alias(name):
     # 芝士id列表
     matched_ids = []
+
+    with open('./src/maimai/aliasList.json', 'r') as f:
+        alias_list = json.load(f)
 
     # 芝士查找
     for id, info in alias_list.items():
@@ -78,7 +79,9 @@ async def find_songid_by_alias(name):
 
 
 # id查歌
-async def find_song_by_id(song_id):
+async def find_song_by_id(song_id, songList = None):
+    if not songList:
+        songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     for song in songList:
         if song['id'] == song_id:
             return song
@@ -100,6 +103,8 @@ async def records_to_b50(
 
     sd = []
     dx = []
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
+    charts = requests.get('https://www.diving-fish.com/api/maimaidxprober/chart_stats').json()
     for record in b_records:
         song_id = record['song_id']
         is_new = [
@@ -107,7 +112,7 @@ async def records_to_b50(
         ]
         if is_fit:
             fit_diff = get_fit_diff(
-                str(record["song_id"]), record["level_index"], record["ds"]
+                str(record["song_id"]), record["level_index"], record["ds"], charts
             )
             record["ds"] = round(fit_diff, 2)
             record["ra"] = int(
@@ -136,7 +141,7 @@ async def records_to_b50(
     return b35, b15
 
 
-def get_fit_diff(song_id: str, level_index: int, ds: float) -> float:
+def get_fit_diff(song_id: str, level_index: int, ds: float, charts) -> float:
     if song_id not in charts["charts"]:
         return ds
     level_data = charts["charts"][song_id][level_index]
@@ -495,7 +500,6 @@ async def _(event: GroupMessageEvent):
             )
         )
     rep_ids = await find_songid_by_alias(song)
-    song_info = await find_song_by_id(song)
     if rep_ids:
         song_id = str(rep_ids[0])
         songinfo = await find_song_by_id(song_id=song_id)
@@ -513,23 +517,24 @@ async def _(event: GroupMessageEvent):
         with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
             file_bytes = file.read()
         await playmp3.send(MessageSegment.record(file_bytes))
-    elif song_info:
-        song_id = song
-        songinfo = await find_song_by_id(song_id=song_id)
-        songname = songinfo['title']
-        await playmp3.send(
-            MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')
-        )
-        with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
-            file_bytes = file.read()
-        await playmp3.send(MessageSegment.record(file_bytes))
     else:
-        await playmp3.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+        songinfo = await find_song_by_id(song)
+        if songinfo:
+            song_id = song
+            songname = songinfo['title']
+            await playmp3.send(
+                MessageSegment.text(f'迪拉熊找到了~\n正在播放{song_id}.{songname}')
             )
-        )
+            with open(f'./src/maimai/mp3/{song_id}.mp3', 'rb') as file:
+                file_bytes = file.read()
+            await playmp3.send(MessageSegment.record(file_bytes))
+        else:
+            await playmp3.send(
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+                )
+            )
 
 
 @randomsong.handle()
@@ -557,6 +562,7 @@ async def _(event: GroupMessageEvent):
     if '.' in level:
         s_type = 'ds'
     s_songs = []
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     for song in songList:
         song_id = song['id']
         s_list = song[s_type]
@@ -580,6 +586,7 @@ async def _(event: GroupMessageEvent):
 @maiwhat.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
+    songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
     song = random.choice(songList)
     song_id = song['id']
     img = await music_info(song_id=song_id, qq=qq)
@@ -619,8 +626,9 @@ async def _(event: GroupMessageEvent):
             )
         else:
             output_lst = f'迪拉熊找到的 {name} 结果如下：'
+            songList = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
             for song_id in rep_ids:
-                song_info = await find_song_by_id(song_id)
+                song_info = await find_song_by_id(song_id, songList)
                 if song_info:
                     song_title = song_info["title"]
                     output_lst += f"\n{song_id} - {song_title}"
@@ -633,6 +641,9 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     msg = str(event.get_message())
     song_id = re.search(r'\d+', msg).group(0)
+
+    with open('./src/maimai/aliasList.json', 'r') as f:
+        alias_list = json.load(f)
     alias = alias_list.get(song_id, None)
     if not alias:
         msg = (
@@ -656,6 +667,9 @@ async def _(event: GroupMessageEvent):
     args = re.search(r'^添加别名 ?(\d+) ?(.+)$', msg)
     song_id = args.group(1)
     alias_name = args.group(2)
+
+    with open('./src/maimai/aliasList.json', 'r') as f:
+        alias_list = json.load(f)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
         msg = MessageSegment.text(
@@ -681,6 +695,9 @@ async def _(event: GroupMessageEvent):
     args = re.search(r'^删除别名 ?(\d+) ?(.+)$', msg)
     song_id = args.group(1)
     alias_name = args.group(2)
+
+    with open('./src/maimai/aliasList.json', 'r') as f:
+        alias_list = json.load(f)
     song_alias = alias_list.get(song_id, None)
     if not song_alias:
         msg = MessageSegment.text(
