@@ -11,7 +11,7 @@ from nonebot.message import run_postprocessor
 @run_postprocessor
 async def _(event: Event, matcher: Matcher, exception: Optional[Exception]):
     if not exception or (
-        isinstance(exception, ActionFailed) and exception.info["retcode"] == 200
+            isinstance(exception, ActionFailed) and exception.info["retcode"] == 200
     ):
         return
     bot = get_bot()

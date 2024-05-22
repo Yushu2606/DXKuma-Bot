@@ -1,7 +1,10 @@
 from pathlib import Path
 
 from nonebot import on_notice, Bot
-from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent
+from nonebot.adapters.onebot.v11 import (
+    GroupIncreaseNoticeEvent,
+    GroupDecreaseNoticeEvent,
+)
 from nonebot.adapters.onebot.v11 import MessageSegment
 
 
@@ -21,23 +24,20 @@ groupDecrease = on_notice(rule=is_group_decrease)
 async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     qq = event.get_user_id()
     group_id = event.group_id
-    user_info = await bot.get_stranger_info(user_id=int(qq), no_cache=False)
-    if user_info:
-        user_name = user_info['nickname']
-    else:
-        user_name = "新人"
-    msg = (
-        MessageSegment.text(
-            f'欢迎{user_name}（{qq}）加入本群，发送dlxhelp和迪拉熊一起玩吧~'
-        ),
-        MessageSegment.image(Path('./src/increase.png')),
-    )
+    user_name = await bot.get_stranger_info(user_id=int(qq), no_cache=False)["nickname"]
     if group_id == 967611986:
         msg = (
             MessageSegment.text(
-                f'恭喜{user_name}（{qq}）发现了迪拉熊宝藏地带，发送dlxhelp试一下吧~'
+                f"恭喜{user_name}（{qq}）发现了迪拉熊宝藏地带，发送dlxhelp试一下吧~"
             ),
-            MessageSegment.image(Path('./src/increase.png')),
+            MessageSegment.image(Path("./src/increase.png")),
+        )
+    else:
+        msg = (
+            MessageSegment.text(
+                f"欢迎{user_name}（{qq}）加入本群，发送dlxhelp和迪拉熊一起玩吧~"
+            ),
+            MessageSegment.image(Path("./src/increase.png")),
         )
     await groupIncrease.finish(msg)
 
@@ -46,16 +46,15 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
 async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     qq = event.get_user_id()
     group_id = event.group_id
-    user_name = await bot.get_stranger_info(user_id=int(qq), no_cache=False)[
-        'nickname'
-    ]
-    msg = (
-        MessageSegment.text(f'{user_name}（{qq}）离开了迪拉熊QAQ'),
-        MessageSegment.image(Path('./src/decrease.png')),
-    )
+    user_name = await bot.get_stranger_info(user_id=int(qq), no_cache=False)["nickname"]
     if group_id == 967611986:
         msg = (
-            MessageSegment.text(f'很遗憾，{user_name}（{qq}）离开了迪拉熊的小窝QAQ'),
-            MessageSegment.image(Path('./src/decrease.png')),
+            MessageSegment.text(f"很遗憾，{user_name}（{qq}）离开了迪拉熊的小窝QAQ"),
+            MessageSegment.image(Path("./src/decrease.png")),
+        )
+    else:
+        msg = (
+            MessageSegment.text(f"{user_name}（{qq}）离开了迪拉熊QAQ"),
+            MessageSegment.image(Path("./src/decrease.png")),
         )
     await groupDecrease.finish(msg)

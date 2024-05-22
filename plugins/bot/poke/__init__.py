@@ -4,16 +4,9 @@ from pathlib import Path
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageSegment
 
-# def is_current_poke(event: PokeNotifyEvent):
-#     if event.notice_type == 'notify' and event.sub_type == 'poke' and event.target_id in [2689340931]:
-#         return True
-#     else:
-#         return False
+poke = on_regex(r"^(戳屁)(屁|股)$")
 
-# poke = on_notice(priority=10, block=True, rule=is_current_poke)
-poke = on_regex(r'^(戳屁)(屁|股)$')
-
-POKE_PIC = './src/kuma-pic/poke'
+POKE_PIC = Path("./src/kuma-pic/poke")
 
 conversations = {
     1: "不可以戳迪拉熊的屁股啦~",
@@ -34,7 +27,7 @@ async def _():
     weights = [9, 9, 9, 9, 9, 9, 9, 9, 4, 4]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
-    filename = str(ran_number).zfill(2) + '.png'
-    file_path = POKE_PIC + '/' + filename
-    msg = (MessageSegment.text(text), MessageSegment.image(Path(file_path)))
+    filename = str(ran_number).zfill(2) + ".png"
+    file_path = POKE_PIC / filename
+    msg = (MessageSegment.text(text), MessageSegment.image(file_path))
     await poke.finish(msg)
