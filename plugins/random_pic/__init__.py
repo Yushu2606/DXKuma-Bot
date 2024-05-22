@@ -30,7 +30,7 @@ def get_time():
     return result
 
 
-async def update_count(qq: str, type: str):
+def update_count(qq: str, type: str):
     time = get_time()
 
     with shelve.open(DATA_PATH) as count_data:
@@ -47,7 +47,7 @@ async def update_count(qq: str, type: str):
         count_data[qq] = count
 
 
-async def gen_rank(data, time):
+def gen_rank(data, time):
     leaderboard = []
 
     for qq, qq_data in data.items():
@@ -93,7 +93,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     files = os.listdir(path)
     file = random.choice(files)
     pic_path = os.path.join(path, file)
-    await update_count(qq=qq, type=type)
+    update_count(qq=qq, type=type)
     send_msg = await kuma_pic.send(MessageSegment.image(Path(pic_path)))
     if type == "kuma_r18":
         await asyncio.sleep(10)
@@ -106,7 +106,7 @@ async def _(bot: Bot):
     time = get_time()
 
     with shelve.open(DATA_PATH) as count_data:
-        leaderboard = await gen_rank(count_data, time)
+        leaderboard = gen_rank(count_data, time)
 
     leaderboard_output = []
     count = min(len(leaderboard), 5)  # 最多显示5个人，取实际人数和5的较小值
