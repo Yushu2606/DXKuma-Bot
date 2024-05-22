@@ -53,7 +53,7 @@ async def update_count(qq: str, type: str):
             count = count_data.setdefault(qq, {})
         else:
             count = count_data[qq]
-        if time not in count_data[qq]:
+        if time not in count:
             times = count.setdefault(time, {"kuma": 0, "kuma_r18": 0})
         else:
             times = count[time]

@@ -37,8 +37,8 @@ wcb = on_regex(r'^完成表 ?((\d+)(\.\d|\+)?)( ([0-9]+))?$')
 whatSong = on_regex(r'^((search|查歌) ?(.+)|(.+)是什么歌)$')
 aliasSearch = on_regex(r'^(查看别名 ?(\d+)|(\d+)有什么别名)$')
 
-aliasAdd = on_regex(r'^添加别名 ?(\d+) ?(.+)$')
-aliasDel = on_regex(r'^删除别名 ?(\d+) ?(.+)$')
+aliasAdd = on_regex(r'^添?加别名 ?(\d+) ?(.+)$')
+aliasDel = on_regex(r'^删除?别名 ?(\d+) ?(.+)$')
 
 all_plate = on_regex(r'^(plate|看牌子)$')
 all_frame = on_regex(r'^(frame|看底板)$')
@@ -46,11 +46,11 @@ all_frame = on_regex(r'^(frame|看底板)$')
 set_plate = on_regex(r'^(setplate|设置牌子) ?(\d{6})$')
 set_frame = on_regex(r'^(setframe|设置底板) ?(\d{6})$')
 
-ratj_on = on_fullmatch('开启分数推荐')
-ratj_off = on_fullmatch('关闭分数推荐')
+ratj_on = on_regex(r'^(开启|启用)分数推荐$')
+ratj_off = on_regex(r'^(关闭|禁用)分数推荐$')
 
-allow_other_on = on_fullmatch('允许代查')
-allow_other_off = on_fullmatch('禁止代查')
+allow_other_on = on_regex(r'^(开启|启用|允许)代查$')
+allow_other_off = on_regex(r'^(关闭|禁用|禁止)代查$')
 
 with open('./src/maimai/aliasList.json', 'r') as f:
     alias_list = json.load(f)
@@ -778,7 +778,7 @@ async def _(event: GroupMessageEvent):
                 cfg['rating_tj'] = True
             config[qq] = cfg
 
-    msg = MessageSegment.text('迪拉熊已为你开启分数推荐')
+    msg = MessageSegment.text('迪拉熊帮你启用了分数推荐~')
     await ratj_on.send((MessageSegment.reply(event.message_id), msg))
 
 
@@ -796,7 +796,7 @@ async def _(event: GroupMessageEvent):
                 cfg['rating_tj'] = False
             config[qq] = cfg
 
-    msg = MessageSegment.text('迪拉熊已为你关闭分数推荐')
+    msg = MessageSegment.text('迪拉熊帮你禁用了分数推荐~')
     await ratj_off.send((MessageSegment.reply(event.message_id), msg))
 
 
@@ -814,7 +814,7 @@ async def _(event: GroupMessageEvent):
                 cfg['allow_other'] = True
             config[qq] = cfg
 
-    msg = MessageSegment.text('迪拉熊已为你启用代查')
+    msg = MessageSegment.text('迪拉熊帮你启用了代查~')
     await allow_other_on.send((MessageSegment.reply(event.message_id), msg))
 
 
@@ -832,5 +832,5 @@ async def _(event: GroupMessageEvent):
                 cfg['allow_other'] = False
             config[qq] = cfg
 
-    msg = MessageSegment.text('迪拉熊已为你禁用代查')
+    msg = MessageSegment.text('迪拉熊帮你禁用了代查~')
     await allow_other_off.send((MessageSegment.reply(event.message_id), msg))

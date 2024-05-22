@@ -289,7 +289,7 @@ async def music_to_part(
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
-    ttf = ImageFont.truetype(ttf_bold_path, size=32)
+    ttf = ImageFont.truetype(ttf_bold_path, size=30)
     # best序号
     ImageDraw.Draw(partbase).text(
         (308, 245), f'#{index}', font=ttf, fill=(255, 255, 255)
@@ -448,13 +448,17 @@ async def rating_tj(b35max, b35min, b15max, b15min):
 
 async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
     with shelve.open('./data/maimai/b50_config.db') as config:
-        if qq not in config:
+        if qq not in config or 'frame' not in config[qq]:
             frame = '200502'
-            plate = '000101'
-            is_rating_tj = True
         else:
             frame = config[qq]['frame']
+        if qq not in config or 'plate' not in config[qq]:
+            plate = '000101'
+        else:
             plate = config[qq]['plate']
+        if qq not in config or 'ranting_tg' not in config[qq]:
+            is_rating_tj = True
+        else:
             is_rating_tj = config[qq]['rating_tj']
 
     b35_ra = sum(item['ra'] for item in b35)
@@ -563,7 +567,7 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
 
 async def generate_wcb(qq: str, level: str, page: int):
     with shelve.open('./data/maimai/b50_config.db') as config:
-        if qq not in config:
+        if qq not in config or 'plate' not in config[qq]:
             plate = '000101'
         else:
             plate = config[qq]['plate']
