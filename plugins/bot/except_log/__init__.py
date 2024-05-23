@@ -16,7 +16,7 @@ async def _(event: Event, matcher: Matcher, exception: Optional[Exception]):
         return
     bot = get_bot()
     trace = "".join(traceback.format_exception(exception)).replace("\\n", "\n")
-    msg = MessageSegment.text(f"{trace}\n{event.raw_message}")
+    msg = MessageSegment.text(f"{trace}{event.raw_message}")
     await bot.send_msg(group_id=236030263, message=msg)
     feedback = (
         MessageSegment.reply(event.message_id),

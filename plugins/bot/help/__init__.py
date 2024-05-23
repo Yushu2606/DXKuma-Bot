@@ -12,7 +12,7 @@ eatbreak = on_regex(r"^(绝赞给你吃|绝赞请你吃|给你吃绝赞|请你�
 async def _():
     msg = (
         MessageSegment.image(Path("./src/allcommands.png")),
-        MessageSegment.text("bot测试群：959231211"),
+        MessageSegment.text("迪拉熊测试群：959231211"),
     )
     await all_help.send(msg)
 

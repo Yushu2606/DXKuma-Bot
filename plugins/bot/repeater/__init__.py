@@ -35,7 +35,7 @@ def message_preprocess(message: str):
 
 
 @m.handle()
-async def repeater(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     # 检查是否在黑名单中
     if event.raw_message in blacklist:
         return

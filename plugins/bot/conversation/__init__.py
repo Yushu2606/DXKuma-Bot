@@ -27,8 +27,8 @@ conversations = {
 @xc.handle()
 async def _():
     weights = [11, 11, 11, 11, 11, 11, 11, 11, 11, 1]
-    ran_number = random.choices(range(1, 11), weights=weights, k=1)
-    text = conversations[ran_number[0]]
+    ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
+    text = conversations[ran_number]
     if ran_number >= 10:
         pic_path = "./src/可怜.png"
     else:
