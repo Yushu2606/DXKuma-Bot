@@ -296,7 +296,7 @@ def music_to_part(
         (388, 245), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
     )
     # 定数和ra
-    if b_type == "fit50" and ((ds * 10) % 1) <= 0:
+    if b_type == "fit50" and ((ds * 10) % 1) == 0:
         ds_str = f"{ds}0"
     else:
         ds_str = str(ds)

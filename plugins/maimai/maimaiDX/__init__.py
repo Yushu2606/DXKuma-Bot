@@ -115,7 +115,7 @@ def records_to_b50(
             record["ra"] = int(
                 fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
             )
-        if record["ra"] <= 0:
+        if record["ra"] == 0:
             continue
         if is_new[0]:
             dx.append(record)
@@ -392,7 +392,7 @@ async def _(event: GroupMessageEvent):
     level = match.group(2)
     if match.group(5) is not None:
         page = int(match.group(5).strip())
-        if page <= 0:
+        if page == 0:
             page = 1
     else:
         page = 1
@@ -419,7 +419,7 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
             )
         )
-        img = music_info(song_id=song_id, qq=qq)
+        img = await music_info(song_id=song_id, qq=qq)
         msg = MessageSegment.image(img)
     await songinfo.send((MessageSegment.reply(event.message_id), msg))
 
@@ -451,7 +451,7 @@ async def _(event: GroupMessageEvent):
                 ),
             )
         )
-    img = play_info(song_id=str(song_id), qq=qq)
+    img = await play_info(song_id=str(song_id), qq=qq)
     if isinstance(img, str):
         msg = MessageSegment.text(img)
     else:
@@ -551,7 +551,7 @@ async def _(event: GroupMessageEvent):
         msg = MessageSegment.text("迪拉熊没有找到符合条件的乐曲")
         await randomsong.finish((MessageSegment.reply(event.message_id), msg))
     song_id = random.choice(s_songs)
-    img = music_info(song_id=song_id, qq=qq)
+    img = await music_info(song_id=song_id, qq=qq)
     msg = MessageSegment.image(img)
     await randomsong.send((MessageSegment.reply(event.message_id), msg))
 
@@ -564,7 +564,7 @@ async def _(event: GroupMessageEvent):
     ).json()
     song = random.choice(songList)
     song_id = song["id"]
-    img = music_info(song_id=song_id, qq=qq)
+    img = await music_info(song_id=song_id, qq=qq)
     msg = MessageSegment.image(img)
     await maiwhat.send((MessageSegment.reply(event.message_id), msg))
 
@@ -594,7 +594,7 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.text("迪拉熊什么都没找到……"),
             )
         elif len(rep_ids) == 1:
-            img = music_info(rep_ids[0], qq=qq)
+            img = await music_info(rep_ids[0], qq=qq)
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
             output_lst = f"迪拉熊找到的 {name} 结果如下："

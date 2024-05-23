@@ -70,7 +70,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if "涩图" in msg or "色图" in msg or "瑟图" in msg or "st" in msg:
         type = "kuma_r18"
         path = KUMAPIC_R18
-    weight = random.randint(1, 100)
+    weight = random.randint(0, 9)
     if group_id == 967611986:  # 不被限制的 group_id
         pass
     elif type == "kuma_r18" and group_id not in [
@@ -83,7 +83,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         )
         await kuma_pic.finish(msg)
     else:
-        if weight <= 10:
+        if weight == 5:
             if type == "kuma":
                 msg = MessageSegment.text("迪拉熊怕你沉溺其中，所以图就先不发了~")
             elif type == "kuma_r18":

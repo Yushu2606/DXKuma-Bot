@@ -34,7 +34,7 @@ def format_songid(id):
     return id_str.zfill(6)
 
 
-def music_info(song_id: str, qq: str):
+async def music_info(song_id: str, qq: str):
     # 底图
     bg = Image.open("./src/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
@@ -46,7 +46,7 @@ def music_info(song_id: str, qq: str):
     song_data = next((d for d in songList if d["id"] == song_id), None)
 
     # 初始化用户数据
-    data, status = get_player_data(qq)
+    data, status = await get_player_data(qq)
     if status == 200:
         b50_status = True
         b35 = data["charts"]["sd"]
@@ -223,8 +223,8 @@ def music_info(song_id: str, qq: str):
     return img_bytes
 
 
-def play_info(song_id: str, qq: str):
-    data, status = get_player_record(qq, song_id)
+async def play_info(song_id: str, qq: str):
+    data, status = await get_player_record(qq, song_id)
     if status == 400:
         msg = "迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/"
         return msg

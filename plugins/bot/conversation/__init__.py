@@ -29,7 +29,7 @@ async def _():
     weights = [11, 11, 11, 11, 11, 11, 11, 11, 11, 1]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
-    if ran_number >= 10:
+    if ran_number == 10:
         pic_path = "./src/可怜.png"
     else:
         pic_path = "./src/啊.png"
@@ -68,7 +68,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/选不了.png")),
         )
         await roll.finish(msg)
-    if len(set(roll_list)) <= 1:
+    if len(set(roll_list)) == 1:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("就一个选项要让迪拉熊怎么选嘛~"),
