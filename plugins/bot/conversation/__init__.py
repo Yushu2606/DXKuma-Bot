@@ -1,14 +1,19 @@
-import random
+import re
 from pathlib import Path
+from random import SystemRandom
 
-from nonebot import on_regex
+from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent
 from nonebot.rule import to_me
 
-xc = on_regex(r"(香草|想草)(迪拉熊|滴蜡熊|dlx)")
-wxhn = on_regex(r"^(我喜欢你)$", rule=to_me())
-wxhn2 = on_regex(r"^(迪拉熊|dlx)我喜欢你$")
-roll = on_regex(r"^(?:是)(.+)(?:还是(.+))+")
+random = SystemRandom()
+
+xc = on_regex(r"^(香草|想草)(迪拉熊|滴蜡熊|dlx)$", re.RegexFlag.I)
+wxhn = on_regex(r"^(迪拉熊|dlx)我喜欢你$", re.RegexFlag.I)
+wxhn2 = on_fullmatch("我喜欢你", rule=to_me())
+roll = on_regex(r"^(?:是)(.+)(?:还是(.+))+$")
+cum = on_regex(r"^(迪拉熊|dlx)cum$", re.RegexFlag.I)
+cum2 = on_fullmatch("cum", rule=to_me())
 
 conversations = {
     1: "变态！！！",
@@ -75,10 +80,22 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/选不了.png")),
         )
         await roll.finish(msg)
-    output = random.SystemRandom().choice(roll_list)
+    output = random.choice(roll_list)
     msg = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text(f"迪拉熊建议你选择“{output}”呢~"),
         MessageSegment.image(Path("./src/选择.png")),
     )
     await roll.send(msg)
+
+
+@cum.handle()
+async def _():
+    msg = MessageSegment.image(Path("./src/cum.jpg"))
+    await cum.send(msg)
+
+
+@cum2.handle()
+async def _():
+    msg = MessageSegment.image(Path("./src/cum.jpg"))
+    await cum2.send(msg)

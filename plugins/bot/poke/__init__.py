@@ -1,8 +1,10 @@
-import random
 from pathlib import Path
+from random import SystemRandom
 
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageSegment
+
+random = SystemRandom()
 
 poke = on_regex(r"^(戳屁)(屁|股)$")
 

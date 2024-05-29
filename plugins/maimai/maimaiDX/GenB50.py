@@ -1,10 +1,10 @@
 import json
-import random
+import math
 import shelve
 from io import BytesIO
+from random import SystemRandom
 
-import math
-import requests
+import aiohttp
 from PIL import Image, ImageFont, ImageDraw
 
 from util.DivingFish import get_player_records
@@ -18,6 +18,8 @@ from .Config import (
     maimai_Dani,
     maimai_Rating,
 )
+
+random = SystemRandom()
 
 with open(maimai_src / "ratings.json", "r") as f:
     ratings = json.load(f)
@@ -127,11 +129,13 @@ def records_filter(records: list, level: str):
     return filted_records
 
 
-def song_list_filter(level: str):
+async def song_list_filter(level: str):
     filted_song_list = []
-    songList = requests.get(
-        "https://www.diving-fish.com/api/maimaidxprober/music_data"
-    ).json()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/music_data"
+        ) as resp:
+            songList = await resp.json()
     for song in songList:
         for song_level in song["level"]:
             if level == song_level:
@@ -278,10 +282,13 @@ def music_to_part(
     draw.text(text_position, text_content, font=ttf, fill=color)
     ttf = ImageFont.truetype(ttf_heavy_path, size=55)
     draw = ImageDraw.Draw(partbase)
-    if len(achievements[0]) == 3:
-        text_position = (532, 106)
-    else:
-        text_position = (488, 106)
+    match len(achievements[0]):
+        case 3:
+            text_position = (532, 106)
+        case 2:
+            text_position = (488, 106)
+        case 1:
+            text_position = (444, 106)
     text_content = f"{achievements2}"
     draw.text(text_position, text_content, font=ttf, fill=color)
 
@@ -445,7 +452,7 @@ def rating_tj(b35max, b35min, b15max, b15min):
     return ratingbase
 
 
-def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
+async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config or "frame" not in config[qq]:
             frame = "200502"
@@ -487,10 +494,12 @@ def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
     iconbase = resize_image(iconbase, 0.308)
     b50.paste(iconbase, (60, 46), iconbase)
     # 头像
-    icon = requests.get(
-        f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
-    )
-    icon = Image.open(BytesIO(icon.content)).resize((88, 88))
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
+        ) as resp:
+            icon = await resp.read()
+    icon = Image.open(BytesIO(icon)).resize((88, 88))
     b50.paste(icon, (73, 75))
 
     # 姓名框
@@ -548,9 +557,11 @@ def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
         fill=(255, 255, 255),
     )
 
-    songList = requests.get(
-        "https://www.diving-fish.com/api/maimaidxprober/music_data"
-    ).json()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/music_data"
+        ) as resp:
+            songList = await resp.json()
     # b50
     b35 = draw_best(b35, type, songList)
     b15 = draw_best(b15, type, songList)
@@ -573,7 +584,7 @@ async def generate_wcb(qq: str, level: str, page: int):
             plate = config[qq]["plate"]
     data, status = await get_player_records(qq)
     if status == 400:
-        msg = "迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/"
+        msg = "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
         return msg
     records = data["records"]
     nickname = data["nickname"]
@@ -608,10 +619,12 @@ async def generate_wcb(qq: str, level: str, page: int):
     iconbase = resize_image(iconbase, 0.308)
     bg.paste(iconbase, (60, 46), iconbase)
     # 头像
-    icon = requests.get(
-        f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
-    )
-    icon = Image.open(BytesIO(icon.content)).resize((88, 88))
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
+        ) as resp:
+            icon = await resp.read()
+    icon = Image.open(BytesIO(icon)).resize((88, 88))
     bg.paste(icon, (73, 75))
 
     # 姓名框
@@ -658,7 +671,7 @@ async def generate_wcb(qq: str, level: str, page: int):
 
     # 绘制各达成数目
     rate_count = compute_record(records=filted_records)
-    all_count = len(song_list_filter(level))
+    all_count = len(await song_list_filter(level))
     ttf = ImageFont.truetype(font=ttf_bold_path, size=20)
     rate_list = ["sssp", "sss", "ssp", "ss", "sp", "s", "clear"]
     fcfs_list = ["app", "ap", "fcp", "fc", "fsdp", "fsd", "fsp", "fs"]
@@ -694,9 +707,11 @@ async def generate_wcb(qq: str, level: str, page: int):
         (260, 850), page_text, font=ttf, fill=(255, 255, 255), anchor="mm"
     )
 
-    songList = requests.get(
-        "https://www.diving-fish.com/api/maimaidxprober/music_data"
-    ).json()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/music_data"
+        ) as resp:
+            songList = await resp.json()
     # 绘制当前页面的成绩
     records_parts = draw_best(input_records, type="wcb", songList=songList)
     bg.paste(records_parts, (25, 795), records_parts)

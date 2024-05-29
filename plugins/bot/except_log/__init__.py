@@ -21,5 +21,6 @@ async def _(event: Event, matcher: Matcher, exception: Optional[Exception]):
     feedback = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text("迪拉熊出了点问题呢x"),
+        MessageSegment.image("./src/pleasewait.jpg"),
     )
     await matcher.send(feedback)

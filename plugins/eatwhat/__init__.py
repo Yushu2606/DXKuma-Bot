@@ -1,11 +1,13 @@
 import os
-import random
 from pathlib import Path
+from random import SystemRandom
 
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageSegment
 
-sawhat = on_regex(r"^(萨(吃|)什么)$")
+random = SystemRandom()
+
+sawhat = on_regex(r"^萨吃?什么$")
 
 
 @sawhat.handle()

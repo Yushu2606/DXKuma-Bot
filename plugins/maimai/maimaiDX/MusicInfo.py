@@ -1,6 +1,6 @@
 from io import BytesIO
 
-import requests
+import aiohttp
 from PIL import Image, ImageDraw, ImageFont
 
 from util.DivingFish import get_player_data, get_player_record
@@ -39,9 +39,11 @@ async def music_info(song_id: str, qq: str):
     bg = Image.open("./src/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    songList = requests.get(
-        "https://www.diving-fish.com/api/maimaidxprober/music_data"
-    ).json()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/music_data"
+        ) as resp:
+            songList = await resp.json()
     # 获取该曲信息
     song_data = next((d for d in songList if d["id"] == song_id), None)
 
@@ -226,7 +228,7 @@ async def music_info(song_id: str, qq: str):
 async def play_info(song_id: str, qq: str):
     data, status = await get_player_record(qq, song_id)
     if status == 400:
-        msg = "迪拉熊未找到用户信息，可能是没有绑定查分器\n查分器网址：https://www.diving-fish.com/maimaidx/prober/"
+        msg = "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
         return msg
     if status == 200:
         if not data:
@@ -242,9 +244,11 @@ async def play_info(song_id: str, qq: str):
     bg = Image.open("./src/maimai/playinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    songList = requests.get(
-        "https://www.diving-fish.com/api/maimaidxprober/music_data"
-    ).json()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/music_data"
+        ) as resp:
+            songList = await resp.json()
     # 获取该曲信息
     song_data = next((d for d in songList if d["id"] == song_id), None)
 

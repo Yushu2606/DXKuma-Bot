@@ -1,15 +1,18 @@
 import asyncio
 import datetime
 import os
-import random
+import re
 import shelve
 from pathlib import Path
+from random import SystemRandom
 
 from nonebot import on_regex, Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
-kuma_pic = on_regex(r"^((随机)(迪拉|滴蜡)熊|dlx)(涩图|色图|瑟图|st|)$")
-rank = on_regex(r"^(迪拉熊排行榜|dlxlist)$")
+random = SystemRandom()
+
+kuma_pic = on_regex(r"^((随机)(迪拉|滴蜡)熊|dlx)(涩图|色图|瑟图|st)?$", re.RegexFlag.I)
+rank = on_regex(r"^(迪拉熊排行榜|dlxlist)$", re.RegexFlag.I)
 
 KUMAPIC = "./src/kuma-pic/normal"
 KUMAPIC_R18 = "./src/kuma-pic/r18"

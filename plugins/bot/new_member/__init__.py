@@ -39,7 +39,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
             ),
             MessageSegment.image(Path("./src/increase.png")),
         )
-    await groupIncrease.finish(msg)
+    await groupIncrease.send(msg)
 
 
 @groupDecrease.handle()
@@ -57,4 +57,4 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
             MessageSegment.text(f"{user_name}（{qq}）离开了迪拉熊QAQ"),
             MessageSegment.image(Path("./src/decrease.png")),
         )
-    await groupDecrease.finish(msg)
+    await groupDecrease.send(msg)
