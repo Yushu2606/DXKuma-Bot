@@ -1,7 +1,7 @@
 import re
 
 from nonebot import on_message, Bot
-from nonebot.adapters.onebot.v11 import GroupMessageEvent
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, ActionFailed
 
 from . import config
 
@@ -48,7 +48,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
         else:
             message_times[gid] += 1
         if message_times.get(gid) == config.shortest_times:
-            await bot.send_group_msg(
-                group_id=event.group_id, message=raw_message, auto_escape=False
-            )
+            try:
+                await bot.send_group_msg(
+                    group_id=event.group_id, message=raw_message, auto_escape=False
+                )
+            except ActionFailed:
+                pass
         last_message[gid] = message

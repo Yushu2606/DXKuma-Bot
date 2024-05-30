@@ -7,7 +7,6 @@ from random import SystemRandom
 import aiohttp
 from PIL import Image, ImageFont, ImageDraw
 
-from util.DivingFish import get_player_records
 from .Config import (
     font_path,
     maimai_src,
@@ -118,11 +117,32 @@ def compute_record(records: list):
     return output
 
 
-def records_filter(records: list, level: str):
+def records_filter(
+        records: list, level: str | None = None, is_sun: bool = False, is_lock: bool = False
+):
     filted_records = []
     for record in records:
-        if record["level"] == level:
-            filted_records.append(record)
+        if level and record["level"] != level:
+            continue
+        if is_sun:
+            passed = False
+            for _, ra_dt in ratings.items():
+                max_acc = ra_dt[0] * 100
+                min_acc = max_acc - 0.0333
+                if min_acc <= record["achievements"] < max_acc:
+                    passed = True
+            if not passed:
+                continue
+        if is_lock:
+            passed = False
+            for _, ra_dt in ratings.items():
+                min_acc = ra_dt[0] * 100
+                max_acc = min_acc + 0.0333
+                if min_acc <= record["achievements"] < max_acc:
+                    passed = True
+            if not passed:
+                continue
+        filted_records.append(record)
     filted_records = sorted(
         filted_records, key=lambda x: (x["achievements"], x["ra"]), reverse=True
     )
@@ -576,34 +596,35 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
     return img_bytes
 
 
-async def generate_wcb(qq: str, level: str, page: int):
+async def generate_wcb(
+        qq: str,
+        page: int,
+        nickname: str,
+        dani: int,
+        rating: int,
+        input_records,
+        all_page_num,
+        level: str | None = None,
+        rate_count=None,
+):
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config or "plate" not in config[qq]:
             plate = "000101"
         else:
             plate = config[qq]["plate"]
-    data, status = await get_player_records(qq)
-    if status == 400:
-        msg = "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
-        return msg
-    records = data["records"]
-    nickname = data["nickname"]
-    rating = data["rating"]
-    dani = data["additional_rating"]
-    filted_records = records_filter(records=records, level=level)
-    if len(filted_records) == 0:
-        msg = "迪拉熊未找到该难度或未游玩过该难度的歌曲"
-        return msg
+        if not level:
+            if qq not in config or "frame" not in config[qq]:
+                frame = "200502"
+            else:
+                frame = config[qq]["frame"]
 
-    all_page_num = math.ceil(len(filted_records) / 55)
-    if page > all_page_num:
-        msg = f"迪拉熊发现你的 {level} 完成表的最大页码为{all_page_num}"
-        return msg
-    input_records = get_page_records(filted_records, page=page)
     bg = Image.open("./src/maimai/wcb_bg.png")
 
     # 底板
-    frame_path = "./src/maimai/wcb_frame.png"
+    if level:
+        frame_path = "./src/maimai/wcb_frame.png"
+    else:
+        frame_path = maimai_Frame / f"UI_Frame_{frame}.png"
     frame = Image.open(frame_path)
     frame = resize_image(frame, 0.95)
     bg.paste(frame, (45, 45))
@@ -663,42 +684,42 @@ async def generate_wcb(qq: str, level: str, page: int):
     ttf = ImageFont.truetype(ttf_regular_path, size=27)
     ImageDraw.Draw(bg).text((180, 113), nickname, font=ttf, fill=(0, 0, 0))
 
-    # 绘制的完成表的等级贴图
-    level_icon_path = maimai_Static / f"level_icon_{level}.png"
-    level_icon = Image.open(level_icon_path)
-    level_icon = resize_image(level_icon, 0.70)
-    bg.paste(level_icon, (755 - (len(level) * 8), 45), level_icon)
+    if level:
+        # 绘制的完成表的等级贴图
+        level_icon_path = maimai_Static / f"level_icon_{level}.png"
+        level_icon = Image.open(level_icon_path)
+        level_icon = resize_image(level_icon, 0.70)
+        bg.paste(level_icon, (755 - (len(level) * 8), 45), level_icon)
 
-    # 绘制各达成数目
-    rate_count = compute_record(records=filted_records)
-    all_count = len(await song_list_filter(level))
-    ttf = ImageFont.truetype(font=ttf_bold_path, size=20)
-    rate_list = ["sssp", "sss", "ssp", "ss", "sp", "s", "clear"]
-    fcfs_list = ["app", "ap", "fcp", "fc", "fsdp", "fsd", "fsp", "fs"]
-    rate_x = 202
-    rate_y = 264
-    fcfs_x = 203
-    fcfs_y = 362
-    for rate in rate_list:
-        rate_num = rate_count[rate]
-        ImageDraw.Draw(bg).text(
-            (rate_x, rate_y),
-            f"{rate_num}/{all_count}",
-            font=ttf,
-            fill=(255, 255, 255),
-            anchor="mm",
-        )
-        rate_x += 118
-    for fcfs in fcfs_list:
-        fcfs_num = rate_count[fcfs]
-        ImageDraw.Draw(bg).text(
-            (fcfs_x, fcfs_y),
-            f"{fcfs_num}/{all_count}",
-            font=ttf,
-            fill=(255, 255, 255),
-            anchor="mm",
-        )
-        fcfs_x += 102
+        # 绘制各达成数目
+        all_count = len(await song_list_filter(level))
+        ttf = ImageFont.truetype(font=ttf_bold_path, size=20)
+        rate_list = ["sssp", "sss", "ssp", "ss", "sp", "s", "clear"]
+        fcfs_list = ["app", "ap", "fcp", "fc", "fsdp", "fsd", "fsp", "fs"]
+        rate_x = 202
+        rate_y = 264
+        fcfs_x = 203
+        fcfs_y = 362
+        for rate in rate_list:
+            rate_num = rate_count[rate]
+            ImageDraw.Draw(bg).text(
+                (rate_x, rate_y),
+                f"{rate_num}/{all_count}",
+                font=ttf,
+                fill=(255, 255, 255),
+                anchor="mm",
+            )
+            rate_x += 118
+        for fcfs in fcfs_list:
+            fcfs_num = rate_count[fcfs]
+            ImageDraw.Draw(bg).text(
+                (fcfs_x, fcfs_y),
+                f"{fcfs_num}/{all_count}",
+                font=ttf,
+                fill=(255, 255, 255),
+                anchor="mm",
+            )
+            fcfs_x += 102
 
     # 页码
     page_text = f"{page} / {all_page_num}"

@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import shelve
@@ -10,21 +11,28 @@ from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
 from util.DivingFish import get_player_records
-from .GenB50 import generateb50, generate_wcb, ratings
+from .GenB50 import (
+    compute_record,
+    generateb50,
+    generate_wcb,
+    get_page_records,
+    ratings,
+    records_filter,
+)
 from .MusicInfo import music_info, play_info
 
 random = SystemRandom()
 
 best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-fit50 = on_regex(r"^dlxfit( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 rate50 = on_regex(
-    r"^dlxr(ate)?( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+)\] ?)?$",
+    r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+)\] ?)?$",
     re.RegexFlag.I,
 )
-ap50 = on_regex(r"^dlxap( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-fc50 = on_regex(r"^dlxfc( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-sun50 = on_regex(r"^dlx([sc]un|寸)( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-lock50 = on_regex(r"^dlx(l(ock)?|锁|🔒)( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+ap50 = on_regex(r"^dlxap(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+fc50 = on_regex(r"^dlxfc(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( ?(\d+?))?$", re.RegexFlag.I)
+locklist = on_regex(r"^dlx(l(ock)?|suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
 
 songinfo = on_regex(r"^id ?(\d+)$", re.RegexFlag.I)
 playinfo = on_regex(r"^info ?(.+)$", re.RegexFlag.I)
@@ -32,7 +40,7 @@ playmp3 = on_regex(r"^dlx点歌 ?(.+)$", re.RegexFlag.I)
 randomsong = on_regex(r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?$")
 maiwhat = on_fullmatch("mai什么")
 
-wcb = on_regex(r"^完成表 ?((\d+)(\.\d|\+)?)( ([0-9]+))?$")
+wcb = on_regex(r"^(dlx)?完成表 ?((\d+)(\.\d|\+)?)( (\d+))?$")
 
 whatSong = on_regex(r"^((search|查歌) ?(.+)|(.+)是什么歌)$", re.RegexFlag.I)
 aliasSearch = on_regex(r"^(查看别名 ?(\d+)|(\d+)有什么别名)$")
@@ -98,8 +106,6 @@ async def records_to_b50(
         fc_rules: list | None = None,
         rate_rules: list | None = None,
         is_fit: bool = False,
-        is_sun: bool = False,
-        is_lock: bool = False,
 ):
     sd = []
     dx = []
@@ -118,24 +124,6 @@ async def records_to_b50(
             continue
         if rate_rules and record["rate"] not in rate_rules:
             continue
-        if is_sun:
-            passed = False
-            for _, ra_dt in ratings.items():
-                max_acc = ra_dt[0] * 100
-                min_acc = max_acc - (0.01 if max_acc % 1 != 0 else 0.1)
-                if min_acc <= record["achievements"] < max_acc:
-                    passed = True
-            if not passed:
-                continue
-        if is_lock:
-            passed = False
-            for _, ra_dt in ratings.items():
-                min_acc = ra_dt[0] * 100
-                max_acc = min_acc + 0.01
-                if min_acc <= record["achievements"] < max_acc:
-                    passed = True
-            if not passed:
-                continue
         song_id = record["song_id"]
         is_new = [
             d["basic_info"]["is_new"] for d in songList if d["id"] == str(song_id)
@@ -214,27 +202,33 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await best50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        b35, b15 = await records_to_b50(records)
-        await best50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type="b50"
+        await best50.finish(msg)
+    records = data["records"]
+    if not records:
+        if match:
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await best50.finish((MessageSegment.reply(event.message_id), msg))
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    b35, b15 = await records_to_b50(records)
+    await best50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    )
+    img = await generateb50(
+        b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type="b50"
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await best50.send(msg)
 
 
@@ -267,33 +261,39 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await ap50.finish((MessageSegment.reply(event.message_id), msg))
-        ap35, ap15 = await records_to_b50(records, ["ap", "app"])
-        if not ap35 and not ap15:
-            if match:
-                msg = MessageSegment.text("他还没有全完美任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有全完美任何一个谱面呢~")
-            await ap50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        await ap50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=ap35, b15=ap15, nickname=nickname, qq=target_qq, dani=dani, type="ap50"
+        await ap50.finish(msg)
+    records = data["records"]
+    if not records:
+        if match:
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await ap50.finish((MessageSegment.reply(event.message_id), msg))
+    ap35, ap15 = await records_to_b50(records, ["ap", "app"])
+    if not ap35 and not ap15:
+        if match:
+            msg = MessageSegment.text("他还没有全完美任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有全完美任何一个谱面呢~")
+        await ap50.finish((MessageSegment.reply(event.message_id), msg))
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    await ap50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    )
+    img = await generateb50(
+        b35=ap35, b15=ap15, nickname=nickname, qq=target_qq, dani=dani, type="ap50"
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await ap50.send(msg)
 
 
@@ -326,33 +326,39 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await fc50.finish((MessageSegment.reply(event.message_id), msg))
-        fc35, fc15 = await records_to_b50(records, ["fc", "fcp"])
-        if not fc35 and not fc15:
-            if match:
-                msg = MessageSegment.text("他还没有全连任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有全连任何一个谱面呢~")
-            await fc50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        await fc50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=fc35, b15=fc15, nickname=nickname, qq=target_qq, dani=dani, type="fc50"
+        await fc50.finish(msg)
+    records = data["records"]
+    if not records:
+        if match:
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await fc50.finish((MessageSegment.reply(event.message_id), msg))
+    fc35, fc15 = await records_to_b50(records, ["fc", "fcp"])
+    if not fc35 and not fc15:
+        if match:
+            msg = MessageSegment.text("他还没有全连任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有全连任何一个谱面呢~")
+        await fc50.finish((MessageSegment.reply(event.message_id), msg))
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    await fc50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    )
+    img = await generateb50(
+        b35=fc35, b15=fc15, nickname=nickname, qq=target_qq, dani=dani, type="fc50"
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await fc50.send(msg)
 
 
@@ -385,27 +391,33 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await fit50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        b35, b15 = await records_to_b50(records, is_fit=True)
-        await fit50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type="fit50"
+        await fit50.finish(msg)
+    records = data["records"]
+    if not records:
+        if match:
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await fit50.finish((MessageSegment.reply(event.message_id), msg))
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    b35, b15 = await records_to_b50(records, is_fit=True)
+    await fit50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    )
+    img = await generateb50(
+        b35=b35, b15=b15, nickname=nickname, qq=target_qq, dani=dani, type="fit50"
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await fit50.send(msg)
 
 
@@ -438,65 +450,62 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await rate50.finish((MessageSegment.reply(event.message_id), msg))
-        msg_text = msg_text.replace("+", "p").lower()
-        rate_rules = re.findall(r"s{1,3}p?|a{1,3}|b{1,3}|[cd]", msg_text)
-        rate35, rate15 = await records_to_b50(records, rate_rules=rate_rules)
-        if not rate35 and not rate15:
-            if match:
-                msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
-            else:
-                msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
-            await rate50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        await rate50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=rate35,
-            b15=rate15,
-            nickname=nickname,
-            qq=target_qq,
-            dani=dani,
-            type="rate50",
+        await rate50.finish(msg)
+    records = data["records"]
+    if not records:
+        if match:
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await rate50.finish((MessageSegment.reply(event.message_id), msg))
+    msg_text = msg_text.replace("+", "p").lower()
+    rate_rules = re.findall(r"s{1,3}p?|a{1,3}|b{1,3}|[cd]", msg_text)
+    rate35, rate15 = await records_to_b50(records, rate_rules=rate_rules)
+    if not rate35 and not rate15:
+        if match:
+            msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
+        else:
+            msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        await rate50.finish((MessageSegment.reply(event.message_id), msg))
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    await rate50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    )
+    img = await generateb50(
+        b35=rate35,
+        b15=rate15,
+        nickname=nickname,
+        qq=target_qq,
+        dani=dani,
+        type="rate50",
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await rate50.send(msg)
 
 
-@sun50.handle()
+@sunlist.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    qq = event.get_user_id()
+    msg = str(event.message)
+    pattern = r"\d+?"
+    match = re.search(pattern, msg)
+    if match:
+        page = int(match.group())
+        if page == 0:
+            page = 1
     else:
-        target_qq = match.group(1)
-        if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await sun50.finish(msg)
-    data, status = await get_player_records(target_qq)
+        page = 1
+    data, status = await get_player_records(qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -504,63 +513,61 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await sun50.finish((MessageSegment.reply(event.message_id), msg))
-        sun35, sun15 = await records_to_b50(records, is_sun=True)
-        if not sun35 and not sun15:
-            if match:
-                msg = MessageSegment.text("他还没有寸任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有寸任何一个谱面呢~")
-            await sun50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        await sun50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=sun35,
-            b15=sun15,
-            nickname=nickname,
-            qq=target_qq,
-            dani=dani,
-            type="sun50",
+        await sunlist.finish(msg)
+    records = data["records"]
+    if not records:
+        msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await sunlist.finish((MessageSegment.reply(event.message_id), msg))
+    filted_records = records_filter(records=records, is_sun=True)
+    if not filted_records:
+        msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        await sunlist.finish((MessageSegment.reply(event.message_id), msg))
+    all_page_num = math.ceil(len(filted_records) / 55)
+    if page > all_page_num:
+        msg = MessageSegment.text(f"迪拉熊发现你的寸止表的最大页码为{all_page_num}")
+        await sunlist.finish((MessageSegment.reply(event.message_id), msg))
+    input_records = get_page_records(filted_records, page=page)
+    nickname = data["nickname"]
+    rating = data["rating"]
+    dani = data["additional_rating"]
+    await sunlist.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
-    await sun50.send(msg)
+    )
+    img = await generate_wcb(
+        qq=qq,
+        page=page,
+        nickname=nickname,
+        dani=dani,
+        rating=rating,
+        input_records=input_records,
+        all_page_num=all_page_num,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await sunlist.send(msg)
 
 
-@lock50.handle()
+@locklist.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    qq = event.get_user_id()
+    msg = str(event.message)
+    pattern = r"\d+?"
+    match = re.search(pattern, msg)
+    if match:
+        page = int(match.group())
+        if page == 0:
+            page = 1
     else:
-        target_qq = match.group(1)
-        if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await lock50.finish(msg)
-    data, status = await get_player_records(target_qq)
+        page = 1
+    data, status = await get_player_records(qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -568,48 +575,55 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status == 200:
-        records = data["records"]
-        if not records:
-            if match:
-                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-            await lock50.finish((MessageSegment.reply(event.message_id), msg))
-        lock35, lock15 = await records_to_b50(records, is_lock=True)
-        if not lock35 and not lock15:
-            if match:
-                msg = MessageSegment.text("他还没有寸任何一个谱面呢~")
-            else:
-                msg = MessageSegment.text("你还没有寸任何一个谱面呢~")
-            await lock50.finish((MessageSegment.reply(event.message_id), msg))
-        nickname = data["nickname"]
-        dani = data["additional_rating"]
-        await lock50.send(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-            )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
         )
-        img = await generateb50(
-            b35=lock35,
-            b15=lock15,
-            nickname=nickname,
-            qq=target_qq,
-            dani=dani,
-            type="lock50",
+        await locklist.finish(msg)
+    records = data["records"]
+    if not records:
+        msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await locklist.finish((MessageSegment.reply(event.message_id), msg))
+    filted_records = records_filter(records=records, is_lock=True)
+    if not filted_records:
+        msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        await locklist.finish((MessageSegment.reply(event.message_id), msg))
+    all_page_num = math.ceil(len(filted_records) / 55)
+    if page > all_page_num:
+        msg = MessageSegment.text(f"迪拉熊发现你的锁血表的最大页码为{all_page_num}")
+        await locklist.finish((MessageSegment.reply(event.message_id), msg))
+    input_records = get_page_records(filted_records, page=page)
+    nickname = data["nickname"]
+    rating = data["rating"]
+    dani = data["additional_rating"]
+    await locklist.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
-        msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
-    await lock50.send(msg)
+    )
+    img = await generate_wcb(
+        qq=qq,
+        page=page,
+        nickname=nickname,
+        dani=dani,
+        rating=rating,
+        input_records=input_records,
+        all_page_num=all_page_num,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await locklist.send(msg)
 
 
 @wcb.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = str(event.message)
-    pattern = r"^(完成表) ?((\d+)(\.\d|\+)?)( ([0-9]+))?"
+    pattern = r"(完成表) ?((\d+)(\.\d|\+)?)( (\d+))?"
     match = re.match(pattern, msg)
-    if match is None:
+    if not match:
         await wcb.finish(
             (
                 MessageSegment.reply(event.message_id),
@@ -617,18 +631,66 @@ async def _(event: GroupMessageEvent):
             )
         )
     level = match.group(2)
-    if match.group(5) is not None:
+    if match.group(5):
         page = int(match.group(5).strip())
         if page == 0:
             page = 1
     else:
         page = 1
-    img = await generate_wcb(qq=qq, level=level, page=page)
-    if isinstance(img, str):
-        msg = MessageSegment.text(img)
-    else:
-        msg = MessageSegment.image(img)
-    await wcb.send((MessageSegment.reply(event.message_id), msg))
+    data, status = await get_player_records(qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+            ),
+        )
+    elif status != 200:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
+        )
+        await wcb.finish(msg)
+    records = data["records"]
+    if not records:
+        msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await wcb.finish((MessageSegment.reply(event.message_id), msg))
+    filted_records = records_filter(records=records, level=level)
+    if len(filted_records) == 0:
+        msg = MessageSegment.text("迪拉熊未找到该难度或未游玩过该难度的歌曲")
+        await wcb.finish((MessageSegment.reply(event.message_id), msg))
+
+    all_page_num = math.ceil(len(filted_records) / 55)
+    if page > all_page_num:
+        msg = MessageSegment.text(
+            f"迪拉熊发现你的 {level} 完成表的最大页码为{all_page_num}"
+        )
+        await wcb.finish((MessageSegment.reply(event.message_id), msg))
+    input_records = get_page_records(filted_records, page=page)
+    nickname = data["nickname"]
+    rating = data["rating"]
+    dani = data["additional_rating"]
+    rate_count = compute_record(records=filted_records)
+    await wcb.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+        )
+    )
+    img = await generate_wcb(
+        qq=qq,
+        level=level,
+        page=page,
+        nickname=nickname,
+        dani=dani,
+        rating=rating,
+        input_records=input_records,
+        rate_count=rate_count,
+        all_page_num=all_page_num,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await wcb.send(msg)
 
 
 @songinfo.handle()
@@ -754,7 +816,7 @@ async def _(event: GroupMessageEvent):
     else:
         level_index = None
     level = match.group(3)
-    if match.group(4) is not None:
+    if match.group(4):
         level += match.group(4)
     s_type = "level"
     if "." in level:
@@ -770,7 +832,7 @@ async def _(event: GroupMessageEvent):
         s_list = song[s_type]
         if s_type == "ds":
             level = float(level)
-        if level_index is not None:
+        if level_index:
             if len(s_list) > level_index:
                 if level == s_list[level_index]:
                     s_songs.append(song_id)

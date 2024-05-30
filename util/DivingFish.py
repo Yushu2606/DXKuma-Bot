@@ -9,12 +9,10 @@ async def get_player_data(qq: str):
         async with session.post(
                 "https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload
         ) as resp:
-            if resp.status == 400:
-                return None, 400
-            if resp.status == 403:
-                return None, 403
-            obj = await resp.json()
-            return obj, 200
+            if resp.status == 200:
+                obj = await resp.json()
+                return obj, 200
+            return None, resp.status
 
 
 async def get_player_records(qq: str):
@@ -26,10 +24,10 @@ async def get_player_records(qq: str):
                 headers=headers,
                 params=payload,
         ) as resp:
-            if resp.status == 400:
-                return None, 400
-            obj = await resp.json()
-            return obj, 200
+            if resp.status == 200:
+                obj = await resp.json()
+                return obj, 200
+            return None, resp.status
 
 
 async def get_player_record(qq: str, music_id):
@@ -41,7 +39,7 @@ async def get_player_record(qq: str, music_id):
                 headers=headers,
                 json=payload,
         ) as resp:
-            if resp.status == 400:
-                return None, 400
-            obj = await resp.json()
-            return obj, 200
+            if resp.status == 200:
+                obj = await resp.json()
+                return obj, 200
+            return None, resp.status

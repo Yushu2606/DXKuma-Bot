@@ -24,7 +24,7 @@ groupDecrease = on_notice(rule=is_group_decrease)
 async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     qq = event.get_user_id()
     group_id = event.group_id
-    user_name = await bot.get_stranger_info(user_id=int(qq), no_cache=False)["nickname"]
+    user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))["nickname"]
     if group_id == 967611986:
         msg = (
             MessageSegment.text(
@@ -46,7 +46,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
 async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     qq = event.get_user_id()
     group_id = event.group_id
-    user_name = await bot.get_stranger_info(user_id=int(qq), no_cache=False)["nickname"]
+    user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))["nickname"]
     if group_id == 967611986:
         msg = (
             MessageSegment.text(f"很遗憾，{user_name}（{qq}）离开了迪拉熊的小窝QAQ"),
