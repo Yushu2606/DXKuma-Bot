@@ -43,3 +43,25 @@ async def get_player_record(qq: str, music_id):
                 obj = await resp.json()
                 return obj, 200
             return None, resp.status
+
+
+async def get_music_data():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/music_data"
+        ) as resp:
+            if resp.status == 200:
+                obj = await resp.json()
+                return obj, 200
+            return None, resp.status
+
+
+async def get_chart_stats():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
+        ) as resp:
+            if resp.status == 200:
+                obj = await resp.json()
+                return obj, 200
+            return None, resp.status

@@ -7,6 +7,7 @@ from random import SystemRandom
 import aiohttp
 from PIL import Image, ImageFont, ImageDraw
 
+from util.DivingFish import get_music_data
 from .Config import (
     font_path,
     maimai_src,
@@ -27,6 +28,16 @@ with open(maimai_src / "ratings.json", "r") as f:
 ttf_bold_path = font_path / "GenSenMaruGothicTW-Bold.ttf"
 ttf_heavy_path = font_path / "GenSenMaruGothicTW-Heavy.ttf"
 ttf_regular_path = font_path / "GenSenMaruGothicTW-Regular.ttf"
+
+
+# id查歌
+def find_song_by_id(song_id, songList):
+    for song in songList:
+        if song["id"] == song_id:
+            return song
+
+    # 如果没有找到对应 id 的歌曲，返回 None
+    return None
 
 
 def resize_image(image, scale):
@@ -117,8 +128,24 @@ def compute_record(records: list):
     return output
 
 
+def get_min_score(notes: list[int]):
+    weight = [1, 2, 3, 1, 5]
+    base_score = 5
+    sum_score = 0
+    for i in range(0, 5):
+        if i == 3 and len(notes) < 5:
+            sum_score += notes[i] * weight[4] * base_score
+            break
+        sum_score += notes[i] * weight[i] * base_score
+    return (1 - ((sum_score - 1) / sum_score)) * 100
+
+
 def records_filter(
-        records: list, level: str | None = None, is_sun: bool = False, is_lock: bool = False
+        records: list,
+        level: str | None = None,
+        is_sun: bool = False,
+        is_lock: bool = False,
+        songList=None,
 ):
     filted_records = []
     for record in records:
@@ -128,7 +155,10 @@ def records_filter(
             passed = False
             for _, ra_dt in ratings.items():
                 max_acc = ra_dt[0] * 100
-                min_acc = max_acc - 0.0333
+                song_data = find_song_by_id(str(record["song_id"]), songList)
+                min_acc = max_acc - get_min_score(
+                    song_data["charts"][record["level_index"]]["notes"]
+                )
                 if min_acc <= record["achievements"] < max_acc:
                     passed = True
             if not passed:
@@ -137,7 +167,10 @@ def records_filter(
             passed = False
             for _, ra_dt in ratings.items():
                 min_acc = ra_dt[0] * 100
-                max_acc = min_acc + 0.0333
+                song_data = find_song_by_id(str(record["song_id"]), songList)
+                max_acc = min_acc + get_min_score(
+                    song_data["charts"][record["level_index"]]["notes"]
+                )
                 if min_acc <= record["achievements"] < max_acc:
                     passed = True
             if not passed:
@@ -149,13 +182,8 @@ def records_filter(
     return filted_records
 
 
-async def song_list_filter(level: str):
+def song_list_filter(level: str, songList):
     filted_song_list = []
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
     for song in songList:
         for song_level in song["level"]:
             if level == song_level:
@@ -474,18 +502,23 @@ def rating_tj(b35max, b35min, b15max, b15min):
 
 async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
     with shelve.open("./data/maimai/b50_config.db") as config:
-        if qq not in config or "frame" not in config[qq]:
+        if qq not in config:
             frame = "200502"
-        else:
-            frame = config[qq]["frame"]
-        if qq not in config or "plate" not in config[qq]:
             plate = "000101"
-        else:
-            plate = config[qq]["plate"]
-        if qq not in config or "ranting_tg" not in config[qq]:
             is_rating_tj = True
         else:
-            is_rating_tj = config[qq]["rating_tj"]
+            if "frame" not in config[qq]:
+                frame = "200502"
+            else:
+                frame = config[qq]["frame"]
+            if "plate" not in config[qq]:
+                plate = "000101"
+            else:
+                plate = config[qq]["plate"]
+            if "rating_tj" not in config[qq]:
+                is_rating_tj = True
+            else:
+                is_rating_tj = config[qq]["rating_tj"]
 
     b35_ra = sum(item["ra"] for item in b35)
     b15_ra = sum(item["ra"] for item in b15)
@@ -577,11 +610,7 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
         fill=(255, 255, 255),
     )
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
+    songList, _ = await get_music_data()
     # b50
     b35 = draw_best(b35, type, songList)
     b15 = draw_best(b15, type, songList)
@@ -604,6 +633,7 @@ async def generate_wcb(
         rating: int,
         input_records,
         all_page_num,
+        songList,
         level: str | None = None,
         rate_count=None,
 ):
@@ -692,7 +722,7 @@ async def generate_wcb(
         bg.paste(level_icon, (755 - (len(level) * 8), 45), level_icon)
 
         # 绘制各达成数目
-        all_count = len(await song_list_filter(level))
+        all_count = len(song_list_filter(level, songList))
         ttf = ImageFont.truetype(font=ttf_bold_path, size=20)
         rate_list = ["sssp", "sss", "ssp", "ss", "sp", "s", "clear"]
         fcfs_list = ["app", "ap", "fcp", "fc", "fsdp", "fsd", "fsp", "fs"]
@@ -728,11 +758,6 @@ async def generate_wcb(
         (260, 850), page_text, font=ttf, fill=(255, 255, 255), anchor="mm"
     )
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
     # 绘制当前页面的成绩
     records_parts = draw_best(input_records, type="wcb", songList=songList)
     bg.paste(records_parts, (25, 795), records_parts)

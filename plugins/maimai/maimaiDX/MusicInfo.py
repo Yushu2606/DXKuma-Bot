@@ -1,9 +1,8 @@
 from io import BytesIO
 
-import aiohttp
 from PIL import Image, ImageDraw, ImageFont
 
-from util.DivingFish import get_player_data, get_player_record
+from util.DivingFish import get_music_data, get_player_data, get_player_record
 from .Config import font_path, maimai_Jacket, maimai_Static
 
 ttf_bold_path = font_path / "GenSenMaruGothicTW-Bold.ttf"
@@ -39,11 +38,7 @@ async def music_info(song_id: str, qq: str):
     bg = Image.open("./src/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
+    songList, _ = await get_music_data()
     # 获取该曲信息
     song_data = next((d for d in songList if d["id"] == song_id), None)
 
@@ -244,11 +239,7 @@ async def play_info(song_id: str, qq: str):
     bg = Image.open("./src/maimai/playinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
+    songList, _ = await get_music_data()
     # 获取该曲信息
     song_data = next((d for d in songList if d["id"] == song_id), None)
 

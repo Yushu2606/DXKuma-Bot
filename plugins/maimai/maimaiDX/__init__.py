@@ -6,11 +6,10 @@ import shelve
 from pathlib import Path
 from random import SystemRandom
 
-import aiohttp
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
-from util.DivingFish import get_player_records
+from util.DivingFish import get_chart_stats, get_music_data, get_player_records
 from .GenB50 import (
     compute_record,
     generateb50,
@@ -18,6 +17,7 @@ from .GenB50 import (
     get_page_records,
     ratings,
     records_filter,
+    find_song_by_id,
 )
 from .MusicInfo import music_info, play_info
 
@@ -32,7 +32,7 @@ rate50 = on_regex(
 ap50 = on_regex(r"^dlxap(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 fc50 = on_regex(r"^dlxfc(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( ?(\d+?))?$", re.RegexFlag.I)
-locklist = on_regex(r"^dlx(l(ock)?|suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
+locklist = on_regex(r"^dlx(suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
 
 songinfo = on_regex(r"^id ?(\d+)$", re.RegexFlag.I)
 playinfo = on_regex(r"^info ?(.+)$", re.RegexFlag.I)
@@ -74,31 +74,20 @@ def find_songid_by_alias(name):
         if (
                 name in info["Alias"]
                 or name in info["Name"]
-                or str(name).lower() == str(info["Name"]).lower()
+                or str(name).lower() in str(info["Name"]).lower()
         ):
             matched_ids.append(id)
+            continue
+        for alias in info["Alias"]:
+            if name in alias or str(name).lower() in str(alias).lower():
+                matched_ids.append(id)
+                break
 
     # 芝士排序
     sorted_matched_ids = sorted(matched_ids, key=int)
 
     # 芝士输出
     return sorted_matched_ids
-
-
-# id查歌
-async def find_song_by_id(song_id, songList=None):
-    if not songList:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    "https://www.diving-fish.com/api/maimaidxprober/music_data"
-            ) as resp:
-                songList = await resp.json()
-    for song in songList:
-        if song["id"] == song_id:
-            return song
-
-    # 如果没有找到对应 id 的歌曲，返回 None
-    return None
 
 
 async def records_to_b50(
@@ -109,16 +98,8 @@ async def records_to_b50(
 ):
     sd = []
     dx = []
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
-        ) as resp:
-            charts = await resp.json()
+    songList, _ = await get_music_data()
+    charts, _ = await get_chart_stats()
     for record in records:
         if fc_rules and record["fc"] not in fc_rules:
             continue
@@ -202,7 +183,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -261,7 +242,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -326,7 +307,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -391,7 +372,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -450,7 +431,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -513,7 +494,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -524,7 +505,8 @@ async def _(event: GroupMessageEvent):
     if not records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
-    filted_records = records_filter(records=records, is_sun=True)
+    songList, _ = await get_music_data()
+    filted_records = records_filter(records=records, is_sun=True, songList=songList)
     if not filted_records:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
@@ -550,6 +532,7 @@ async def _(event: GroupMessageEvent):
         rating=rating,
         input_records=input_records,
         all_page_num=all_page_num,
+        songList=songList,
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await sunlist.send(msg)
@@ -575,7 +558,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -586,7 +569,8 @@ async def _(event: GroupMessageEvent):
     if not records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
-    filted_records = records_filter(records=records, is_lock=True)
+    songList, _ = await get_music_data()
+    filted_records = records_filter(records=records, is_lock=True, songList=songList)
     if not filted_records:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
@@ -612,6 +596,7 @@ async def _(event: GroupMessageEvent):
         rating=rating,
         input_records=input_records,
         all_page_num=all_page_num,
+        songList=songList,
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await locklist.send(msg)
@@ -645,7 +630,7 @@ async def _(event: GroupMessageEvent):
                 "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
             ),
         )
-    elif status != 200:
+    elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
@@ -667,6 +652,7 @@ async def _(event: GroupMessageEvent):
             f"迪拉熊发现你的 {level} 完成表的最大页码为{all_page_num}"
         )
         await wcb.finish((MessageSegment.reply(event.message_id), msg))
+    songList, _ = await get_music_data()
     input_records = get_page_records(filted_records, page=page)
     nickname = data["nickname"]
     rating = data["rating"]
@@ -688,6 +674,7 @@ async def _(event: GroupMessageEvent):
         input_records=input_records,
         rate_count=rate_count,
         all_page_num=all_page_num,
+        songList=songList,
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await wcb.send(msg)
@@ -698,7 +685,8 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = str(event.get_message())
     song_id = re.search(r"\d+", msg).group(0)
-    song_info = await find_song_by_id(song_id)
+    songList, _ = await get_music_data()
+    song_info = find_song_by_id(song_id, songList)
     if not song_info:
         msg = MessageSegment.text(f"迪拉熊没找到 {song_id} 对应的乐曲")
     else:
@@ -726,7 +714,8 @@ async def _(event: GroupMessageEvent):
             )
         )
     rep_ids = find_songid_by_alias(song)
-    song_info = await find_song_by_id(song)
+    songList, _ = await get_music_data()
+    song_info = find_song_by_id(song, songList)
     if rep_ids:
         song_id = str(rep_ids[0])
     elif song_info:
@@ -760,9 +749,10 @@ async def _(event: GroupMessageEvent):
             )
         )
     rep_ids = find_songid_by_alias(song)
+    songList, _ = await get_music_data()
     if rep_ids:
         song_id = str(rep_ids[0])
-        songinfo = await find_song_by_id(song_id=song_id)
+        songinfo = find_song_by_id(song_id=song_id, songList=songList)
         if not songinfo:
             await playmp3.finish(
                 (
@@ -778,7 +768,7 @@ async def _(event: GroupMessageEvent):
             file_bytes = file.read()
         await playmp3.send(MessageSegment.record(file_bytes))
     else:
-        songinfo = await find_song_by_id(song)
+        songinfo = find_song_by_id(song, songList)
         if songinfo:
             song_id = song
             songname = songinfo["title"]
@@ -822,11 +812,7 @@ async def _(event: GroupMessageEvent):
     if "." in level:
         s_type = "ds"
     s_songs = []
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
+    songList, _ = await get_music_data()
     for song in songList:
         song_id = song["id"]
         s_list = song[s_type]
@@ -850,11 +836,7 @@ async def _(event: GroupMessageEvent):
 @maiwhat.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            songList = await resp.json()
+    songList, _ = await get_music_data()
     song = random.choice(songList)
     song_id = song["id"]
     img = await music_info(song_id=song_id, qq=qq)
@@ -891,13 +873,9 @@ async def _(event: GroupMessageEvent):
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
             output_lst = f"迪拉熊找到的 {name} 结果如下："
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                        "https://www.diving-fish.com/api/maimaidxprober/music_data"
-                ) as resp:
-                    songList = await resp.json()
+            songList, _ = await get_music_data()
             for song_id in rep_ids:
-                song_info = await find_song_by_id(song_id, songList)
+                song_info = find_song_by_id(song_id, songList)
                 if song_info:
                     song_title = song_info["title"]
                     output_lst += f"\n{song_id} - {song_title}"
