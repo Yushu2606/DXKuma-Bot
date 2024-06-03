@@ -25,13 +25,13 @@ random = SystemRandom()
 
 best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+dxs50 = on_regex(r"^dlxs50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 rate50 = on_regex(
     r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+)\] ?)?$",
     re.RegexFlag.I,
 )
 ap50 = on_regex(r"^dlxap(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 fc50 = on_regex(r"^dlxfc(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-dxs50 = on_regex(r"^dlxdxs(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( ?(\d+?))?$", re.RegexFlag.I)
 locklist = on_regex(r"^dlx(suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
 
@@ -41,7 +41,7 @@ playmp3 = on_regex(r"^dlx点歌 ?(.+)$", re.RegexFlag.I)
 randomsong = on_regex(r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?$")
 maiwhat = on_fullmatch("mai什么")
 
-wcb = on_regex(r"^(dlx)?完成表 ?((\d+)(\.\d|\+)?)( (\d+))?$")
+wcb = on_regex(r"^完成表 ?((\d+)(\.\d|\+)?)( (\d+))?$")
 
 whatSong = on_regex(r"^((search|查歌) ?(.+)|(.+)是什么歌)$", re.RegexFlag.I)
 aliasSearch = on_regex(r"^(查看?别名 ?(\d+)|(\d+)有什么别名)$")
@@ -745,7 +745,7 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = str(event.message)
-    pattern = r"(完成表) ?((\d+)(\.\d|\+)?)( (\d+))?"
+    pattern = r"完成表 ?((\d+)(\.\d|\+)?)( (\d+))?"
     match = re.match(pattern, msg)
     if not match:
         await wcb.finish(
@@ -774,7 +774,10 @@ async def _(event: GroupMessageEvent):
     if not records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await wcb.finish((MessageSegment.reply(event.message_id), msg))
-    level = match.group(2)
+    if match.group(3):
+        level = f"{match.group(2)}{match.group(3)}"
+    else:
+        level = match.group(2)
     filted_records = records_filter(records=records, level=level)
     if len(filted_records) == 0:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
@@ -897,10 +900,13 @@ async def _(event: GroupMessageEvent):
                     other_id += song_id
                     song_info = find_song_by_id(other_id, songList)
                     if song_info:
-                        song_title = song_info["title"]
-                        output_lst += f"\n{song_id}/{other_id}：{song_title}"
-                        rep_ids.remove(other_id)
-                        continue
+                        if other_id not in rep_ids:
+                            song_id = other_id
+                        else:
+                            song_title = song_info["title"]
+                            output_lst += f"\n{song_id}/{other_id}：{song_title}"
+                            rep_ids.remove(other_id)
+                            continue
                 song_info = find_song_by_id(song_id, songList)
                 if song_info:
                     song_title = song_info["title"]
@@ -1079,10 +1085,13 @@ async def _(event: GroupMessageEvent):
                     other_id += song_id
                     song_info = find_song_by_id(other_id, songList)
                     if song_info:
-                        song_title = song_info["title"]
-                        output_lst += f"\n{song_id}/{other_id}：{song_title}"
-                        rep_ids.remove(other_id)
-                        continue
+                        if other_id not in rep_ids:
+                            song_id = other_id
+                        else:
+                            song_title = song_info["title"]
+                            output_lst += f"\n{song_id}/{other_id}：{song_title}"
+                            rep_ids.remove(other_id)
+                            continue
                 song_info = find_song_by_id(song_id, songList)
                 if song_info:
                     song_title = song_info["title"]
