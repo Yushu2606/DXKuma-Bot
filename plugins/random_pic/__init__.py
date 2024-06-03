@@ -11,8 +11,8 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
 random = SystemRandom()
 
-kuma_pic = on_regex(r"^((随机)(迪拉|滴蜡)熊|dlx)(涩图|色图|瑟图|st)?$", re.RegexFlag.I)
-rank = on_regex(r"^(迪拉熊排行榜|dlxlist)$", re.RegexFlag.I)
+kuma_pic = on_regex(r"^(随机迪拉熊|dlx)((涩|色|瑟)图|st)?$", re.RegexFlag.I)
+rank = on_regex(r"^(迪拉熊|dlx)(排行榜|list)$", re.RegexFlag.I)
 
 KUMAPIC = "./src/kuma-pic/normal"
 KUMAPIC_R18 = "./src/kuma-pic/r18"
@@ -99,8 +99,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     update_count(qq=qq, type=type)
     send_msg = await kuma_pic.send(MessageSegment.image(Path(pic_path)))
     if type == "kuma_r18":
-        await asyncio.sleep(10)
         msg_id = send_msg["message_id"]
+        await asyncio.sleep(10)
         await bot.delete_msg(message_id=msg_id)
 
 
@@ -117,7 +117,7 @@ async def _(bot: Bot):
         user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
             "nickname"
         ]
-        rank_str = f"{i}. {user_name} - {total_count}"
+        rank_str = f"{i}. {user_name}：{total_count}"
         leaderboard_output.append(rank_str)
 
     msg = "\n".join(leaderboard_output)

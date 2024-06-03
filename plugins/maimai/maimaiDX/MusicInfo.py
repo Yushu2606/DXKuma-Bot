@@ -2,7 +2,7 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
-from util.DivingFish import get_music_data, get_player_data, get_player_record
+from util.DivingFish import get_player_data, get_player_record
 from .Config import font_path, maimai_Jacket, maimai_Static
 
 ttf_bold_path = font_path / "GenSenMaruGothicTW-Bold.ttf"
@@ -33,14 +33,13 @@ def format_songid(id):
     return id_str.zfill(6)
 
 
-async def music_info(song_id: str, qq: str):
+async def music_info(song_id: str, qq: str, songList):
     # 底图
     bg = Image.open("./src/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    songList, _ = await get_music_data()
     # 获取该曲信息
-    song_data = next((d for d in songList if d["id"] == song_id), None)
+    song_data = [d for d in songList if song_id in [d["id"], d["id"][1:]]][0]
 
     # 初始化用户数据
     data, status = await get_player_data(qq)
@@ -105,7 +104,9 @@ async def music_info(song_id: str, qq: str):
     # id
     ttf = ImageFont.truetype(ttf_bold_path, size=28)
     id_position = (239, 876)
-    drawtext.text(id_position, song_id, anchor="mm", font=ttf, fill=(28, 43, 110))
+    drawtext.text(
+        id_position, song_data["id"], anchor="mm", font=ttf, fill=(28, 43, 110)
+    )
     # bpm
     song_bpm = str(song_data["basic_info"]["bpm"])
     bpm_position = (341, 876)
@@ -220,7 +221,7 @@ async def music_info(song_id: str, qq: str):
     return img_bytes
 
 
-async def play_info(song_id: str, qq: str):
+async def play_info(song_id: str, qq: str, songList):
     data, status = await get_player_record(qq, song_id)
     if status == 400:
         msg = "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
@@ -239,9 +240,8 @@ async def play_info(song_id: str, qq: str):
     bg = Image.open("./src/maimai/playinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    songList, _ = await get_music_data()
     # 获取该曲信息
-    song_data = next((d for d in songList if d["id"] == song_id), None)
+    song_data = [d for d in songList if song_id in [d["id"], d["id"][1:]]][0]
 
     # 歌曲封面
     cover_id = format_songid(song_id)
@@ -297,7 +297,9 @@ async def play_info(song_id: str, qq: str):
     # id
     ttf = ImageFont.truetype(ttf_bold_path, size=28)
     id_position = (239, 876)
-    drawtext.text(id_position, song_id, anchor="mm", font=ttf, fill=(28, 43, 110))
+    drawtext.text(
+        id_position, song_data["id"], anchor="mm", font=ttf, fill=(28, 43, 110)
+    )
     # bpm
     song_bpm = str(song_data["basic_info"]["bpm"])
     bpm_position = (341, 876)

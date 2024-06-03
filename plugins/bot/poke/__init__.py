@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11 import MessageSegment
 
 random = SystemRandom()
 
-poke = on_regex(r"^(戳屁)(屁|股)$")
+poke = on_regex(r"^戳屁(屁|股)$")
 
 POKE_PIC = Path("./src/kuma-pic/poke")
 

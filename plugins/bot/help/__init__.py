@@ -5,8 +5,8 @@ from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent
 from nonebot.rule import to_me
 
-all_help = on_regex(r"(dlxhelp|迪拉熊指令|迪拉熊帮助|指令大全)$", re.RegexFlag.I)
-eatbreak = on_regex(r"^(绝赞给你吃|绝赞请你吃|给你吃绝赞|请你吃绝赞)$", rule=to_me())
+all_help = on_regex(r"^((迪拉熊|dlx)(help|指令|帮助)|指令大全)$", re.RegexFlag.I)
+eatbreak = on_regex(r"^(绝赞(给|请)你吃|(给|请)你吃绝赞)$", rule=to_me())
 
 
 @all_help.handle()

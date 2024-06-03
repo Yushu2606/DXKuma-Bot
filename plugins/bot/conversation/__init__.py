@@ -8,12 +8,11 @@ from nonebot.rule import to_me
 
 random = SystemRandom()
 
-xc = on_regex(r"^(香草|想草)(迪拉熊|滴蜡熊|dlx)$", re.RegexFlag.I)
+xc = on_regex(r"^(香草|想草)(迪拉熊|dlx)$", re.RegexFlag.I)
 wxhn = on_regex(r"^(迪拉熊|dlx)我喜欢你$", re.RegexFlag.I)
 wxhn2 = on_fullmatch("我喜欢你", rule=to_me())
-roll = on_regex(r"^(?:是)(.+)(?:还是(.+))+$")
-cum = on_regex(r"^(迪拉熊|dlx)cum$", re.RegexFlag.I)
-cum2 = on_fullmatch("cum", rule=to_me())
+roll = on_regex(r"^(?:.*?是)(.+)(?:还是(.+))+$", rule=to_me())
+cum = on_regex(r"dlxcum", re.RegexFlag.I)
 
 conversations = {
     1: "变态！！！",
@@ -64,8 +63,8 @@ async def _(event: GroupMessageEvent):
 
 @roll.handle()
 async def _(event: GroupMessageEvent):
-    text = str(event.raw_message)
-    roll_list = text[1:].split("还是")
+    text = event.raw_message
+    roll_list = re.search(r"^(?:.*?是)(.+)$", text).group(1).split("还是")
     if not roll_list:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -91,11 +90,8 @@ async def _(event: GroupMessageEvent):
 
 @cum.handle()
 async def _():
+    weight = random.randint(0, 4)
+    if weight != 2:
+        return
     msg = MessageSegment.image(Path("./src/cum.jpg"))
     await cum.send(msg)
-
-
-@cum2.handle()
-async def _():
-    msg = MessageSegment.image(Path("./src/cum.jpg"))
-    await cum2.send(msg)

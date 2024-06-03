@@ -15,7 +15,7 @@ async def _():
     path = "./src/saliya"
     files = os.listdir(path)
     file = random.choice(files)
-    name, price = str(file).split("-")
+    name, price = file.split("-")
     price = price.replace(".jpeg", "")
     pic_path = os.path.join(path, file)
     msg = (

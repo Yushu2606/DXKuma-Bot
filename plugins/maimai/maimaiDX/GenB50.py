@@ -7,7 +7,6 @@ from random import SystemRandom
 import aiohttp
 from PIL import Image, ImageFont, ImageDraw
 
-from util.DivingFish import get_music_data
 from .Config import (
     font_path,
     maimai_src,
@@ -357,7 +356,7 @@ def music_to_part(
         ds_str = str(ds)
     ImageDraw.Draw(partbase).text((375, 182), f"{ds_str} -> {ra}", font=ttf, fill=color)
     # dx分数和星星
-    song_data = next((d for d in songList if d["id"] == str(song_id)), None)
+    song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
     ImageDraw.Draw(partbase).text(
         (568, 245), f"{dxScore}/{sum_dxscore}", font=ttf, fill=(28, 43, 120)
@@ -500,7 +499,9 @@ def rating_tj(b35max, b35min, b15max, b15min):
     return ratingbase
 
 
-async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: str):
+async def generateb50(
+        b35: list, b15: list, nickname: str, qq, dani: int, type: str, songList
+):
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
             frame = "200502"
@@ -610,7 +611,6 @@ async def generateb50(b35: list, b15: list, nickname: str, qq, dani: int, type: 
         fill=(255, 255, 255),
     )
 
-    songList, _ = await get_music_data()
     # b50
     b35 = draw_best(b35, type, songList)
     b15 = draw_best(b15, type, songList)
