@@ -55,7 +55,7 @@ async def music_info(song_data, qq: str):
     # 绘制标题
     song_title = song_data["title"]
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
-    title_position = (545, 630)
+    title_position = (545, 626)
     text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
     max_width = 1110
     ellipsis = "..."
@@ -78,7 +78,7 @@ async def music_info(song_data, qq: str):
     # 绘制曲师
     song_artist = song_data["basic_info"]["artist"]
     ttf = ImageFont.truetype(ttf_regular_path, size=30)
-    artist_position = (545, 704)
+    artist_position = (545, 694)
     text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
     max_width = 1110
     ellipsis = "..."
@@ -100,28 +100,29 @@ async def music_info(song_data, qq: str):
 
     # id
     ttf = ImageFont.truetype(ttf_bold_path, size=28)
-    id_position = (239, 876)
+    id_position = (239, 872)
     drawtext.text(
         id_position, song_data["id"], anchor="mm", font=ttf, fill=(28, 43, 110)
     )
     # bpm
     song_bpm = str(song_data["basic_info"]["bpm"])
-    bpm_position = (341, 876)
+    bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
     song_genre = song_data["basic_info"]["genre"]
-    genre_position = (544, 876)
+    genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
     song_type = song_data["type"]
     type_path = maimai_Static / f"music_{song_type}.png"
     type = Image.open(type_path)
+    type = resize_image(type, 0.9)
     bg.paste(type, (708, 858), type)
     # version
     song_ver = song_data["basic_info"]["from"]
     song_ver = Image.open(maimai_Static / f"{song_ver}.png")
     song_ver = resize_image(song_ver, 0.8)
-    bg.paste(song_ver, (865, 765), song_ver)
+    bg.paste(song_ver, (860, 768), song_ver)
 
     # 等级
     ttf = ImageFont.truetype(ttf_heavy_path, size=50)
@@ -134,14 +135,14 @@ async def music_info(song_data, qq: str):
         (186, 126, 232),
     ]
     level_x = 395
-    level_y = 1050
+    level_y = 1046
     for i, song_level in enumerate(songs_level):
         if "+" in song_level:
             song_level = song_level.replace("+", "")
             level_label = ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][i]
             plus_path = maimai_Static / f"{level_label}_plus.png"
             plus_icon = Image.open(plus_path)
-            bg.paste(plus_icon, (level_x + 33, level_y - 74), plus_icon)
+            bg.paste(plus_icon, (level_x + 33, level_y - 70), plus_icon)
         level_position = (level_x, level_y)
         drawtext.text(
             level_position, song_level, anchor="mm", font=ttf, fill=level_color[i]
@@ -154,7 +155,7 @@ async def music_info(song_data, qq: str):
     is_new = song_data["basic_info"]["is_new"]
     song_ra = [int(value * 1.005 * 22.4) for value in songs_ds]  # 该ds鸟加的ra值
     ds_x = 395
-    ds_y = 1125
+    ds_y = 1124
     basic_ra = 0
     if b50_status:
         if b35:
@@ -187,7 +188,7 @@ async def music_info(song_data, qq: str):
     song_charts = song_data["charts"]
     notes_x = 395
     for chart in song_charts:
-        notes_y = 1202
+        notes_y = 1200
         notes = chart["notes"]
         if song_type == "SD":
             notes.insert(3, 0)
@@ -204,10 +205,10 @@ async def music_info(song_data, qq: str):
         notes_x += 170
 
     # 谱师
-    ttf = ImageFont.truetype(ttf_bold_path, size=18)
+    ttf = ImageFont.truetype(ttf_bold_path, size=20)
     song_charters = [item["charter"] for item in song_charts[2:]]
     charter_x = 448
-    charter_y = 1796
+    charter_y = 1792
     charter_color = [(192, 33, 56), (103, 20, 141), (186, 126, 232)]
     for i, song_charter in enumerate(song_charters):
         charter_position = (charter_x, charter_y)
@@ -251,7 +252,7 @@ async def play_info(song_data, qq: str):
     # 绘制标题
     song_title = song_data["title"]
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
-    title_position = (545, 630)
+    title_position = (545, 626)
     text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
     max_width = 1110
     ellipsis = "..."
@@ -274,7 +275,7 @@ async def play_info(song_data, qq: str):
     # 绘制曲师
     song_artist = song_data["basic_info"]["artist"]
     ttf = ImageFont.truetype(ttf_regular_path, size=30)
-    artist_position = (545, 704)
+    artist_position = (545, 694)
     text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
     max_width = 1110
     ellipsis = "..."
@@ -296,28 +297,29 @@ async def play_info(song_data, qq: str):
 
     # id
     ttf = ImageFont.truetype(ttf_bold_path, size=28)
-    id_position = (239, 876)
+    id_position = (239, 872)
     drawtext.text(
         id_position, song_data["id"], anchor="mm", font=ttf, fill=(28, 43, 110)
     )
     # bpm
     song_bpm = str(song_data["basic_info"]["bpm"])
-    bpm_position = (341, 876)
+    bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
     song_genre = song_data["basic_info"]["genre"]
-    genre_position = (544, 876)
+    genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
     song_type = song_data["type"]
     type_path = maimai_Static / f"music_{song_type}.png"
     type = Image.open(type_path)
+    type = resize_image(type, 0.9)
     bg.paste(type, (708, 858), type)
     # version
     song_ver = song_data["basic_info"]["from"]
     song_ver = Image.open(maimai_Static / f"{song_ver}.png")
     song_ver = resize_image(song_ver, 0.8)
-    bg.paste(song_ver, (865, 765), song_ver)
+    bg.paste(song_ver, (860, 760), song_ver)
 
     # 绘制成绩
     score_color = [
@@ -329,9 +331,9 @@ async def play_info(song_data, qq: str):
     ]
     for _, play_datum in enumerate(playdata):
         level_x = 229
-        level_y = 1104
+        level_y = 1100
         achieve_x = 471
-        achieve_y = 1107
+        achieve_y = 1102
         rate_x = 646
         rate_y = 1074
         fc_x = 809
@@ -339,7 +341,7 @@ async def play_info(song_data, qq: str):
         fs_x = 895
         fs_y = 1060
         dsra_x = 1047
-        dsra_y = 1104
+        dsra_y = 1102
         plus_x = 262
         plus_y = 1030
         score = play_datum

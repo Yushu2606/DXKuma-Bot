@@ -9,7 +9,7 @@ from nonebot.message import run_postprocessor
 
 @run_postprocessor
 async def _(event: Event, matcher: Matcher, exception: Exception | None):
-    if not exception or exception is NetworkError:
+    if not exception or isinstance(exception, NetworkError):
         return
     bot = get_bot()
     trace = "".join(traceback.format_exception(exception)).replace("\\n", "\n")

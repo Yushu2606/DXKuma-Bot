@@ -91,7 +91,7 @@ ttf_regular_path = font_path / "SourceHanSans-Regular.ttc"
 # id查歌
 def find_song_by_id(song_id, songList):
     for song in songList:
-        if song_id in [song["id"], song["id"][1:]]:
+        if song_id == song["id"]:
             return song
 
     # 如果没有找到对应 id 的歌曲，返回 None
@@ -350,7 +350,7 @@ def music_to_part(
 
     # 歌名
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
-    text_position = (305.4, 16.8)
+    text_position = (306, 14)
     draw = ImageDraw.Draw(partbase)
     text_bbox = draw.textbbox(text_position, title, font=ttf)
     max_width = 750
@@ -378,42 +378,42 @@ def music_to_part(
     achievements = f"{achievements}".split(".")
     achievements1 = f"{achievements[0]}.        %"
     achievements2 = (str(achievements[1]).ljust(4, "0"))[:4]
-    text_position = (375, 90)
+    text_position = (375, 68)
     text_content = f"{achievements1}"
     draw.text(text_position, text_content, font=ttf, fill=color)
     ttf = ImageFont.truetype(ttf_heavy_path, size=55)
     draw = ImageDraw.Draw(partbase)
     match len(achievements[0]):
         case 3:
-            text_position = (532, 106)
+            text_position = (532, 88)
         case 2:
-            text_position = (488, 106)
+            text_position = (488, 88)
         case 1:
-            text_position = (444, 106)
+            text_position = (444, 88)
     text_content = f"{achievements2}"
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
-    ttf = ImageFont.truetype(ttf_bold_path, size=30)
+    ttf = ImageFont.truetype(ttf_bold_path, size=32)
     # best序号
     ImageDraw.Draw(partbase).text(
-        (308, 245), f"#{index}", font=ttf, fill=(255, 255, 255)
+        (308, 236), f"#{index}", font=ttf, fill=(255, 255, 255)
     )
     # 乐曲ID
     ImageDraw.Draw(partbase).text(
-        (388, 245), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
+        (388, 236), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
     )
     # 定数和ra
     if b_type == "fit50" and ((ds * 10) % 1) == 0:
         ds_str = f"{ds}0"
     else:
         ds_str = str(ds)
-    ImageDraw.Draw(partbase).text((375, 182), f"{ds_str} -> {ra}", font=ttf, fill=color)
+    ImageDraw.Draw(partbase).text((375, 172), f"{ds_str} -> {ra}", font=ttf, fill=color)
     # dx分数和星星
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
     ImageDraw.Draw(partbase).text(
-        (568, 245), f"{dxScore}/{sum_dxscore}", font=ttf, fill=(28, 43, 120)
+        (568, 236), f"{dxScore}/{sum_dxscore}", font=ttf, fill=(28, 43, 120)
     )
     star_level, stars = dxscore_proc(dxScore, sum_dxscore)
     if star_level:
@@ -509,46 +509,46 @@ def rating_tj(b35max, b35min, b15max, b15min):
     b15min_diff = random.randint(1, 5)
 
     draw = ImageDraw.Draw(ratingbase)
-    draw.text((155, 72), font=ttf, text=f"+{str(b35max_diff)}", fill=(255, 255, 255))
-    draw.text((155, 112), font=ttf, text=f"+{str(b35min_diff)}", fill=(255, 255, 255))
-    draw.text((155, 178), font=ttf, text=f"+{str(b15max_diff)}", fill=(255, 255, 255))
-    draw.text((155, 218), font=ttf, text=f"+{str(b15min_diff)}", fill=(255, 255, 255))
+    draw.text((155, 64), font=ttf, text=f"+{str(b35max_diff)}", fill=(255, 255, 255))
+    draw.text((155, 104), font=ttf, text=f"+{str(b35min_diff)}", fill=(255, 255, 255))
+    draw.text((155, 170), font=ttf, text=f"+{str(b15max_diff)}", fill=(255, 255, 255))
+    draw.text((155, 210), font=ttf, text=f"+{str(b15min_diff)}", fill=(255, 255, 255))
 
     b35max_ra_sssp = rating_proc(b35max, "sssp")
     b35min_ra_sssp = rating_proc((b35min + b35min_diff), "sssp")
     b15max_ra_sssp = rating_proc(b15max, "sssp")
     b15min_ra_sssp = rating_proc((b15min + b15min_diff), "sssp")
-    draw.text((270, 72), font=ttf, text=str(b35max_ra_sssp), fill=(255, 255, 255))
-    draw.text((270, 112), font=ttf, text=str(b35min_ra_sssp), fill=(255, 255, 255))
-    draw.text((270, 178), font=ttf, text=str(b15max_ra_sssp), fill=(255, 255, 255))
-    draw.text((270, 218), font=ttf, text=str(b15min_ra_sssp), fill=(255, 255, 255))
+    draw.text((270, 64), font=ttf, text=str(b35max_ra_sssp), fill=(255, 255, 255))
+    draw.text((270, 104), font=ttf, text=str(b35min_ra_sssp), fill=(255, 255, 255))
+    draw.text((270, 170), font=ttf, text=str(b15max_ra_sssp), fill=(255, 255, 255))
+    draw.text((270, 210), font=ttf, text=str(b15min_ra_sssp), fill=(255, 255, 255))
 
     b35max_ra_sss = rating_proc(b35max, "sss")
     b35min_ra_sss = rating_proc((b35min + b35min_diff), "sss")
     b15max_ra_sss = rating_proc(b15max, "sss")
     b15min_ra_sss = rating_proc((b15min + b15min_diff), "sss")
-    draw.text((390, 72), font=ttf, text=str(b35max_ra_sss), fill=(255, 255, 255))
-    draw.text((390, 112), font=ttf, text=str(b35min_ra_sss), fill=(255, 255, 255))
-    draw.text((390, 178), font=ttf, text=str(b15max_ra_sss), fill=(255, 255, 255))
-    draw.text((390, 218), font=ttf, text=str(b15min_ra_sss), fill=(255, 255, 255))
+    draw.text((390, 64), font=ttf, text=str(b35max_ra_sss), fill=(255, 255, 255))
+    draw.text((390, 104), font=ttf, text=str(b35min_ra_sss), fill=(255, 255, 255))
+    draw.text((390, 170), font=ttf, text=str(b15max_ra_sss), fill=(255, 255, 255))
+    draw.text((390, 210), font=ttf, text=str(b15min_ra_sss), fill=(255, 255, 255))
 
     b35max_ra_ssp = rating_proc(b35max, "ssp")
     b35min_ra_ssp = rating_proc((b35min + b35min_diff), "ssp")
     b15max_ra_ssp = rating_proc(b15max, "ssp")
     b15min_ra_ssp = rating_proc((b15min + b15min_diff), "ssp")
-    draw.text((510, 72), font=ttf, text=str(b35max_ra_ssp), fill=(255, 255, 255))
-    draw.text((510, 112), font=ttf, text=str(b35min_ra_ssp), fill=(255, 255, 255))
-    draw.text((510, 178), font=ttf, text=str(b15max_ra_ssp), fill=(255, 255, 255))
-    draw.text((510, 218), font=ttf, text=str(b15min_ra_ssp), fill=(255, 255, 255))
+    draw.text((510, 64), font=ttf, text=str(b35max_ra_ssp), fill=(255, 255, 255))
+    draw.text((510, 104), font=ttf, text=str(b35min_ra_ssp), fill=(255, 255, 255))
+    draw.text((510, 170), font=ttf, text=str(b15max_ra_ssp), fill=(255, 255, 255))
+    draw.text((510, 210), font=ttf, text=str(b15min_ra_ssp), fill=(255, 255, 255))
 
     b35max_ra_ss = rating_proc(b35max, "ss")
     b35min_ra_ss = rating_proc((b35min + b35min_diff), "ss")
     b15max_ra_ss = rating_proc(b15max, "ss")
     b15min_ra_ss = rating_proc((b15min + b15min_diff), "ss")
-    draw.text((630, 72), font=ttf, text=str(b35max_ra_ss), fill=(255, 255, 255))
-    draw.text((630, 112), font=ttf, text=str(b35min_ra_ss), fill=(255, 255, 255))
-    draw.text((630, 178), font=ttf, text=str(b15max_ra_ss), fill=(255, 255, 255))
-    draw.text((630, 218), font=ttf, text=str(b15min_ra_ss), fill=(255, 255, 255))
+    draw.text((630, 64), font=ttf, text=str(b35max_ra_ss), fill=(255, 255, 255))
+    draw.text((630, 104), font=ttf, text=str(b35min_ra_ss), fill=(255, 255, 255))
+    draw.text((630, 170), font=ttf, text=str(b15max_ra_ss), fill=(255, 255, 255))
+    draw.text((630, 210), font=ttf, text=str(b15min_ra_ss), fill=(255, 255, 255))
 
     return ratingbase
 
@@ -653,13 +653,13 @@ async def generateb50(
     b50.paste(num5, (308, 77), num5)
 
     # 名字
-    ttf = ImageFont.truetype(ttf_regular_path, size=27)
-    ImageDraw.Draw(b50).text((180, 113), nickname, font=ttf, fill=(0, 0, 0))
+    ttf = ImageFont.truetype(ttf_regular_path, size=24)
+    ImageDraw.Draw(b50).text((186, 108), nickname, font=ttf, fill=(0, 0, 0))
 
     # rating合计
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
-        (188, 148),
+        (188, 144),
         f"过往版本：{b35_ra} + 现行版本：{b15_ra} = {rating}",
         font=ttf,
         fill=(255, 255, 255),
@@ -765,8 +765,8 @@ async def generate_wcb(
     bg.paste(num5, (308, 77), num5)
 
     # 名字
-    ttf = ImageFont.truetype(ttf_regular_path, size=27)
-    ImageDraw.Draw(bg).text((180, 113), nickname, font=ttf, fill=(0, 0, 0))
+    ttf = ImageFont.truetype(ttf_regular_path, size=24)
+    ImageDraw.Draw(bg).text((186, 108), nickname, font=ttf, fill=(0, 0, 0))
 
     if level:
         # 绘制的完成表的等级贴图
