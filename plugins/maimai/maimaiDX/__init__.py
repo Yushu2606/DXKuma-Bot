@@ -18,6 +18,7 @@ from .GenB50 import (
     ratings,
     records_filter,
     find_song_by_id,
+    format_songid,
 )
 from .MusicInfo import music_info, play_info
 
@@ -126,14 +127,8 @@ async def records_to_b50(
             )
         if is_dxs:
             song_data = find_song_by_id(str(record["song_id"]), songList)
-            record["ra"] = int(
-                record["ds"]
-                * (
-                        record["dxScore"]
-                        / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3)
-                )
-                * get_ra_in(record["rate"])
-            )
+            record["achievements"] = record["dxScore"] / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
+            record["ra"] = int(record["ds"] * record["achievements"] * get_ra_in(record["rate"]) * 0.01)
         if record["ra"] == 0:
             continue
         if is_new[0]:
@@ -181,7 +176,7 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
+            with shelve.open("./data/maimai/b50_config") as config:
                 if (
                         target_qq in config
                         and "allow_other" in config[target_qq]
@@ -254,7 +249,7 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
+            with shelve.open("./data/maimai/b50_config") as config:
                 if (
                         target_qq in config
                         and "allow_other" in config[target_qq]
@@ -327,7 +322,7 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
+            with shelve.open("./data/maimai/b50_config") as config:
                 if (
                         target_qq in config
                         and "allow_other" in config[target_qq]
@@ -400,7 +395,7 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
+            with shelve.open("./data/maimai/b50_config") as config:
                 if (
                         target_qq in config
                         and "allow_other" in config[target_qq]
@@ -473,7 +468,7 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
+            with shelve.open("./data/maimai/b50_config") as config:
                 if (
                         target_qq in config
                         and "allow_other" in config[target_qq]
@@ -548,7 +543,7 @@ async def _(event: GroupMessageEvent):
     else:
         target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config.db") as config:
+            with shelve.open("./data/maimai/b50_config") as config:
                 if (
                         target_qq in config
                         and "allow_other" in config[target_qq]
@@ -839,7 +834,7 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
             )
         )
-        img = await music_info(song_id=song_id, qq=qq, songList=songList)
+        img = await music_info(qq=qq, song_data=song_info)
         msg = MessageSegment.image(img)
     await songinfo.send((MessageSegment.reply(event.message_id), msg))
 
@@ -858,9 +853,7 @@ async def _(event: GroupMessageEvent):
         )
     songList, _ = await get_music_data()
     song_info = find_song_by_id(song, songList)
-    if song_info:
-        song_id = song
-    else:
+    if not song_info:
         rep_ids = await find_songid_by_alias(song, songList)
         if not rep_ids:
             await playinfo.finish(
@@ -871,6 +864,7 @@ async def _(event: GroupMessageEvent):
             )
         elif len(rep_ids) == 1:
             song_id = rep_ids[0]
+            song_info = find_song_by_id(song_id, songList)
             song_id_len = len(song_id)
             if song_id_len < 5:
                 other_id = "1"
@@ -878,16 +872,19 @@ async def _(event: GroupMessageEvent):
                     other_id += "0"
                     song_id_len += 1
                 other_id += song_id
-                song_info = find_song_by_id(other_id, songList)
-                if song_info:
-                    await playinfo.finish(
-                        (
-                            MessageSegment.reply(event.message_id),
-                            MessageSegment.text(
-                                f"迪拉熊发现这首歌有标准与DX差分哦~\n请准确输入乐曲的id（{song_id}/{other_id}）"
-                            ),
+                other_info = find_song_by_id(other_id, songList)
+                if other_info:
+                    if song_info:
+                        await playinfo.finish(
+                            (
+                                MessageSegment.reply(event.message_id),
+                                MessageSegment.text(
+                                    f"迪拉熊发现这首歌有标准与DX差分哦~\n请准确输入乐曲的id（{song_id}/{other_id}）"
+                                ),
+                            )
                         )
-                    )
+                    else:
+                        song_info = other_info
         else:
             output_lst = "迪拉熊找到了~结果有："
             for song_id in rep_ids:
@@ -912,7 +909,7 @@ async def _(event: GroupMessageEvent):
                     song_title = song_info["title"]
                     output_lst += f"\n{song_id}：{song_title}"
             await playinfo.finish(MessageSegment.text(output_lst))
-    img = await play_info(song_id=song_id, qq=qq, songList=songList)
+    img = await play_info(song_data=song_info, qq=qq)
     if isinstance(img, str):
         msg = MessageSegment.text(img)
     else:
@@ -934,7 +931,7 @@ async def _(event: GroupMessageEvent):
     songList, _ = await get_music_data()
     rep_ids = await find_songid_by_alias(song, songList)
     if rep_ids:
-        song_id = rep_ids[0]
+        song_id = rep_ids[0] if len(rep_ids[0]) < 5 else rep_ids[0][1:]
         songinfo = find_song_by_id(song_id=song_id, songList=songList)
         if not songinfo:
             await playmp3.finish(
@@ -945,21 +942,27 @@ async def _(event: GroupMessageEvent):
             )
         songname = songinfo["title"]
         await playmp3.send(
-            MessageSegment.text(f"迪拉熊找到了~\n正在播放{song_id}.{songname}")
+            MessageSegment.text(f"迪拉熊找到了~\n正在播放{songinfo["id"]}.{songname}")
         )
-        with open(f"./src/maimai/mp3/{song_id}.mp3", "rb") as file:
-            file_bytes = file.read()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
+            ) as resp:
+                file_bytes = await resp.read()
         await playmp3.send(MessageSegment.record(file_bytes))
     else:
         songinfo = find_song_by_id(song, songList)
         if songinfo:
-            song_id = song
+            song_id = song if len(song) < 5 else song[1:]
             songname = songinfo["title"]
             await playmp3.send(
-                MessageSegment.text(f"迪拉熊找到了~\n正在播放{song_id}.{songname}")
+                MessageSegment.text(f"迪拉熊找到了~\n正在播放{songinfo["id"]}.{songname}")
             )
-            with open(f"./src/maimai/mp3/{song_id}.mp3", "rb") as file:
-                file_bytes = file.read()
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                        f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
+                ) as resp:
+                    file_bytes = await resp.read()
             await playmp3.send(MessageSegment.record(file_bytes))
         else:
             await playmp3.send(
@@ -997,21 +1000,20 @@ async def _(event: GroupMessageEvent):
     s_songs = []
     songList, _ = await get_music_data()
     for song in songList:
-        song_id = song["id"]
         s_list = song[s_type]
         if s_type == "ds":
             level = float(level)
         if level_index:
             if len(s_list) > level_index:
                 if level == s_list[level_index]:
-                    s_songs.append(song_id)
+                    s_songs.append(song)
         elif level in s_list:
-            s_songs.append(song_id)
+            s_songs.append(song)
     if len(s_songs) == 0:
         msg = MessageSegment.text("迪拉熊好像没找到，换一个试试吧~")
         await randomsong.finish((MessageSegment.reply(event.message_id), msg))
-    song_id = random.choice(s_songs)
-    img = await music_info(song_id=song_id, qq=qq, songList=songList)
+    song = random.choice(s_songs)
+    img = await music_info(song_data=song, qq=qq)
     msg = MessageSegment.image(img)
     await randomsong.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1021,8 +1023,7 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     songList, _ = await get_music_data()
     song = random.choice(songList)
-    song_id = song["id"]
-    img = await music_info(song_id=song_id, qq=qq, songList=songList)
+    img = await music_info(qq=qq, song_data=song)
     msg = MessageSegment.image(img)
     await maiwhat.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1054,6 +1055,7 @@ async def _(event: GroupMessageEvent):
             )
         elif len(rep_ids) == 1:
             song_id = rep_ids[0]
+            song_info = find_song_by_id(song_id, songList)
             song_id_len = len(song_id)
             if song_id_len < 5:
                 other_id = "1"
@@ -1061,17 +1063,20 @@ async def _(event: GroupMessageEvent):
                     other_id += "0"
                     song_id_len += 1
                 other_id += song_id
-                song_info = find_song_by_id(other_id, songList)
-                if song_info:
-                    await whatSong.finish(
-                        (
-                            MessageSegment.reply(event.message_id),
-                            MessageSegment.text(
-                                f"迪拉熊发现这首歌有标准与DX差分哦~\n请准确输入乐曲的id（{song_id}/{other_id}）"
-                            ),
+                other_info = find_song_by_id(other_id, songList)
+                if other_info:
+                    if song_info:
+                        await whatSong.finish(
+                            (
+                                MessageSegment.reply(event.message_id),
+                                MessageSegment.text(
+                                    f"迪拉熊发现这首歌有标准与DX差分哦~\n请准确输入乐曲的id（{song_id}/{other_id}）"
+                                ),
+                            )
                         )
-                    )
-            img = await music_info(song_id, qq=qq, songList=songList)
+                    else:
+                        song_info = other_info
+            img = await music_info(qq=qq, song_data=song_info)
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
             output_lst = "迪拉熊找到了~结果有："
@@ -1157,7 +1162,7 @@ async def _(event: GroupMessageEvent):
     file_name = f"UI_Plate_{id}.png"
     file_path = Path(dir_path) / file_name
     if os.path.exists(file_path):
-        with shelve.open("./data/maimai/b50_config.db") as config:
+        with shelve.open("./data/maimai/b50_config") as config:
             if qq not in config:
                 config.setdefault(qq, {"plate": id})
             else:
@@ -1183,7 +1188,7 @@ async def _(event: GroupMessageEvent):
     file_name = f"UI_Frame_{id}.png"
     file_path = Path(dir_path) / file_name
     if os.path.exists(file_path):
-        with shelve.open("./data/maimai/b50_config.db") as config:
+        with shelve.open("./data/maimai/b50_config") as config:
             if qq not in config:
                 config.setdefault(qq, {"frame": id})
             else:
@@ -1203,7 +1208,7 @@ async def _(event: GroupMessageEvent):
 @ratj_on.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config.db") as config:
+    with shelve.open("./data/maimai/b50_config") as config:
         if qq not in config:
             config.setdefault(qq, {"rating_tj": True})
         else:
@@ -1221,7 +1226,7 @@ async def _(event: GroupMessageEvent):
 @ratj_off.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config.db") as config:
+    with shelve.open("./data/maimai/b50_config") as config:
         if qq not in config:
             config.setdefault(qq, {"rating_tj": False})
         else:
@@ -1239,7 +1244,7 @@ async def _(event: GroupMessageEvent):
 @allow_other_on.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config.db") as config:
+    with shelve.open("./data/maimai/b50_config") as config:
         if qq not in config:
             config.setdefault(qq, {"allow_other": True})
         else:
@@ -1257,7 +1262,7 @@ async def _(event: GroupMessageEvent):
 @allow_other_off.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config.db") as config:
+    with shelve.open("./data/maimai/b50_config") as config:
         if qq not in config:
             config.setdefault(qq, {"allow_other": False})
         else:

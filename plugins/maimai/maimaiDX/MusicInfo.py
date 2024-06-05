@@ -5,9 +5,9 @@ from PIL import Image, ImageDraw, ImageFont
 from util.DivingFish import get_player_data, get_player_record
 from .Config import font_path, maimai_Jacket, maimai_Static
 
-ttf_bold_path = font_path / "GenSenMaruGothicTW-Bold.ttf"
-ttf_heavy_path = font_path / "GenSenMaruGothicTW-Heavy.ttf"
-ttf_regular_path = font_path / "GenSenMaruGothicTW-Regular.ttf"
+ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
+ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
+ttf_regular_path = font_path / "SourceHanSans-Regular.ttc"
 
 
 def resize_image(image, scale):
@@ -33,13 +33,10 @@ def format_songid(id):
     return id_str.zfill(6)
 
 
-async def music_info(song_id: str, qq: str, songList):
+async def music_info(song_data, qq: str):
     # 底图
     bg = Image.open("./src/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
-
-    # 获取该曲信息
-    song_data = [d for d in songList if song_id in [d["id"], d["id"][1:]]][0]
 
     # 初始化用户数据
     data, status = await get_player_data(qq)
@@ -51,7 +48,7 @@ async def music_info(song_id: str, qq: str, songList):
         b50_status = False
 
     # 歌曲封面
-    cover_id = format_songid(song_id)
+    cover_id = format_songid(song_data["id"])
     cover = Image.open(maimai_Jacket / f"UI_Jacket_{cover_id}.png").resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 
@@ -139,6 +136,12 @@ async def music_info(song_id: str, qq: str, songList):
     level_x = 395
     level_y = 1050
     for i, song_level in enumerate(songs_level):
+        if "+" in song_level:
+            song_level = song_level.replace("+", "")
+            level_label = ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][i]
+            plus_path = maimai_Static / f"{level_label}_plus.png"
+            plus_icon = Image.open(plus_path)
+            bg.paste(plus_icon, (level_x + 33, level_y - 74), plus_icon)
         level_position = (level_x, level_y)
         drawtext.text(
             level_position, song_level, anchor="mm", font=ttf, fill=level_color[i]
@@ -221,8 +224,8 @@ async def music_info(song_id: str, qq: str, songList):
     return img_bytes
 
 
-async def play_info(song_id: str, qq: str, songList):
-    data, status = await get_player_record(qq, song_id)
+async def play_info(song_data, qq: str):
+    data, status = await get_player_record(qq, song_data["id"])
     if status == 400:
         msg = "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
         return msg
@@ -230,7 +233,7 @@ async def play_info(song_id: str, qq: str, songList):
         if not data:
             msg = "迪拉熊发现你未游玩过该乐曲"
             return msg
-        records = data[song_id]
+        records = data[song_data["id"]]
     else:
         msg = "迪拉熊发现你未游玩过该乐曲"
         return msg
@@ -240,11 +243,8 @@ async def play_info(song_id: str, qq: str, songList):
     bg = Image.open("./src/maimai/playinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
-    # 获取该曲信息
-    song_data = [d for d in songList if song_id in [d["id"], d["id"][1:]]][0]
-
     # 歌曲封面
-    cover_id = format_songid(song_id)
+    cover_id = format_songid(song_data["id"])
     cover = Image.open(maimai_Jacket / f"UI_Jacket_{cover_id}.png").resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 

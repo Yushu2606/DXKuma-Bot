@@ -7,7 +7,7 @@ from pathlib import Path
 from random import SystemRandom
 
 from nonebot import on_regex, Bot
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment, ActionFailed
 
 random = SystemRandom()
 
@@ -16,7 +16,7 @@ rank = on_regex(r"^(迪拉熊|dlx)(排行榜|list)$", re.RegexFlag.I)
 
 KUMAPIC = "./src/kuma-pic/normal"
 KUMAPIC_R18 = "./src/kuma-pic/r18"
-DATA_PATH = "./data/random_pic/count.db"
+DATA_PATH = "./data/random_pic/count"
 
 
 def get_time():
@@ -73,12 +73,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if "涩图" in msg or "色图" in msg or "瑟图" in msg or "st" in msg:
         type = "kuma_r18"
         path = KUMAPIC_R18
-    weight = random.randint(0, 9)
     if group_id == 967611986:  # 不被限制的 group_id
         pass
     elif type == "kuma_r18" and group_id not in [
         236030263,
         938593095,
+        783427193,
     ]:  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
             MessageSegment.text("迪拉熊不准你看"),
@@ -86,6 +86,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         )
         await kuma_pic.finish(msg)
     else:
+        weight = random.randint(0, 9)
         if weight == 5:
             if type == "kuma":
                 msg = MessageSegment.text("迪拉熊怕你沉溺其中，所以图就先不发了~")
@@ -101,7 +102,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if type == "kuma_r18":
         msg_id = send_msg["message_id"]
         await asyncio.sleep(10)
-        await bot.delete_msg(message_id=msg_id)
+        try:
+            await bot.delete_msg(message_id=msg_id)
+        except ActionFailed:
+            pass
 
 
 @rank.handle()

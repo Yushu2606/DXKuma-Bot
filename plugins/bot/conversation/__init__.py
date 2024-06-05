@@ -64,7 +64,7 @@ async def _(event: GroupMessageEvent):
 @roll.handle()
 async def _(event: GroupMessageEvent):
     text = event.raw_message
-    roll_list = re.search(r"^(?:.*?是)(.+)$", text).group(1).split("还是")
+    roll_list = re.search(r"是(.+)", text).group(1).split("还是")
     if not roll_list:
         msg = (
             MessageSegment.reply(event.message_id),

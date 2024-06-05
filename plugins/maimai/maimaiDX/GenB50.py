@@ -9,7 +9,6 @@ from PIL import Image, ImageFont, ImageDraw
 
 from .Config import (
     font_path,
-    maimai_src,
     maimai_Static,
     maimai_Jacket,
     maimai_Frame,
@@ -20,19 +19,79 @@ from .Config import (
 
 random = SystemRandom()
 
-with open(maimai_src / "ratings.json", "r") as f:
-    ratings = json.load(f)
+ratings = {
+    "ap+": [
+        1.01,
+        0
+    ],
+    "sssp": [
+        1.005,
+        22.4
+    ],
+    "sss": [
+        1.0,
+        21.6
+    ],
+    "ssp": [
+        0.995,
+        21.1
+    ],
+    "ss": [
+        0.99,
+        20.8
+    ],
+    "sp": [
+        0.98,
+        20.3
+    ],
+    "s": [
+        0.97,
+        20.0
+    ],
+    "aaa": [
+        0.94,
+        16.8
+    ],
+    "aa": [
+        0.9,
+        13.6
+    ],
+    "a": [
+        0.8,
+        12.8
+    ],
+    "bbb": [
+        0.75,
+        12.0
+    ],
+    "bb": [
+        0.7,
+        11.2
+    ],
+    "b": [
+        0.6,
+        9.6
+    ],
+    "c": [
+        0.5,
+        8.0
+    ],
+    "d": [
+        0.4,
+        6.4
+    ]
+}
 
 # 字体路径
-ttf_bold_path = font_path / "GenSenMaruGothicTW-Bold.ttf"
-ttf_heavy_path = font_path / "GenSenMaruGothicTW-Heavy.ttf"
-ttf_regular_path = font_path / "GenSenMaruGothicTW-Regular.ttf"
+ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
+ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
+ttf_regular_path = font_path / "SourceHanSans-Regular.ttc"
 
 
 # id查歌
 def find_song_by_id(song_id, songList):
     for song in songList:
-        if song["id"] == song_id:
+        if song_id in [song["id"], song["id"][1:]]:
             return song
 
     # 如果没有找到对应 id 的歌曲，返回 None
@@ -163,16 +222,11 @@ def records_filter(
             if not passed:
                 continue
         if is_lock:
-            passed = False
-            for _, ra_dt in ratings.items():
-                min_acc = ra_dt[0] * 100
-                song_data = find_song_by_id(str(record["song_id"]), songList)
-                max_acc = min_acc + get_min_score(
-                    song_data["charts"][record["level_index"]]["notes"]
-                )
-                if min_acc <= record["achievements"] < max_acc:
-                    passed = True
-            if not passed:
+            ra_in = ratings[record["rate"]][0]
+            min_acc = ra_in * 100
+            song_data = find_song_by_id(str(record["song_id"]), songList)
+            max_acc = min_acc + get_min_score(song_data["charts"][record["level_index"]]["notes"])
+            if max_acc <= record["achievements"] < min_acc:
                 continue
         filted_records.append(record)
     filted_records = sorted(
@@ -502,7 +556,7 @@ def rating_tj(b35max, b35min, b15max, b15min):
 async def generateb50(
         b35: list, b15: list, nickname: str, qq, dani: int, type: str, songList
 ):
-    with shelve.open("./data/maimai/b50_config.db") as config:
+    with shelve.open("./data/maimai/b50_config") as config:
         if qq not in config:
             frame = "200502"
             plate = "000101"
@@ -637,7 +691,7 @@ async def generate_wcb(
         level: str | None = None,
         rate_count=None,
 ):
-    with shelve.open("./data/maimai/b50_config.db") as config:
+    with shelve.open("./data/maimai/b50_config") as config:
         if qq not in config or "plate" not in config[qq]:
             plate = "000101"
         else:
