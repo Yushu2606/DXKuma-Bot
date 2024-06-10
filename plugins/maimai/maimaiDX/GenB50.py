@@ -226,7 +226,7 @@ def records_filter(
             min_acc = ra_in * 100
             song_data = find_song_by_id(str(record["song_id"]), songList)
             max_acc = min_acc + get_min_score(song_data["charts"][record["level_index"]]["notes"])
-            if max_acc <= record["achievements"] < min_acc:
+            if max_acc < record["achievements"] or record["achievements"] < min_acc:
                 continue
         filted_records.append(record)
     filted_records = sorted(

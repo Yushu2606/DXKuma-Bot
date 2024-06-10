@@ -8,5 +8,6 @@ maimai_Frame = maimai_src / "Frame"
 maimai_Plate = maimai_src / "Plate"
 maimai_Rating = maimai_src / "Rating"
 maimai_Jacket = maimai_src / "Jacket"
+maimai_Version = maimai_src / "Version"
 
 font_path = maimai_src / "font"

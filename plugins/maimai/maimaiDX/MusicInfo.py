@@ -1,9 +1,10 @@
 from io import BytesIO
+import os
 
 from PIL import Image, ImageDraw, ImageFont
 
 from util.DivingFish import get_player_data, get_player_record
-from .Config import font_path, maimai_Jacket, maimai_Static
+from .Config import font_path, maimai_Jacket, maimai_Static, maimai_Version
 
 ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
 ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
@@ -49,7 +50,10 @@ async def music_info(song_data, qq: str):
 
     # 歌曲封面
     cover_id = format_songid(song_data["id"])
-    cover = Image.open(maimai_Jacket / f"UI_Jacket_{cover_id}.png").resize((295, 295))
+    cover_path = maimai_Jacket / f"UI_Jacket_{cover_id}.png"
+    if not os.path.exists(cover_path):
+        cover_path = maimai_Jacket / "UI_Jacket_000000.png"
+    cover = Image.open(cover_path).resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 
     # 绘制标题
@@ -120,7 +124,7 @@ async def music_info(song_data, qq: str):
     bg.paste(type, (708, 858), type)
     # version
     song_ver = song_data["basic_info"]["from"]
-    song_ver = Image.open(maimai_Static / f"{song_ver}.png")
+    song_ver = Image.open(maimai_Version / f"{song_ver}.png")
     song_ver = resize_image(song_ver, 0.8)
     bg.paste(song_ver, (860, 768), song_ver)
 
@@ -317,7 +321,7 @@ async def play_info(song_data, qq: str):
     bg.paste(type, (708, 858), type)
     # version
     song_ver = song_data["basic_info"]["from"]
-    song_ver = Image.open(maimai_Static / f"{song_ver}.png")
+    song_ver = Image.open(maimai_Version / f"{song_ver}.png")
     song_ver = resize_image(song_ver, 0.8)
     bg.paste(song_ver, (860, 760), song_ver)
 

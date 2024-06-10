@@ -909,6 +909,13 @@ async def _(event: GroupMessageEvent):
                     song_title = song_info["title"]
                     output_lst += f"\n{song_id}：{song_title}"
             await playinfo.finish(MessageSegment.text(output_lst))
+    if not song_info:
+        await playinfo.finish(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+            )
+        )
     img = await play_info(song_data=song_info, qq=qq)
     if isinstance(img, str):
         msg = MessageSegment.text(img)
@@ -1035,9 +1042,9 @@ async def _(event: GroupMessageEvent):
     match = re.match(r"/?(search|查歌)\s*(.*)|(.*?)是什么歌", msg, re.I)
     if match:
         if match.group(2):
-            name = match.group(2)
+            name = match.group(2).strip()
         elif match.group(3):
-            name = match.group(3)
+            name = match.group(3).strip()
         else:
             await whatSong.finish(
                 (
@@ -1076,6 +1083,13 @@ async def _(event: GroupMessageEvent):
                         )
                     else:
                         song_info = other_info
+            if not song_info:
+                await whatSong.finish(
+                    (
+                        MessageSegment.reply(event.message_id),
+                        MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+                    )
+                )
             img = await music_info(qq=qq, song_data=song_info)
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
