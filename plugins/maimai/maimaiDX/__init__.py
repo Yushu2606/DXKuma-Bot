@@ -18,7 +18,7 @@ from .GenB50 import (
     ratings,
     records_filter,
     find_song_by_id,
-    format_songid,
+    dxscore_proc,
 )
 from .MusicInfo import music_info, play_info
 
@@ -27,6 +27,7 @@ random = SystemRandom()
 best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 dxs50 = on_regex(r"^dlxs50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+star50 = on_regex(r"^dlxx50 ?[1-5]( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 rate50 = on_regex(
     r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+)\] ?)?$",
     re.RegexFlag.I,
@@ -103,6 +104,7 @@ async def records_to_b50(
         rate_rules: list | None = None,
         is_fit: bool = False,
         is_dxs: bool = False,
+        dx_star_count: int = 0
 ):
     sd = []
     dx = []
@@ -114,9 +116,8 @@ async def records_to_b50(
         if rate_rules and record["rate"] not in rate_rules:
             continue
         song_id = record["song_id"]
-        is_new = [
-            d["basic_info"]["is_new"] for d in songList if d["id"] == str(song_id)
-        ]
+        song_data = [d for d in songList if d["id"] == str(song_id)][0]
+        is_new = song_data["basic_info"]["is_new"]
         if is_fit:
             fit_diff = get_fit_diff(
                 str(record["song_id"]), record["level_index"], record["ds"], charts
@@ -126,12 +127,18 @@ async def records_to_b50(
                 fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
             )
         if is_dxs:
-            song_data = find_song_by_id(str(record["song_id"]), songList)
-            record["achievements"] = record["dxScore"] / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
-            record["ra"] = int(record["ds"] * record["achievements"] * get_ra_in(record["rate"]) * 0.01)
+            if dx_star_count < 1:
+                song_data = find_song_by_id(str(record["song_id"]), songList)
+                record["achievements"] = record["dxScore"] / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
+                record["ra"] = int(record["ds"] * record["achievements"] * get_ra_in(record["rate"]) * 0.01)
+            else:
+                sum_dxscore = sum(song_data["charts"][record["level_index"]]["notes"]) * 3
+                _, stars = dxscore_proc(record["dxScore"], sum_dxscore)
+                if stars != dx_star_count:
+                    continue
         if record["ra"] == 0:
             continue
-        if is_new[0]:
+        if is_new:
             dx.append(record)
         else:
             sd.append(record)
@@ -604,6 +611,80 @@ async def _(event: GroupMessageEvent):
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await dxs50.send(msg)
+
+
+@star50.handle()
+async def _(event: GroupMessageEvent):
+    msg_text = str(event.raw_message)
+    pattern = r"\[CQ:at,qq=(\d+)\]"
+    match = re.search(pattern, msg_text)
+    if not match:
+        target_qq = event.get_user_id()
+    else:
+        target_qq = match.group(1)
+        if target_qq != event.get_user_id():
+            with shelve.open("./data/maimai/b50_config") as config:
+                if (
+                        target_qq in config
+                        and "allow_other" in config[target_qq]
+                        and not config[target_qq]["allow_other"]
+                ):
+                    msg = (
+                        MessageSegment.reply(event.message_id),
+                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+                    )
+                    await star50.finish(msg)
+    data, status = await get_player_records(target_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+            ),
+        )
+        await star50.finish(msg)
+    elif status != 200 or not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/pleasewait.jpg")),
+        )
+        await star50.finish(msg)
+    records = data["records"]
+    if not records:
+        if match:
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await star50.finish((MessageSegment.reply(event.message_id), msg))
+    songList, _ = await get_music_data()
+    find = re.search(r"dlxx50 ?([1-5])", msg_text)
+    star35, star15 = await records_to_b50(records, songList, is_dxs=True, dx_star_count=int(find.group(1)))
+    if not star35 and not star15:
+        if match:
+            msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
+        else:
+            msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        await star50.finish((MessageSegment.reply(event.message_id), msg))
+    await star50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+        )
+    )
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    img = await generateb50(
+        b35=star35,
+        b15=star15,
+        nickname=nickname,
+        qq=target_qq,
+        dani=dani,
+        type="star50",
+        songList=songList,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await star50.send(msg)
 
 
 @sunlist.handle()

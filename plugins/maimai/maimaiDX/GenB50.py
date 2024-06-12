@@ -1,4 +1,3 @@
-import json
 import math
 import shelve
 from io import BytesIO
@@ -15,71 +14,31 @@ from .Config import (
     maimai_Plate,
     maimai_Dani,
     maimai_Rating,
+    maimai_Level,
+    maimai_DXScoreStar,
+    maimai_MusicType,
+    maimai_MusicIcon,
+    maimai_Rank,
 )
 
 random = SystemRandom()
 
 ratings = {
-    "ap+": [
-        1.01,
-        0
-    ],
-    "sssp": [
-        1.005,
-        22.4
-    ],
-    "sss": [
-        1.0,
-        21.6
-    ],
-    "ssp": [
-        0.995,
-        21.1
-    ],
-    "ss": [
-        0.99,
-        20.8
-    ],
-    "sp": [
-        0.98,
-        20.3
-    ],
-    "s": [
-        0.97,
-        20.0
-    ],
-    "aaa": [
-        0.94,
-        16.8
-    ],
-    "aa": [
-        0.9,
-        13.6
-    ],
-    "a": [
-        0.8,
-        12.8
-    ],
-    "bbb": [
-        0.75,
-        12.0
-    ],
-    "bb": [
-        0.7,
-        11.2
-    ],
-    "b": [
-        0.6,
-        9.6
-    ],
-    "c": [
-        0.5,
-        8.0
-    ],
-    "d": [
-        0.4,
-        6.4
-    ]
+    "ap+": [1.01, 0],
+    "sssp": [1.005, 22.4],
+    "sss": [1.0, 21.6],
+    "ssp": [0.995, 21.1],
+    "ss": [0.99, 20.8],
+    "sp": [0.98, 20.3],
+    "s": [0.97, 20.0],
+    "aaa": [0.94, 16.8],
+    "aa": [0.9, 13.6],
+    "a": [0.8, 12.8],
+    "bbb": [0.75, 12.0],
+    "bb": [0.7, 11.2],
+    "b": [0.6, 9.6],
+    "c": [0.5, 8.0],
+    "d": [0.4, 6.4],
 }
 
 # 字体路径
@@ -138,6 +97,7 @@ def compute_record(records: list):
         "fsd": 0,
         "fsp": 0,
         "fs": 0,
+        "sync": 0,
     }
 
     for record in records:
@@ -172,16 +132,19 @@ def compute_record(records: list):
             if fc == "fcp":
                 output["fcp"] += 1
         if fs:
-            output["fs"] += 1
+            output["sync"] += 1
             if fs == "fsdp":
                 output["fsdp"] += 1
                 output["fsd"] += 1
                 output["fsp"] += 1
+                output["fs"] += 1
             if fs == "fsd":
                 output["fsd"] += 1
                 output["fsp"] += 1
+                output["fs"] += 1
             if fs == "fsp":
                 output["fsp"] += 1
+                output["fs"] += 1
 
     return output
 
@@ -225,7 +188,9 @@ def records_filter(
             ra_in = ratings[record["rate"]][0]
             min_acc = ra_in * 100
             song_data = find_song_by_id(str(record["song_id"]), songList)
-            max_acc = min_acc + get_min_score(song_data["charts"][record["level_index"]]["notes"])
+            max_acc = min_acc + get_min_score(
+                song_data["charts"][record["level_index"]]["notes"]
+            )
             if max_acc < record["achievements"] or record["achievements"] < min_acc:
                 continue
         filted_records.append(record)
@@ -343,7 +308,7 @@ def music_to_part(
     partbase.paste(jacket, (36, 41), jacket)
 
     # 歌曲分类 DX / SD
-    icon_path = maimai_Static / f"music_{type}.png"
+    icon_path = maimai_MusicType / f"{type}.png"
     icon = Image.open(icon_path)
     icon = resize_image(icon, 1.39)
     partbase.paste(icon, (797, 16), icon)
@@ -394,21 +359,21 @@ def music_to_part(
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
-    ttf = ImageFont.truetype(ttf_bold_path, size=32)
+    ttf = ImageFont.truetype(ttf_bold_path, size=30)
     # best序号
     ImageDraw.Draw(partbase).text(
-        (308, 236), f"#{index}", font=ttf, fill=(255, 255, 255)
+        (308, 238), f"#{index}", font=ttf, fill=(255, 255, 255)
     )
     # 乐曲ID
     ImageDraw.Draw(partbase).text(
-        (388, 236), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
+        (388, 238), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
     )
     # 定数和ra
     if b_type == "fit50" and ((ds * 10) % 1) == 0:
         ds_str = f"{ds}0"
     else:
         ds_str = str(ds)
-    ImageDraw.Draw(partbase).text((375, 172), f"{ds_str} -> {ra}", font=ttf, fill=color)
+    ImageDraw.Draw(partbase).text((375, 174), f"{ds_str} -> {ra}", font=ttf, fill=color)
     # dx分数和星星
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
@@ -418,7 +383,7 @@ def music_to_part(
     star_level, stars = dxscore_proc(dxScore, sum_dxscore)
     if star_level:
         star_width = 30
-        star_path = maimai_Static / f"dxscore_star_{star_level}.png"
+        star_path = maimai_DXScoreStar / f"{star_level}.png"
         star = Image.open(star_path)
         star = resize_image(star, 1.3)
         for i in range(stars):
@@ -426,22 +391,22 @@ def music_to_part(
             partbase.paste(star, (x_offset + 570, 178), star)
 
     # 评价
-    rate_path = maimai_Static / f"bud_music_icon_{rate}.png"
+    rate_path = maimai_Rank / f"{rate}.png"
     rate = Image.open(rate_path)
     rate = resize_image(rate, 0.87)
     partbase.paste(rate, (770, 72), rate)
 
     # fc ap
     if fc:
-        fc_path = maimai_Static / f"music_icon_{fc}.png"
+        fc_path = maimai_MusicIcon / f"{fc}.png"
         fc = Image.open(fc_path)
-        fc = resize_image(fc, 2.22)
-        partbase.paste(fc, (782, 187), fc)
+        fc = resize_image(fc, 76 / 61)
+        partbase.paste(fc, (781, 191), fc)
     if fs:
-        fs_path = maimai_Static / f"music_icon_{fs}.png"
+        fs_path = maimai_MusicIcon / f"{fs}.png"
         fs = Image.open(fs_path)
-        fs = resize_image(fs, 2.22)
-        partbase.paste(fs, (876, 187), fs)
+        fs = resize_image(fs, 76 / 61)
+        partbase.paste(fs, (875, 191), fs)
 
     partbase = partbase.resize((340, 110))
     return partbase
@@ -616,7 +581,7 @@ async def generateb50(
     b50.paste(namebase, (0, 0), namebase)
 
     # 段位
-    dani_path = maimai_Dani / f"UI_DNM_DaniPlate_{dani:02d}.png"
+    dani_path = maimai_Dani / f"{dani}.png"
     dani = Image.open(dani_path)
     dani = resize_image(dani, 0.2)
     b50.paste(dani, (400, 110), dani)
@@ -659,10 +624,11 @@ async def generateb50(
     # rating合计
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
-        (188, 144),
-        f"过往版本：{b35_ra} + 现行版本：{b15_ra} = {rating}",
+        (334, 154),
+        f"过往版本：{b35_ra} | 现行版本：{b15_ra}",
         font=ttf,
         fill=(255, 255, 255),
+        anchor="mm",
     )
 
     # b50
@@ -738,7 +704,7 @@ async def generate_wcb(
     bg.paste(namebase, (0, 0), namebase)
 
     # 段位
-    dani_path = maimai_Dani / f"UI_DNM_DaniPlate_{dani:02d}.png"
+    dani_path = maimai_Dani / f"{dani}.png"
     dani = Image.open(dani_path)
     dani = resize_image(dani, 0.2)
     bg.paste(dani, (400, 110), dani)
@@ -770,7 +736,7 @@ async def generate_wcb(
 
     if level:
         # 绘制的完成表的等级贴图
-        level_icon_path = maimai_Static / f"level_icon_{level}.png"
+        level_icon_path = maimai_Level / f"{level}.png"
         level_icon = Image.open(level_icon_path)
         level_icon = resize_image(level_icon, 0.70)
         bg.paste(level_icon, (755 - (len(level) * 8), 45), level_icon)

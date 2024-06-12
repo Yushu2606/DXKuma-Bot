@@ -90,8 +90,5 @@ async def _(event: GroupMessageEvent):
 
 @cum.handle()
 async def _():
-    weight = random.randint(0, 4)
-    if weight != 2:
-        return
-    msg = MessageSegment.image(Path("./src/cum.jpg"))
+    msg = MessageSegment.image(Path("./src/cum.png"))
     await cum.send(msg)

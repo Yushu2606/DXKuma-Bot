@@ -4,7 +4,15 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 from util.DivingFish import get_player_data, get_player_record
-from .Config import font_path, maimai_Jacket, maimai_Static, maimai_Version
+from .Config import (
+    font_path,
+    maimai_Jacket,
+    maimai_Static,
+    maimai_Version,
+    maimai_Plus,
+    maimai_MusicType,
+    maimai_Rank,
+)
 
 ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
 ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
@@ -118,7 +126,7 @@ async def music_info(song_data, qq: str):
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
     song_type = song_data["type"]
-    type_path = maimai_Static / f"music_{song_type}.png"
+    type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
     type = resize_image(type, 0.9)
     bg.paste(type, (708, 858), type)
@@ -144,7 +152,7 @@ async def music_info(song_data, qq: str):
         if "+" in song_level:
             song_level = song_level.replace("+", "")
             level_label = ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][i]
-            plus_path = maimai_Static / f"{level_label}_plus.png"
+            plus_path = maimai_Plus / f"{level_label}.png"
             plus_icon = Image.open(plus_path)
             bg.paste(plus_icon, (level_x + 33, level_y - 70), plus_icon)
         level_position = (level_x, level_y)
@@ -315,7 +323,7 @@ async def play_info(song_data, qq: str):
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
     song_type = song_data["type"]
-    type_path = maimai_Static / f"music_{song_type}.png"
+    type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
     type = resize_image(type, 0.9)
     bg.paste(type, (708, 858), type)
@@ -376,7 +384,7 @@ async def play_info(song_data, qq: str):
         # 等级
         if "+" in level:
             level = level.replace("+", "")
-            plus_path = maimai_Static / f"{level_label}_plus.png"
+            plus_path = maimai_Plus / f"{level_label}.png"
             plus_icon = Image.open(plus_path)
             bg.paste(plus_icon, (plus_x, plus_y), plus_icon)
         ttf = ImageFont.truetype(ttf_heavy_path, size=50)
@@ -389,7 +397,7 @@ async def play_info(song_data, qq: str):
         )
 
         # 评价
-        rate_path = maimai_Static / f"bud_music_icon_{rate}.png"
+        rate_path = maimai_Rank / f"{rate}.png"
         rate = Image.open(rate_path)
         rate = resize_image(rate, 0.5)
         bg.paste(rate, (rate_x, rate_y), rate)
