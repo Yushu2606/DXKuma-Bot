@@ -310,7 +310,7 @@ def music_to_part(
     # 歌曲分类 DX / SD
     icon_path = maimai_MusicType / f"{type}.png"
     icon = Image.open(icon_path)
-    icon = resize_image(icon, 1.39)
+    icon = resize_image(icon, 0.82)
     partbase.paste(icon, (797, 16), icon)
 
     # 歌名
@@ -638,7 +638,7 @@ async def generateb50(
     b50.paste(b15, (25, 1985), b15)
 
     img_byte_arr = BytesIO()
-    b50.save(img_byte_arr, format="PNG", quality=90)
+    b50.save(img_byte_arr, format="PNG")
     img_byte_arr.seek(0)
     img_bytes = img_byte_arr.getvalue()
 
@@ -783,7 +783,7 @@ async def generate_wcb(
     bg.paste(records_parts, (25, 795), records_parts)
 
     img_byte_arr = BytesIO()
-    bg.save(img_byte_arr, format="PNG", quality=90)
+    bg.save(img_byte_arr, format="PNG")
     img_byte_arr.seek(0)
     img_bytes = img_byte_arr.getvalue()
 

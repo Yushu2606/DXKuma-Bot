@@ -20,14 +20,14 @@ from .GenB50 import (
     find_song_by_id,
     dxscore_proc,
 )
-from .MusicInfo import music_info, play_info
+from .MusicInfo import music_info, play_info, utage_music_info, score_info
 
 random = SystemRandom()
 
 best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 dxs50 = on_regex(r"^dlxs50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-star50 = on_regex(r"^dlxx50 ?[1-5]( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+star50 = on_regex(r"^dlxx50( ?[1-5])+( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
 rate50 = on_regex(
     r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+)\] ?)?$",
     re.RegexFlag.I,
@@ -39,6 +39,7 @@ locklist = on_regex(r"^dlx(suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
 
 songinfo = on_regex(r"^id ?(\d+)$", re.RegexFlag.I)
 playinfo = on_regex(r"^info ?(.+)$", re.RegexFlag.I)
+scoreinfo = on_regex(r"^score ?(绿|黄|红|紫|白) ?(\d+)$", re.RegexFlag.I)
 playmp3 = on_regex(r"^dlx点歌 ?(.+)$", re.RegexFlag.I)
 randomsong = on_regex(r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?$")
 maiwhat = on_fullmatch("mai什么")
@@ -104,7 +105,7 @@ async def records_to_b50(
         rate_rules: list | None = None,
         is_fit: bool = False,
         is_dxs: bool = False,
-        dx_star_count: int = 0
+        dx_star_count: str | None = None
 ):
     sd = []
     dx = []
@@ -127,14 +128,14 @@ async def records_to_b50(
                 fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
             )
         if is_dxs:
-            if dx_star_count < 1:
+            if not dx_star_count:
                 song_data = find_song_by_id(str(record["song_id"]), songList)
                 record["achievements"] = record["dxScore"] / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
                 record["ra"] = int(record["ds"] * record["achievements"] * get_ra_in(record["rate"]) * 0.01)
             else:
                 sum_dxscore = sum(song_data["charts"][record["level_index"]]["notes"]) * 3
                 _, stars = dxscore_proc(record["dxScore"], sum_dxscore)
-                if stars != dx_star_count:
+                if str(stars) not in dx_star_count:
                     continue
         if record["ra"] == 0:
             continue
@@ -207,7 +208,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await best50.finish(msg)
     records = data["records"]
@@ -280,7 +281,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await ap50.finish(msg)
     records = data["records"]
@@ -353,7 +354,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await fc50.finish(msg)
     records = data["records"]
@@ -426,7 +427,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await fit50.finish(msg)
     records = data["records"]
@@ -499,7 +500,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await rate50.finish(msg)
     records = data["records"]
@@ -574,7 +575,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await dxs50.finish(msg)
     records = data["records"]
@@ -647,7 +648,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await star50.finish(msg)
     records = data["records"]
@@ -658,8 +659,8 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await star50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
-    find = re.search(r"dlxx50 ?([1-5])", msg_text)
-    star35, star15 = await records_to_b50(records, songList, is_dxs=True, dx_star_count=int(find.group(1)))
+    find = re.search(r"dlxx50(( ?[1-5])+)", msg_text)
+    star35, star15 = await records_to_b50(records, songList, is_dxs=True, dx_star_count=find.group(1))
     if not star35 and not star15:
         if match:
             msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
@@ -703,7 +704,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await sunlist.finish(msg)
     records = data["records"]
@@ -768,7 +769,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await locklist.finish(msg)
     records = data["records"]
@@ -843,7 +844,7 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/pleasewait.jpg")),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await wcb.finish(msg)
     records = data["records"]
@@ -915,7 +916,10 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
             )
         )
-        img = await music_info(qq=qq, song_data=song_info)
+        if song_info["basic_info"]["genre"] == "宴会場":
+            img = await utage_music_info(song_data=song_info)
+        else:
+            img = await music_info(qq=qq, song_data=song_info)
         msg = MessageSegment.image(img)
     await songinfo.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1003,6 +1007,27 @@ async def _(event: GroupMessageEvent):
     else:
         msg = MessageSegment.image(img)
     await playinfo.send((MessageSegment.reply(event.message_id), msg))
+
+
+@scoreinfo.handle()
+async def _(event: GroupMessageEvent):
+    msg = str(event.get_message())
+    type_index = ["绿", "黄", "红", "紫", "白"].index(re.search(r"绿|黄|红|紫|白", msg).group(0))
+    song_id = re.search(r"\d+", msg).group(0)
+    songList, _ = await get_music_data()
+    song_info = find_song_by_id(song_id, songList)
+    if not song_info or song_info["basic_info"]["genre"] == "宴会場" or len(song_info["level"]) <= type_index:
+        msg = MessageSegment.text("迪拉熊好像没找到，换一个试试吧~")
+    else:
+        await scoreinfo.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+            )
+        )
+        img = await score_info(song_data=song_info, index=type_index)
+        msg = MessageSegment.image(img)
+    await scoreinfo.send((MessageSegment.reply(event.message_id), msg))
 
 
 @playmp3.handle()
@@ -1101,7 +1126,10 @@ async def _(event: GroupMessageEvent):
         msg = MessageSegment.text("迪拉熊好像没找到，换一个试试吧~")
         await randomsong.finish((MessageSegment.reply(event.message_id), msg))
     song = random.choice(s_songs)
-    img = await music_info(song_data=song, qq=qq)
+    if song["basic_info"]["genre"] == "宴会場":
+        img = await utage_music_info(song_data=song)
+    else:
+        img = await music_info(song_data=song, qq=qq)
     msg = MessageSegment.image(img)
     await randomsong.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1111,7 +1139,10 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     songList, _ = await get_music_data()
     song = random.choice(songList)
-    img = await music_info(qq=qq, song_data=song)
+    if song["basic_info"]["genre"] == "宴会場":
+        img = await utage_music_info(song_data=song)
+    else:
+        img = await music_info(qq=qq, song_data=song)
     msg = MessageSegment.image(img)
     await maiwhat.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1171,7 +1202,10 @@ async def _(event: GroupMessageEvent):
                         MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
                     )
                 )
-            img = await music_info(qq=qq, song_data=song_info)
+            if song_info["basic_info"]["genre"] == "宴会場":
+                img = await utage_music_info(song_data=song_info)
+            else:
+                img = await music_info(qq=qq, song_data=song_info)
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
             output_lst = "迪拉熊找到了~结果有："

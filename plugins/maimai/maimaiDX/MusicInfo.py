@@ -128,8 +128,8 @@ async def music_info(song_data, qq: str):
     song_type = song_data["type"]
     type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
-    type = resize_image(type, 0.9)
-    bg.paste(type, (708, 858), type)
+    type = resize_image(type, 0.7)
+    bg.paste(type, (694, 852), type)
     # version
     song_ver = song_data["basic_info"]["from"]
     song_ver = Image.open(maimai_Version / f"{song_ver}.png")
@@ -230,7 +230,7 @@ async def music_info(song_data, qq: str):
         charter_x += 292
 
     img_byte_arr = BytesIO()
-    bg.save(img_byte_arr, format="PNG", quality=90)
+    bg.save(img_byte_arr, format="PNG")
     img_byte_arr.seek(0)
     img_bytes = img_byte_arr.getvalue()
 
@@ -325,8 +325,8 @@ async def play_info(song_data, qq: str):
     song_type = song_data["type"]
     type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
-    type = resize_image(type, 0.9)
-    bg.paste(type, (708, 858), type)
+    type = resize_image(type, 0.7)
+    bg.paste(type, (694, 852), type)
     # version
     song_ver = song_data["basic_info"]["from"]
     song_ver = Image.open(maimai_Version / f"{song_ver}.png")
@@ -422,7 +422,293 @@ async def play_info(song_data, qq: str):
         )
 
     img_byte_arr = BytesIO()
-    bg.save(img_byte_arr, format="PNG", quality=90)
+    bg.save(img_byte_arr, format="PNG")
+    img_byte_arr.seek(0)
+    img_bytes = img_byte_arr.getvalue()
+
+    return img_bytes
+
+
+async def utage_music_info(song_data, index=0):
+    # 底图
+    bg = Image.open("./src/maimai/utage_musicinfo_bg.png")
+    drawtext = ImageDraw.Draw(bg)
+
+    # 歌曲封面
+    cover_id = format_songid(song_data["id"])
+    cover_path = maimai_Jacket / f"UI_Jacket_{cover_id}.png"
+    if not os.path.exists(cover_path):
+        cover_path = maimai_Jacket / "UI_Jacket_000000.png"
+    cover = Image.open(cover_path).resize((295, 295))
+    bg.paste(cover, (204, 440), cover)
+
+    # 绘制标题
+    song_title = song_data["title"]
+    if len(song_data["charts"]) > 1:
+        song_title += f" [{index}]"
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    title_position = (545, 626)
+    text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
+    max_width = 1110
+    ellipsis = "..."
+    # 检查文本的宽度是否超过最大宽度
+    if text_bbox[2] <= max_width:
+        # 文本未超过最大宽度,直接绘制
+        drawtext.text(title_position, song_title, font=ttf, fill=(0, 0, 0))
+    else:
+        # 文本超过最大宽度,截断并添加省略符号
+        truncated_title = song_title
+        while text_bbox[2] > max_width and len(truncated_title) > 0:
+            truncated_title = truncated_title[:-1]
+            text_bbox = drawtext.textbbox(
+                title_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            title_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
+
+    # 绘制曲师
+    song_artist = song_data["basic_info"]["artist"]
+    ttf = ImageFont.truetype(ttf_regular_path, size=30)
+    artist_position = (545, 694)
+    text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
+    max_width = 1110
+    ellipsis = "..."
+    # 检查文本的宽度是否超过最大宽度
+    if text_bbox[2] <= max_width:
+        # 文本未超过最大宽度,直接绘制
+        drawtext.text(artist_position, song_artist, font=ttf, fill=(0, 0, 0))
+    else:
+        # 文本超过最大宽度,截断并添加省略符号
+        truncated_title = song_artist
+        while text_bbox[2] > max_width and len(truncated_title) > 0:
+            truncated_title = truncated_title[:-1]
+            text_bbox = drawtext.textbbox(
+                artist_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
+
+    # id
+    ttf = ImageFont.truetype(ttf_bold_path, size=28)
+    id_position = (239, 872)
+    drawtext.text(
+        id_position, song_data["id"], anchor="mm", font=ttf, fill=(28, 43, 110)
+    )
+    # bpm
+    song_bpm = str(song_data["basic_info"]["bpm"])
+    bpm_position = (341, 872)
+    drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
+    # 分类
+    song_genre = song_data["basic_info"]["genre"]
+    genre_position = (544, 872)
+    drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
+    # 谱面类型
+    song_type = song_data["type"]
+    type_path = maimai_MusicType / f"{song_type}.png"
+    type = Image.open(type_path)
+    type = resize_image(type, 0.7)
+    bg.paste(type, (694, 852), type)
+    # version
+    song_ver = song_data["basic_info"]["from"]
+    song_ver = Image.open(maimai_Version / f"{song_ver}.png")
+    song_ver = resize_image(song_ver, 0.8)
+    bg.paste(song_ver, (860, 768), song_ver)
+
+    # 等级
+    ttf = ImageFont.truetype(ttf_heavy_path, size=50)
+    song_level = song_data["level"][0].replace("?", "")
+    drawtext.text((650, 1046), song_level, anchor="mm", font=ttf, fill=(131, 19, 158))
+
+    # 物量
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    chart = song_data["charts"][index]
+    notes_x = 310
+    notes_y = 1258
+    notes = chart["notes"]
+    if song_type == "SD":
+        notes.insert(3, 0)
+    for note in notes:
+        notes_position = (notes_x, notes_y)
+        drawtext.text(
+            notes_position, str(note), anchor="mm", font=ttf, fill=(28, 43, 110)
+        )
+        notes_x += 170
+    total_num = sum(notes)
+    drawtext.text(
+        (438, 1415), str(total_num), anchor="mm", font=ttf, fill=(28, 43, 110)
+    )
+    dx_num = total_num * 3
+    drawtext.text(
+        (863, 1415), str(dx_num), anchor="mm", font=ttf, fill=(28, 43, 110)
+    )
+
+
+    img_byte_arr = BytesIO()
+    bg.save(img_byte_arr, format="PNG")
+    img_byte_arr.seek(0)
+    img_bytes = img_byte_arr.getvalue()
+
+    return img_bytes
+
+
+async def score_info(song_data, index):
+    # 底图
+    bg = Image.open(f"./src/maimai/Static/scoreinfo_bg_{["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][index]}.png")
+    drawtext = ImageDraw.Draw(bg)
+
+    # 歌曲封面
+    cover_id = format_songid(song_data["id"])
+    cover_path = maimai_Jacket / f"UI_Jacket_{cover_id}.png"
+    if not os.path.exists(cover_path):
+        cover_path = maimai_Jacket / "UI_Jacket_000000.png"
+    cover = Image.open(cover_path).resize((295, 295))
+    bg.paste(cover, (204, 440), cover)
+
+    # 绘制标题
+    song_title = song_data["title"]
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    title_position = (545, 626)
+    text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
+    max_width = 1110
+    ellipsis = "..."
+    # 检查文本的宽度是否超过最大宽度
+    if text_bbox[2] <= max_width:
+        # 文本未超过最大宽度,直接绘制
+        drawtext.text(title_position, song_title, font=ttf, fill=(0, 0, 0))
+    else:
+        # 文本超过最大宽度,截断并添加省略符号
+        truncated_title = song_title
+        while text_bbox[2] > max_width and len(truncated_title) > 0:
+            truncated_title = truncated_title[:-1]
+            text_bbox = drawtext.textbbox(
+                title_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            title_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
+
+    # 绘制曲师
+    song_artist = song_data["basic_info"]["artist"]
+    ttf = ImageFont.truetype(ttf_regular_path, size=30)
+    artist_position = (545, 694)
+    text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
+    max_width = 1110
+    ellipsis = "..."
+    # 检查文本的宽度是否超过最大宽度
+    if text_bbox[2] <= max_width:
+        # 文本未超过最大宽度,直接绘制
+        drawtext.text(artist_position, song_artist, font=ttf, fill=(0, 0, 0))
+    else:
+        # 文本超过最大宽度,截断并添加省略符号
+        truncated_title = song_artist
+        while text_bbox[2] > max_width and len(truncated_title) > 0:
+            truncated_title = truncated_title[:-1]
+            text_bbox = drawtext.textbbox(
+                artist_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
+
+    # id
+    ttf = ImageFont.truetype(ttf_bold_path, size=28)
+    id_position = (239, 872)
+    drawtext.text(
+        id_position, song_data["id"], anchor="mm", font=ttf, fill=(28, 43, 110)
+    )
+    # bpm
+    song_bpm = str(song_data["basic_info"]["bpm"])
+    bpm_position = (341, 872)
+    drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
+    # 分类
+    song_genre = song_data["basic_info"]["genre"]
+    genre_position = (544, 872)
+    drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
+    # 谱面类型
+    song_type = song_data["type"]
+    type_path = maimai_MusicType / f"{song_type}.png"
+    type = Image.open(type_path)
+    type = resize_image(type, 0.7)
+    bg.paste(type, (694, 852), type)
+    # version
+    song_ver = song_data["basic_info"]["from"]
+    song_ver = Image.open(maimai_Version / f"{song_ver}.png")
+    song_ver = resize_image(song_ver, 0.8)
+    bg.paste(song_ver, (860, 768), song_ver)
+
+    # 等级
+    ttf = ImageFont.truetype(ttf_heavy_path, size=36)
+    song_level = song_data["level"][index]
+    level_color = [
+        (14, 117, 54),
+        (214, 148, 19),
+        (192, 33, 56),
+        (103, 20, 141),
+        (186, 126, 232),
+    ]
+    if "+" in song_level:
+        song_level = song_level.replace("+", "")
+        level_label = ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][index]
+        plus_path = maimai_Plus / f"{level_label}.png"
+        plus_icon = Image.open(plus_path)
+        bg.paste(plus_icon, (302, 953), plus_icon)
+    drawtext.text((251, 1000), song_level, anchor="mm", font=ttf, fill=level_color[index])
+
+    # 分数
+    ttf = ImageFont.truetype(ttf_heavy_path, size=36)
+    chart = song_data["charts"][index]
+    notes = chart["notes"]
+    if song_type == "SD":
+        notes.insert(3, 0)
+    type_weight = [1, 2, 3, 1, 5]
+    sum_score = 0
+    for i in range(0, 5):
+        sum_score += notes[i] * type_weight[i] * 500
+    score_y = 1107
+    for i in range(0, 7):
+        score_x = 451
+        type_index = i if i < 5 else 4
+        great_weight = 0.2
+        good_weight = 0.5
+        if i > 3:
+            ex_weight = [0, 0.25, 0.5][i - 4]
+            great_weight = [0.2, 0.4, 0.5][i - 4]
+            good_weight = 0.6
+        for j in range(0, 4):
+            if j > 1 and i in [4, 6]:
+                break
+            score_position = (score_x, score_y)
+            if notes[type_index] > 0:
+                weight = [0, great_weight, good_weight, 1][j]
+                score = (1 - ((sum_score - (500 * weight * type_weight[type_index])) / sum_score))
+                if i > 3:
+                    ex_weight = [ex_weight, 0.6, 0.7, 1][j]
+                    ex_score = (1 - (((notes[-1] * 100) - (100 * ex_weight)) / (notes[-1] * 100)))
+                    score += ex_score * 0.01
+            else:
+                score = 0
+            score_text = "-" + (str(score * 100)[:6] + "%" if score > 0 else "")
+            drawtext.text(
+                score_position, score_text, anchor="mm", font=ttf, fill=(255, 255, 255)
+            )
+            score_x += 200
+        score_y += 80
+
+    # 物量
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    notes_x = 251
+    notes_y = 1778
+    for note in notes:
+        notes_position = (notes_x, notes_y)
+        drawtext.text(
+            notes_position, str(note), anchor="mm", font=ttf, fill=(28, 43, 110)
+        )
+        notes_x += 200
+
+    img_byte_arr = BytesIO()
+    bg.save(img_byte_arr, format="PNG")
     img_byte_arr.seek(0)
     img_bytes = img_byte_arr.getvalue()
 

@@ -82,7 +82,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     ]:  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
             MessageSegment.text("迪拉熊不准你看"),
-            MessageSegment.image(Path("./src/notplay.png")),
+            MessageSegment.image(Path("./src/kuma-pic/response/noplay.png")),
         )
         await kuma_pic.finish(msg)
     else:

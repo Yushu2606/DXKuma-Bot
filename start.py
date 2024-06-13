@@ -64,6 +64,7 @@ if __name__ == "__main__":
             f"PORT={config.listen_port}\n"
             f"ONEBOT_ACCESS_TOKEN={config.token}\n"
             f'COMMAND_START=["."]\n'
+            f'LOG_LEVEL=SUCCESS\n'
         )
         v.write(file)
         logger.info("生成了NoneBot的环境配置文件.env")
