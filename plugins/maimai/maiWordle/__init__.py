@@ -28,7 +28,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 open_chars = on_regex(r"^开 ?(.+)$", re.RegexFlag.I)
 @open_chars.handle()   
 async def _(event: GroupMessageEvent):
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     char = msg.replace("开", "").strip()
     group_id = event.group_id
 
@@ -56,7 +56,7 @@ async def _(event: GroupMessageEvent):
 all_message_handle = on_message(priority=18,block=False)
 @all_message_handle.handle()
 async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
-    msg_content = str(event.get_message())
+    msg_content = event.get_plaintext()
     group_id = event.group_id
     game_data = openchars.get_game_data(group_id)
     if game_data:
