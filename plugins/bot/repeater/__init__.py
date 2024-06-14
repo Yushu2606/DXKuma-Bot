@@ -37,12 +37,12 @@ def message_preprocess(message: str):
 @m.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     # 检查是否在黑名单中
-    if event.raw_message in blacklist:
+    if event.get_plaintext() in blacklist:
         return
     gid = str(event.group_id)
     if gid in repeater_group or "all" in repeater_group:
         global last_message, message_times
-        message, raw_message = message_preprocess(str(event.message))
+        message, raw_message = message_preprocess(event.get_plaintext())
         if last_message.get(gid) != message:
             message_times[gid] = 1
         else:

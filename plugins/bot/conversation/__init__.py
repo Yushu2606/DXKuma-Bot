@@ -64,7 +64,7 @@ async def _(event: GroupMessageEvent):
 
 @roll.handle()
 async def _(event: GroupMessageEvent):
-    text = event.raw_message
+    text = event.get_plaintext()
     roll_list = re.search(r"是(.+)", text).group(1).split("还是")
     if not roll_list:
         msg = (
@@ -91,9 +91,9 @@ async def _(event: GroupMessageEvent):
 
 @cum.handle()
 async def _():
-    weight = random.randint(0, 4)
+    weight = random.randint(0, 9)
     imgpath = "./src/kuma-pic/cum/0.png"
-    if weight == 2:
+    if weight == 0:
         imgpath = "./src/kuma-pic/cum/1.png"
     msg = MessageSegment.image(Path(imgpath))
     await cum.send(msg)

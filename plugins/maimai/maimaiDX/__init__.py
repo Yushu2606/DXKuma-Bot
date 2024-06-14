@@ -39,7 +39,7 @@ locklist = on_regex(r"^dlx(suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
 
 songinfo = on_regex(r"^id ?(\d+)$", re.RegexFlag.I)
 playinfo = on_regex(r"^info ?(.+)$", re.RegexFlag.I)
-scoreinfo = on_regex(r"^score ?(绿|黄|红|紫|白) ?(\d+)$", re.RegexFlag.I)
+scoreinfo = on_regex(r"^分数表 ?(绿|黄|红|紫|白) ?(\d+)$", re.RegexFlag.I)
 playmp3 = on_regex(r"^dlx点歌 ?(.+)$", re.RegexFlag.I)
 randomsong = on_regex(r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?$")
 maiwhat = on_fullmatch("mai什么")
@@ -112,6 +112,8 @@ async def records_to_b50(
     if is_fit:
         charts, _ = await get_chart_stats()
     for record in records:
+        if record["level_label"] == "Utage":
+            continue
         if fc_rules and record["fc"] not in fc_rules:
             continue
         if rate_rules and record["rate"] not in rate_rules:
@@ -176,7 +178,7 @@ def get_ra_in(rate: str) -> float:
 
 @best50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -249,7 +251,7 @@ async def _(event: GroupMessageEvent):
 
 @ap50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -322,7 +324,7 @@ async def _(event: GroupMessageEvent):
 
 @fc50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -395,7 +397,7 @@ async def _(event: GroupMessageEvent):
 
 @fit50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -468,7 +470,7 @@ async def _(event: GroupMessageEvent):
 
 @rate50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -543,7 +545,7 @@ async def _(event: GroupMessageEvent):
 
 @dxs50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -616,7 +618,7 @@ async def _(event: GroupMessageEvent):
 
 @star50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = str(event.raw_message)
+    msg_text = event.get_plaintext()
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -716,7 +718,7 @@ async def _(event: GroupMessageEvent):
     if not filted_records:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
-    msg = str(event.message)
+    msg = event.get_plaintext()
     pattern = r"\d+?"
     match = re.search(pattern, msg)
     if match:
@@ -781,7 +783,7 @@ async def _(event: GroupMessageEvent):
     if not filted_records:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
-    msg = str(event.message)
+    msg = event.get_plaintext()
     pattern = r"\d+?"
     match = re.search(pattern, msg)
     if match:
@@ -821,7 +823,7 @@ async def _(event: GroupMessageEvent):
 @wcb.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.message)
+    msg = event.get_plaintext()
     pattern = r"完成表 ?((\d+)(\.\d|\+)?)( (\d+))?"
     match = re.match(pattern, msg)
     if not match:
@@ -903,7 +905,7 @@ async def _(event: GroupMessageEvent):
 @songinfo.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
     songList, _ = await get_music_data()
     song_info = find_song_by_id(song_id, songList)
@@ -927,7 +929,7 @@ async def _(event: GroupMessageEvent):
 @playinfo.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     song = msg.replace("info", "").strip()
     if not song:
         await playinfo.finish(
@@ -1011,7 +1013,7 @@ async def _(event: GroupMessageEvent):
 
 @scoreinfo.handle()
 async def _(event: GroupMessageEvent):
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     type_index = ["绿", "黄", "红", "紫", "白"].index(re.search(r"绿|黄|红|紫|白", msg).group(0))
     song_id = re.search(r"\d+", msg).group(0)
     songList, _ = await get_music_data()
@@ -1032,7 +1034,7 @@ async def _(event: GroupMessageEvent):
 
 @playmp3.handle()
 async def _(event: GroupMessageEvent):
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     song = msg.replace("dlx点歌", "").strip()
     if not song:
         await playmp3.finish(
@@ -1089,7 +1091,7 @@ async def _(event: GroupMessageEvent):
 @randomsong.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.message)
+    msg = event.get_plaintext()
     pattern = r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?"
     match = re.match(pattern, msg)
     level_label = match.group(2)
@@ -1150,7 +1152,7 @@ async def _(event: GroupMessageEvent):
 @whatSong.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.message)
+    msg = event.get_plaintext()
     match = re.match(r"/?(search|查歌)\s*(.*)|(.*?)是什么歌", msg, re.I)
     if match:
         if match.group(2):
@@ -1237,7 +1239,7 @@ async def _(event: GroupMessageEvent):
 # 查看别名
 @aliasSearch.handle()
 async def _(event: GroupMessageEvent):
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
 
     async with aiohttp.ClientSession() as session:
@@ -1285,7 +1287,7 @@ async def _():
 @set_plate.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
     dir_path = "./src/maimai/Plate/"
     file_name = f"UI_Plate_{id}.png"
@@ -1311,7 +1313,7 @@ async def _(event: GroupMessageEvent):
 @set_frame.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
     dir_path = "./src/maimai/Frame/"
     file_name = f"UI_Frame_{id}.png"

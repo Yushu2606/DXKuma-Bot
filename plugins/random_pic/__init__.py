@@ -67,7 +67,7 @@ def gen_rank(data, time):
 async def _(bot: Bot, event: GroupMessageEvent):
     group_id = event.group_id
     qq = event.get_user_id()
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     type = "kuma"
     path = KUMAPIC
     if "涩图" in msg or "色图" in msg or "瑟图" in msg or "st" in msg:
@@ -87,7 +87,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         await kuma_pic.finish(msg)
     else:
         weight = random.randint(0, 9)
-        if weight == 5:
+        if weight == 0:
             if type == "kuma":
                 msg = MessageSegment.text("迪拉熊怕你沉溺其中，所以图就先不发了~")
             elif type == "kuma_r18":
