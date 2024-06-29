@@ -1,6 +1,8 @@
 import pymongo
 import time
 from datetime import datetime,timedelta
+
+import pymongo.errors
 from .maimaidx_music import total_list
 
 class Alias(object):
@@ -20,9 +22,12 @@ class Alias(object):
     def findSong(self,alias: str):
         if list(set(list(alias))) == ['.']:
             return []
-        search_result = list(self.alias_collection.find(
-            {"alias":{'$regex': f'^{alias}$', '$options': 'i'}},
-            {"_id":0,"music_id":1}))
+        try:
+            search_result = list(self.alias_collection.find(
+                {"alias":{'$regex': f'^{alias}$', '$options': 'i'}},
+                {"_id":0,"music_id":1}))
+        except pymongo.errors.OperationFailure:
+            return []
         music_ids = [m['music_id'] for m in search_result]
         return music_ids
     

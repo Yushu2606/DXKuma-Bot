@@ -1302,7 +1302,7 @@ async def _(event: GroupMessageEvent):
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
             output_lst = "迪拉熊找到了~结果有："
-            for song_id in rep_ids:
+            for song_id in rep_ids_set:
                 song_info = find_song_by_id(song_id, songList)
                 song_title = song_info["title"]
                 output_lst += f"\n{song_id}：{song_title}"
