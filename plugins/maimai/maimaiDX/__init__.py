@@ -178,7 +178,7 @@ def get_ra_in(rate: str) -> float:
 
 @best50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -221,6 +221,13 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await best50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await best50.finish(msg)
     b35, b15 = await records_to_b50(records, songList)
     if not b35 and not b15:
         if match:
@@ -251,7 +258,7 @@ async def _(event: GroupMessageEvent):
 
 @ap50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -294,6 +301,13 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await ap50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await ap50.finish(msg)
     ap35, ap15 = await records_to_b50(records, songList, ["ap", "app"])
     if not ap35 and not ap15:
         if match:
@@ -324,7 +338,7 @@ async def _(event: GroupMessageEvent):
 
 @fc50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -367,6 +381,13 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await fc50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await fc50.finish(msg)
     fc35, fc15 = await records_to_b50(records, songList, ["fc", "fcp"])
     if not fc35 and not fc15:
         if match:
@@ -397,7 +418,7 @@ async def _(event: GroupMessageEvent):
 
 @fit50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -440,6 +461,13 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await fit50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await fit50.finish(msg)
     b35, b15 = await records_to_b50(records, songList, is_fit=True)
     if not b35 and not b15:
         if match:
@@ -470,7 +498,7 @@ async def _(event: GroupMessageEvent):
 
 @rate50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -515,6 +543,13 @@ async def _(event: GroupMessageEvent):
     msg_text = msg_text.replace("+", "p").lower()
     rate_rules = re.findall(r"s{1,3}p?|a{1,3}|b{1,3}|[cd]", msg_text)
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await rate50.finish(msg)
     rate35, rate15 = await records_to_b50(records, songList, rate_rules=rate_rules)
     if not rate35 and not rate15:
         if match:
@@ -545,7 +580,7 @@ async def _(event: GroupMessageEvent):
 
 @dxs50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -588,6 +623,13 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await dxs50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await dxs50.finish(msg)
     dxs35, dxs15 = await records_to_b50(records, songList, is_dxs=True)
     if not dxs35 and not dxs15:
         if match:
@@ -618,7 +660,7 @@ async def _(event: GroupMessageEvent):
 
 @star50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.get_plaintext()
+    msg_text = event.raw_message
     pattern = r"\[CQ:at,qq=(\d+)\]"
     match = re.search(pattern, msg_text)
     if not match:
@@ -661,6 +703,13 @@ async def _(event: GroupMessageEvent):
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await star50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await star50.finish(msg)
     find = re.search(r"dlxx50(( ?[1-5])+)", msg_text)
     star35, star15 = await records_to_b50(records, songList, is_dxs=True, dx_star_count=find.group(1))
     if not star35 and not star15:
@@ -714,6 +763,13 @@ async def _(event: GroupMessageEvent):
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await sunlist.finish(msg)
     filted_records = records_filter(records=records, is_sun=True, songList=songList)
     if not filted_records:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
@@ -779,6 +835,13 @@ async def _(event: GroupMessageEvent):
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await locklist.finish(msg)
     filted_records = records_filter(records=records, is_lock=True, songList=songList)
     if not filted_records:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
@@ -881,6 +944,13 @@ async def _(event: GroupMessageEvent):
         )
     )
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await wcb.finish(msg)
     input_records = get_page_records(filted_records, page=page)
     rate_count = compute_record(records=filted_records)
     nickname = data["nickname"]
@@ -908,6 +978,13 @@ async def _(event: GroupMessageEvent):
     msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await songinfo.finish(msg)
     song_info = find_song_by_id(song_id, songList)
     if not song_info:
         msg = MessageSegment.text("迪拉熊好像没找到，换一个试试吧~")
@@ -939,6 +1016,13 @@ async def _(event: GroupMessageEvent):
             )
         )
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await playinfo.finish(msg)
     song_info = find_song_by_id(song, songList)
     if not song_info:
         rep_ids = await find_songid_by_alias(song, songList)
@@ -975,6 +1059,7 @@ async def _(event: GroupMessageEvent):
         else:
             output_lst = "迪拉熊找到了~结果有："
             for song_id in rep_ids:
+                song_info = find_song_by_id(song_id, songList)
                 song_id_len = len(song_id)
                 if song_id_len < 5:
                     other_id = "1"
@@ -982,16 +1067,14 @@ async def _(event: GroupMessageEvent):
                         other_id += "0"
                         song_id_len += 1
                     other_id += song_id
-                    song_info = find_song_by_id(other_id, songList)
-                    if song_info:
-                        if other_id not in rep_ids:
-                            song_id = other_id
-                        else:
+                    other_info = find_song_by_id(other_id, songList)
+                    if other_info:
+                        if song_info:
                             song_title = song_info["title"]
                             output_lst += f"\n{song_id}/{other_id}：{song_title}"
                             rep_ids.remove(other_id)
                             continue
-                song_info = find_song_by_id(song_id, songList)
+                        song_id = other_id
                 if song_info:
                     song_title = song_info["title"]
                     output_lst += f"\n{song_id}：{song_title}"
@@ -1017,6 +1100,13 @@ async def _(event: GroupMessageEvent):
     type_index = ["绿", "黄", "红", "紫", "白"].index(re.search(r"绿|黄|红|紫|白", msg).group(0))
     song_id = re.search(r"\d+", msg).group(0)
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await scoreinfo.finish(msg)
     song_info = find_song_by_id(song_id, songList)
     if not song_info or song_info["basic_info"]["genre"] == "宴会場" or len(song_info["level"]) <= type_index:
         msg = MessageSegment.text("迪拉熊好像没找到，换一个试试吧~")
@@ -1044,6 +1134,13 @@ async def _(event: GroupMessageEvent):
             )
         )
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await playmp3.finish(msg)
     rep_ids = await find_songid_by_alias(song, songList)
     if rep_ids:
         song_id = rep_ids[0] if len(rep_ids[0]) < 5 else rep_ids[0][1:]
@@ -1064,6 +1161,13 @@ async def _(event: GroupMessageEvent):
                     f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
             ) as resp:
                 file_bytes = await resp.read()
+        if not file_bytes:
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("落雪好像出了点问题呢"),
+                MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            )
+            await playmp3.finish(msg)
         await playmp3.send(MessageSegment.record(file_bytes))
     else:
         songinfo = find_song_by_id(song, songList)
@@ -1078,6 +1182,13 @@ async def _(event: GroupMessageEvent):
                         f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
                 ) as resp:
                     file_bytes = await resp.read()
+                if not file_bytes:
+                    msg = (
+                        MessageSegment.reply(event.message_id),
+                        MessageSegment.text("落雪好像出了点问题呢"),
+                        MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+                    )
+                    await playmp3.finish(msg)
             await playmp3.send(MessageSegment.record(file_bytes))
         else:
             await playmp3.send(
@@ -1114,6 +1225,13 @@ async def _(event: GroupMessageEvent):
         s_type = "ds"
     s_songs = []
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await randomsong.finish(msg)
     for song in songList:
         s_list = song[s_type]
         if s_type == "ds":
@@ -1140,6 +1258,13 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("水鱼好像出了点问题呢"),
+            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        )
+        await maiwhat.finish(msg)
     song = random.choice(songList)
     if song["basic_info"]["genre"] == "宴会場":
         img = await utage_music_info(song_data=song)
@@ -1168,6 +1293,13 @@ async def _(event: GroupMessageEvent):
             )
 
         songList, _ = await get_music_data()
+        if not songList:
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("水鱼好像出了点问题呢"),
+                MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            )
+            await whatSong.finish(msg)
         rep_ids = await find_songid_by_alias(name, songList)
         if not rep_ids:
             msg = (
@@ -1212,6 +1344,7 @@ async def _(event: GroupMessageEvent):
         else:
             output_lst = "迪拉熊找到了~结果有："
             for song_id in rep_ids:
+                song_info = find_song_by_id(song_id, songList)
                 song_id_len = len(song_id)
                 if song_id_len < 5:
                     other_id = "1"
@@ -1219,16 +1352,14 @@ async def _(event: GroupMessageEvent):
                         other_id += "0"
                         song_id_len += 1
                     other_id += song_id
-                    song_info = find_song_by_id(other_id, songList)
-                    if song_info:
-                        if other_id not in rep_ids:
-                            song_id = other_id
-                        else:
+                    other_info = find_song_by_id(other_id, songList)
+                    if other_info:
+                        if song_info:
                             song_title = song_info["title"]
                             output_lst += f"\n{song_id}/{other_id}：{song_title}"
                             rep_ids.remove(other_id)
                             continue
-                song_info = find_song_by_id(song_id, songList)
+                        song_id = other_id
                 if song_info:
                     song_title = song_info["title"]
                     output_lst += f"\n{song_id}：{song_title}"
@@ -1250,7 +1381,7 @@ async def _(event: GroupMessageEvent):
     alias = [
         d
         for d in alias_list["aliases"]
-        if d["song_id"] in [int(song_id), int(song_id[1:])]
+        if d["song_id"] in [int(song_id), int(song_id) / 10]
     ]
     if not alias or len(alias) > 1:
         msg = (

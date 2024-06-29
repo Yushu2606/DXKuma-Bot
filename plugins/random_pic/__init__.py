@@ -89,7 +89,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         weight = random.randint(0, 9)
         if weight == 0:
             if type == "kuma":
-                msg = MessageSegment.text("迪拉熊怕你沉溺其中，所以图就先不发了~")
+                msg = MessageSegment.text("迪拉熊提醒你：不要发太多刷屏啦~再试一下吧~")
             elif type == "kuma_r18":
                 msg = MessageSegment.text("迪拉熊关心你的身体健康，所以图就先不发了~")
             await kuma_pic.finish(msg)

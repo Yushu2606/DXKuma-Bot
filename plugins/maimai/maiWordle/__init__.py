@@ -49,8 +49,6 @@ async def _(event: GroupMessageEvent):
                 await open_chars.send('全部答对啦，恭喜各位🎉\n本轮猜歌已结束，可发送“dlx猜歌”再次游玩')
         else:
             await open_chars.send([MessageSegment.reply(event.message_id),MessageSegment.text("该字母已经开过了噢，换一个字母吧~")])
-    else:
-        await open_chars.send('游戏还未开启')
 
 
 all_message_handle = on_message(priority=18,block=False)
