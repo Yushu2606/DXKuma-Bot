@@ -1033,51 +1033,26 @@ async def _(event: GroupMessageEvent):
                     MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
                 )
             )
-        elif len(rep_ids) == 1:
-            song_id = rep_ids[0]
+        rep_ids_set = set(rep_ids)
+        for song_id in rep_ids:
             song_info = find_song_by_id(song_id, songList)
+            if not song_info:
+                rep_ids_set.remove(song_id)
             song_id_len = len(song_id)
             if song_id_len < 5:
-                other_id = "1"
-                while song_id_len < 4:
-                    other_id += "0"
-                    song_id_len += 1
-                other_id += song_id
+                other_id = f"1{int(song_id):04d}"
                 other_info = find_song_by_id(other_id, songList)
                 if other_info:
-                    if song_info:
-                        await playinfo.finish(
-                            (
-                                MessageSegment.reply(event.message_id),
-                                MessageSegment.text(
-                                    f"迪拉熊发现这首歌有标准与DX差分哦~\n请准确输入乐曲的id（{song_id}/{other_id}）"
-                                ),
-                            )
-                        )
-                    else:
-                        song_info = other_info
+                    rep_ids_set.add(other_id)
+        if len(rep_ids_set) == 1:
+            song_id = rep_ids_set.pop()
+            song_info = find_song_by_id(song_id, songList)
         else:
             output_lst = "迪拉熊找到了~结果有："
-            for song_id in rep_ids:
+            for song_id in rep_ids_set:
                 song_info = find_song_by_id(song_id, songList)
-                song_id_len = len(song_id)
-                if song_id_len < 5:
-                    other_id = "1"
-                    while song_id_len < 4:
-                        other_id += "0"
-                        song_id_len += 1
-                    other_id += song_id
-                    other_info = find_song_by_id(other_id, songList)
-                    if other_info:
-                        if song_info:
-                            song_title = song_info["title"]
-                            output_lst += f"\n{song_id}/{other_id}：{song_title}"
-                            rep_ids.remove(other_id)
-                            continue
-                        song_id = other_id
-                if song_info:
-                    song_title = song_info["title"]
-                    output_lst += f"\n{song_id}：{song_title}"
+                song_title = song_info["title"]
+                output_lst += f"\n{song_id}：{song_title}"
             await playinfo.finish(MessageSegment.text(output_lst))
     if not song_info:
         await playinfo.finish(
@@ -1306,36 +1281,20 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.reply(event.message_id),
                 MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
             )
-        elif len(rep_ids) == 1:
-            song_id = rep_ids[0]
+        rep_ids_set = set(rep_ids)
+        for song_id in rep_ids:
             song_info = find_song_by_id(song_id, songList)
+            if not song_info:
+                rep_ids_set.remove(song_id)
             song_id_len = len(song_id)
             if song_id_len < 5:
-                other_id = "1"
-                while song_id_len < 4:
-                    other_id += "0"
-                    song_id_len += 1
-                other_id += song_id
+                other_id = f"1{int(song_id):04d}"
                 other_info = find_song_by_id(other_id, songList)
                 if other_info:
-                    if song_info:
-                        await whatSong.finish(
-                            (
-                                MessageSegment.reply(event.message_id),
-                                MessageSegment.text(
-                                    f"迪拉熊发现这首歌有标准与DX差分哦~\n请准确输入乐曲的id（{song_id}/{other_id}）"
-                                ),
-                            )
-                        )
-                    else:
-                        song_info = other_info
-            if not song_info:
-                await whatSong.finish(
-                    (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
-                    )
-                )
+                    rep_ids_set.add(other_id)
+        if len(rep_ids_set) == 1:
+            song_id = rep_ids_set.pop()
+            song_info = find_song_by_id(song_id, songList)
             if song_info["basic_info"]["genre"] == "宴会場":
                 img = await utage_music_info(song_data=song_info)
             else:
@@ -1345,24 +1304,8 @@ async def _(event: GroupMessageEvent):
             output_lst = "迪拉熊找到了~结果有："
             for song_id in rep_ids:
                 song_info = find_song_by_id(song_id, songList)
-                song_id_len = len(song_id)
-                if song_id_len < 5:
-                    other_id = "1"
-                    while song_id_len < 4:
-                        other_id += "0"
-                        song_id_len += 1
-                    other_id += song_id
-                    other_info = find_song_by_id(other_id, songList)
-                    if other_info:
-                        if song_info:
-                            song_title = song_info["title"]
-                            output_lst += f"\n{song_id}/{other_id}：{song_title}"
-                            rep_ids.remove(other_id)
-                            continue
-                        song_id = other_id
-                if song_info:
-                    song_title = song_info["title"]
-                    output_lst += f"\n{song_id}：{song_title}"
+                song_title = song_info["title"]
+                output_lst += f"\n{song_id}：{song_title}"
             msg = MessageSegment.text(output_lst)
         await whatSong.send(msg)
 
