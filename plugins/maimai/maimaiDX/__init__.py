@@ -1044,7 +1044,14 @@ async def _(event: GroupMessageEvent):
                 other_info = find_song_by_id(other_id, songList)
                 if other_info:
                     rep_ids_set.add(other_id)
-        if len(rep_ids_set) == 1:
+        if not rep_ids_set:
+            await playinfo.finish(
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+                )
+            )
+        elif len(rep_ids_set) == 1:
             song_id = rep_ids_set.pop()
             song_info = find_song_by_id(song_id, songList)
         else:
@@ -1292,7 +1299,14 @@ async def _(event: GroupMessageEvent):
                 other_info = find_song_by_id(other_id, songList)
                 if other_info:
                     rep_ids_set.add(other_id)
-        if len(rep_ids_set) == 1:
+        if not rep_ids_set:
+            await playinfo.finish(
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
+                )
+            )
+        elif len(rep_ids_set) == 1:
             song_id = rep_ids_set.pop()
             song_info = find_song_by_id(song_id, songList)
             if song_info["basic_info"]["genre"] == "宴会場":
