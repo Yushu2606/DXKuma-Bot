@@ -1,4 +1,5 @@
 import pymongo
+import pymongo.errors
 from .utils import generate_game_data
 class OpenChars(object):
     def __init__(self):
@@ -37,7 +38,10 @@ class OpenChars(object):
             return None,None
     
     def get_game_data(self,group_id:int):
-        game_data = self.collection.find_one({"_id":group_id})
+        try:
+            game_data = self.collection.find_one({"_id":group_id})
+        except pymongo.errors.ServerSelectionTimeoutError:
+            return None
         if game_data:
             return game_data
         else:
