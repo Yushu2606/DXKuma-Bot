@@ -169,10 +169,14 @@ def records_filter(
         songList=None,
 ):
     filted_records = []
+    mask_enabled = False
     for record in records:
         if level and record["level"] != level:
             continue
         if is_sun:
+            if record["dxScore"] == 0:
+                mask_enabled = True
+                continue
             passed = False
             for _, ra_dt in ratings.items():
                 max_acc = ra_dt[0] * 100
@@ -185,6 +189,9 @@ def records_filter(
             if not passed:
                 continue
         if is_lock:
+            if record["dxScore"] == 0:
+                mask_enabled = True
+                continue
             ra_in = ratings[record["rate"]][0]
             min_acc = ra_in * 100
             song_data = find_song_by_id(str(record["song_id"]), songList)
@@ -197,7 +204,7 @@ def records_filter(
     filted_records = sorted(
         filted_records, key=lambda x: (x["achievements"], x["ra"]), reverse=True
     )
-    return filted_records
+    return filted_records, mask_enabled
 
 
 def song_list_filter(level: str, songList):

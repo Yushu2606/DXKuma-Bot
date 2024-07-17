@@ -111,6 +111,7 @@ async def records_to_b50(
     dx = []
     if is_fit:
         charts, _ = await get_chart_stats()
+    mask_enabled = False
     for record in records:
         if record["level_label"] == "Utage":
             continue
@@ -122,6 +123,9 @@ async def records_to_b50(
         song_data = [d for d in songList if d["id"] == str(song_id)][0]
         is_new = song_data["basic_info"]["is_new"]
         if is_fit:
+            if record["dxScore"] == 0:
+                mask_enabled = True
+                continue
             fit_diff = get_fit_diff(
                 str(record["song_id"]), record["level_index"], record["ds"], charts
             )
@@ -130,6 +134,9 @@ async def records_to_b50(
                 fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
             )
         if is_dxs:
+            if record["dxScore"] == 0:
+                mask_enabled = True
+                continue
             if not dx_star_count:
                 song_data = find_song_by_id(str(record["song_id"]), songList)
                 record["achievements"] = record["dxScore"] / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
@@ -139,7 +146,8 @@ async def records_to_b50(
                 _, stars = dxscore_proc(record["dxScore"], sum_dxscore)
                 if str(stars) not in dx_star_count:
                     continue
-        if record["ra"] == 0:
+        if record["ra"] == 0 or record["achievements"] > 101:
+            mask_enabled = True
             continue
         if is_new:
             dx.append(record)
@@ -159,7 +167,7 @@ async def records_to_b50(
                   reverse=True,
               )
           )[:15]
-    return b35, b15
+    return b35, b15, mask_enabled
 
 
 def get_fit_diff(song_id: str, level_index: int, ds: float, charts) -> float:
@@ -228,7 +236,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await best50.finish(msg)
-    b35, b15 = await records_to_b50(records, songList)
+    b35, b15, _ = await records_to_b50(records, songList)
     if not b35 and not b15:
         if match:
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
@@ -308,7 +316,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await ap50.finish(msg)
-    ap35, ap15 = await records_to_b50(records, songList, ["ap", "app"])
+    ap35, ap15, _ = await records_to_b50(records, songList, ["ap", "app"])
     if not ap35 and not ap15:
         if match:
             msg = MessageSegment.text("他还没有全完美任何一个谱面呢~")
@@ -388,7 +396,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await fc50.finish(msg)
-    fc35, fc15 = await records_to_b50(records, songList, ["fc", "fcp"])
+    fc35, fc15, _ = await records_to_b50(records, songList, ["fc", "fcp"])
     if not fc35 and not fc15:
         if match:
             msg = MessageSegment.text("他还没有全连任何一个谱面呢~")
@@ -468,12 +476,18 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await fit50.finish(msg)
-    b35, b15 = await records_to_b50(records, songList, is_fit=True)
+    b35, b15, mask_enabled = await records_to_b50(records, songList, is_fit=True)
     if not b35 and not b15:
-        if match:
-            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        if mask_enabled:
+            if match:
+                msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
+            else:
+                msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
         else:
-            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+            if match:
+                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+            else:
+                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await fit50.finish((MessageSegment.reply(event.message_id), msg))
     await fit50.send(
         (
@@ -550,7 +564,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await rate50.finish(msg)
-    rate35, rate15 = await records_to_b50(records, songList, rate_rules=rate_rules)
+    rate35, rate15, _ = await records_to_b50(records, songList, rate_rules=rate_rules)
     if not rate35 and not rate15:
         if match:
             msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
@@ -630,12 +644,18 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await dxs50.finish(msg)
-    dxs35, dxs15 = await records_to_b50(records, songList, is_dxs=True)
+    dxs35, dxs15, mask_enabled = await records_to_b50(records, songList, is_dxs=True)
     if not dxs35 and not dxs15:
-        if match:
-            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        if mask_enabled:
+            if match:
+                msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
+            else:
+                msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
         else:
-            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+            if match:
+                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+            else:
+                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await dxs50.finish((MessageSegment.reply(event.message_id), msg))
     await dxs50.send(
         (
@@ -711,12 +731,18 @@ async def _(event: GroupMessageEvent):
         )
         await star50.finish(msg)
     find = re.search(r"dlxx50(( ?[1-5])+)", msg_text)
-    star35, star15 = await records_to_b50(records, songList, is_dxs=True, dx_star_count=find.group(1))
+    star35, star15, mask_enabled = await records_to_b50(records, songList, is_dxs=True, dx_star_count=find.group(1))
     if not star35 and not star15:
-        if match:
-            msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
+        if mask_enabled:
+            if match:
+                msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
+            else:
+                msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
         else:
-            msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+            if match:
+                msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
+            else:
+                msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await star50.finish((MessageSegment.reply(event.message_id), msg))
     await star50.send(
         (
@@ -770,9 +796,12 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await sunlist.finish(msg)
-    filted_records = records_filter(records=records, is_sun=True, songList=songList)
+    filted_records, mask_enabled = records_filter(records=records, is_sun=True, songList=songList)
     if not filted_records:
-        msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        if mask_enabled:
+            msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
+        else:
+            msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
     msg = event.get_plaintext()
     pattern = r"\d+?"
@@ -842,9 +871,12 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
         )
         await locklist.finish(msg)
-    filted_records = records_filter(records=records, is_lock=True, songList=songList)
+    filted_records, mask_enabled = records_filter(records=records, is_lock=True, songList=songList)
     if not filted_records:
-        msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        if mask_enabled:
+            msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
+        else:
+            msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
     msg = event.get_plaintext()
     pattern = r"\d+?"
@@ -920,7 +952,7 @@ async def _(event: GroupMessageEvent):
         level = f"{match.group(2)}{match.group(3)}"
     else:
         level = match.group(2)
-    filted_records = records_filter(records=records, level=level)
+    filted_records, _ = records_filter(records=records, level=level)
     if len(filted_records) == 0:
         msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
         await wcb.finish((MessageSegment.reply(event.message_id), msg))
