@@ -1,12 +1,13 @@
 from pathlib import Path
 from random import SystemRandom
 
-from nonebot import on_regex
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot import on_type
+from nonebot.adapters.onebot.v11 import MessageSegment, PokeNotifyEvent
+from nonebot.rule import to_me
 
 random = SystemRandom()
 
-poke = on_regex(r"^戳屁(屁|股)$")
+poke = on_type(PokeNotifyEvent, rule=to_me())
 
 POKE_PIC = Path("./src/kuma-pic/poke")
 

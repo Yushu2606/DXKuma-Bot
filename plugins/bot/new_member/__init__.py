@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nonebot import on_notice, Bot
+from nonebot import on_type, Bot
 from nonebot.adapters.onebot.v11 import (
     GroupIncreaseNoticeEvent,
     GroupDecreaseNoticeEvent,
@@ -8,16 +8,8 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.adapters.onebot.v11 import MessageSegment
 
 
-def is_group_increase(event: GroupIncreaseNoticeEvent):
-    return True
-
-
-def is_group_decrease(event: GroupDecreaseNoticeEvent):
-    return True
-
-
-groupIncrease = on_notice(rule=is_group_increase)
-groupDecrease = on_notice(rule=is_group_decrease)
+groupIncrease = on_type(GroupIncreaseNoticeEvent)
+groupDecrease = on_type(GroupDecreaseNoticeEvent)
 
 
 @groupIncrease.handle()
