@@ -6,10 +6,10 @@ from pathlib import Path
 from random import SystemRandom
 
 import aiohttp
-from nonebot import on_regex, on_fullmatch, on_startswith
+from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
-from util.DivingFish import get_chart_stats, get_music_data, get_player_records
+from util.DivingFish import get_chart_stats, get_music_data, get_player_data, get_player_records
 from .GenB50 import (
     compute_record,
     generateb50,
@@ -24,16 +24,18 @@ from .MusicInfo import music_info, play_info, utage_music_info, score_info
 
 random = SystemRandom()
 
-best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-dxs50 = on_regex(r"^dlxs50( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-star50 = on_regex(r"^dlxx50( ?[1-5])+( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
+fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
+dxs50 = on_regex(r"^dlxs50( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
+star50 = on_regex(r"^dlxx50( ?[1-5])+( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
 rate50 = on_regex(
-    r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+)\] ?)?$",
+    r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$",
     re.RegexFlag.I,
 )
-ap50 = on_regex(r"^dlxap(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
-fc50 = on_regex(r"^dlxfc(50)?( ?\[CQ:at,qq=(\d+)\] ?)?$", re.RegexFlag.I)
+ap50 = on_regex(r"^dlxap(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
+fc50 = on_regex(r"^dlxfc(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
+cf50 = on_regex(r"^dlxcf(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)$", re.RegexFlag.I)
+fd50 = on_regex(r"^dlxfd(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( ?(\d+?))?$", re.RegexFlag.I)
 locklist = on_regex(r"^dlx(suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
 
@@ -49,8 +51,6 @@ wcb = on_regex(r"^完成表 ?((\d+)(\.\d|\+)?)( (\d+))?$")
 whatSong = on_regex(r"^((search|查歌) ?(.+)|(.+)是什么歌)$", re.RegexFlag.I)
 aliasSearch = on_regex(r"^(查看?别名 ?(\d+)|(\d+)有什么别名)$")
 
-aliasChange = on_regex(r"^(添加|删除)别名")
-
 all_plate = on_regex(r"^(plate|看牌子)$", re.RegexFlag.I)
 all_frame = on_regex(r"^(frame|看底板)$", re.RegexFlag.I)
 
@@ -62,9 +62,6 @@ ratj_off = on_regex(r"^(关闭?|禁用)分数推荐$")
 
 allow_other_on = on_regex(r"^(开启?|启用|允许)代查$")
 allow_other_off = on_regex(r"^(关闭?|禁用|禁止)代查$")
-
-old_1 = on_regex(r"^dlxr(?!50)")
-old_2 = on_startswith("dlxfit")
 
 
 # 根据乐曲别名查询乐曲id列表
@@ -104,12 +101,13 @@ async def records_to_b50(
         fc_rules: list | None = None,
         rate_rules: list | None = None,
         is_fit: bool = False,
+        is_fd: bool = False,
         is_dxs: bool = False,
         dx_star_count: str | None = None
 ):
     sd = []
     dx = []
-    if is_fit:
+    if is_fit or is_fd:
         charts, _ = await get_chart_stats()
     mask_enabled = False
     for record in records:
@@ -122,19 +120,22 @@ async def records_to_b50(
         song_id = record["song_id"]
         song_data = [d for d in songList if d["id"] == str(song_id)][0]
         is_new = song_data["basic_info"]["is_new"]
-        if is_fit:
-            if record["dxScore"] == 0:
+        if is_fit or is_fd:
+            if record["ra"] == 0:
+                continue
+            if record["achievements"] > 0 and record["dxScore"] == 0:
                 mask_enabled = True
                 continue
             fit_diff = get_fit_diff(
                 str(record["song_id"]), record["level_index"], record["ds"], charts
             )
+            record["s_ra"] = record["ds"] if is_fit else record["ra"]
             record["ds"] = round(fit_diff, 2)
             record["ra"] = int(
                 fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
             )
         if is_dxs:
-            if record["dxScore"] == 0:
+            if record["achievements"] > 0 and record["dxScore"] == 0:
                 mask_enabled = True
                 continue
             if not dx_star_count:
@@ -147,7 +148,6 @@ async def records_to_b50(
                 if str(stars) not in dx_star_count:
                     continue
         if record["ra"] == 0 or record["achievements"] > 101:
-            mask_enabled = True
             continue
         if is_new:
             dx.append(record)
@@ -156,14 +156,75 @@ async def records_to_b50(
     b35 = (
               sorted(
                   sd,
-                  key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
+                  key=lambda x: ((x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]) if is_fd else x["ra"], x["ds"], x["achievements"]),
                   reverse=True,
               )
           )[:35]
     b15 = (
               sorted(
                   dx,
-                  key=lambda x: (x["ra"], get_ra_in(x["rate"]), x["ds"], x["achievements"]),
+                  key=lambda x: ((x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]) if is_fd else x["ra"], x["ds"], x["achievements"]),
+                  reverse=True,
+              )
+          )[:15]
+    return b35, b15, mask_enabled
+
+
+async def compare_b50(sender_records, target_records, songList):
+    handle_type = len(sender_records) > len(target_records)
+    sd = []
+    dx = []
+    mask_enabled = False
+    b35, b15, mask_enabled = await records_to_b50(sender_records, songList)
+    if not b35 and not b15:
+        return sd, dx, mask_enabled
+    sd_min = b35[-1]["ra"] if b35 else -1
+    dx_min = b15[-1]["ra"] if b15 else -1
+    for record in (target_records if handle_type else sender_records):
+        if record["level_label"] == "Utage":
+            continue
+        if record["ra"] == 0 or record["achievements"] > 101:
+            continue
+        if record["achievements"] > 0 and record["dxScore"] == 0:
+            mask_enabled = True
+            continue
+        other_record = [d for d in (sender_records if handle_type else target_records) if d["song_id"] == record["song_id"] and d["level_index"] == record["level_index"]]
+        if not other_record:
+            continue
+        other_record = other_record[0]
+        if other_record["ra"] == 0 or other_record["achievements"] > 101:
+            continue
+        if other_record["achievements"] > 0 and other_record["dxScore"] == 0:
+            mask_enabled = True
+            continue
+        song_id = record["song_id"]
+        song_data = [d for d in songList if d["id"] == str(song_id)][0]
+        is_new = song_data["basic_info"]["is_new"]
+        if handle_type:
+            record["preferred"] = record["ra"] >= (dx_min if is_new else sd_min)
+            record["s_ra"] = other_record["ra"]
+            if is_new:
+                dx.append(record)
+            else:
+                sd.append(record)
+        else:
+            other_record["preferred"] = other_record["ra"] >= (dx_min if is_new else sd_min)
+            other_record["s_ra"] = record["ra"]
+            if is_new:
+                dx.append(other_record)
+            else:
+                sd.append(other_record)
+    b35 = (
+              sorted(
+                  sd,
+                  key=lambda x: (x["preferred"], x["ra"] - x["s_ra"], x["ds"], x["achievements"]),
+                  reverse=True,
+              )
+          )[:35]
+    b15 = (
+              sorted(
+                  dx,
+                  key=lambda x: (x["preferred"], x["ra"] - x["s_ra"], x["ds"], x["achievements"]),
                   reverse=True,
               )
           )[:15]
@@ -186,59 +247,63 @@ def get_ra_in(rate: str) -> float:
 
 @best50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await best50.finish(msg)
-    data, status = await get_player_records(target_qq)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await best50.finish(msg)
+    data, status = await get_player_data(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
+            ),
+        )
+        await best50.finish(msg)
+    elif status == 403:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "已设置隐私或未同意用户协议"
             ),
         )
         await best50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await best50.finish(msg)
-    records = data["records"]
-    if not records:
-        if match:
-            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
-        else:
-            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
-        await best50.finish((MessageSegment.reply(event.message_id), msg))
     songList, _ = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await best50.finish(msg)
-    b35, b15, _ = await records_to_b50(records, songList)
+    charts = data["charts"]
+    b35, b15 = charts["sd"], charts["dx"]
     if not b35 and not b15:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -266,44 +331,46 @@ async def _(event: GroupMessageEvent):
 
 @ap50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await ap50.finish(msg)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await ap50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await ap50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await ap50.finish(msg)
     records = data["records"]
     if not records:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -312,13 +379,13 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await ap50.finish(msg)
     ap35, ap15, _ = await records_to_b50(records, songList, ["ap", "app"])
     if not ap35 and not ap15:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有全完美任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有全完美任何一个谱面呢~")
@@ -346,44 +413,46 @@ async def _(event: GroupMessageEvent):
 
 @fc50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await fc50.finish(msg)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await fc50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await fc50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await fc50.finish(msg)
     records = data["records"]
     if not records:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -392,13 +461,13 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await fc50.finish(msg)
     fc35, fc15, _ = await records_to_b50(records, songList, ["fc", "fcp"])
     if not fc35 and not fc15:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有全连任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有全连任何一个谱面呢~")
@@ -426,44 +495,46 @@ async def _(event: GroupMessageEvent):
 
 @fit50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await fit50.finish(msg)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await fit50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await fit50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await fit50.finish(msg)
     records = data["records"]
     if not records:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -472,19 +543,19 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await fit50.finish(msg)
     b35, b15, mask_enabled = await records_to_b50(records, songList, is_fit=True)
     if not b35 and not b15:
         if mask_enabled:
-            if match:
+            if target_qq != event.get_user_id():
                 msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
             else:
                 msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
         else:
-            if match:
+            if target_qq != event.get_user_id():
                 msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
             else:
                 msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -512,61 +583,63 @@ async def _(event: GroupMessageEvent):
 
 @rate50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await rate50.finish(msg)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await rate50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await rate50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await rate50.finish(msg)
     records = data["records"]
     if not records:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await rate50.finish((MessageSegment.reply(event.message_id), msg))
-    msg_text = msg_text.replace("+", "p").lower()
+    msg_text = event.get_plaintext().replace("+", "p").lower()
     rate_rules = re.findall(r"s{1,3}p?|a{1,3}|b{1,3}|[cd]", msg_text)
     songList, _ = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await rate50.finish(msg)
     rate35, rate15, _ = await records_to_b50(records, songList, rate_rules=rate_rules)
     if not rate35 and not rate15:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
         else:
             msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
@@ -594,44 +667,46 @@ async def _(event: GroupMessageEvent):
 
 @dxs50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await dxs50.finish(msg)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await dxs50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await dxs50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await dxs50.finish(msg)
     records = data["records"]
     if not records:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -640,19 +715,19 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await dxs50.finish(msg)
     dxs35, dxs15, mask_enabled = await records_to_b50(records, songList, is_dxs=True)
     if not dxs35 and not dxs15:
         if mask_enabled:
-            if match:
+            if target_qq != event.get_user_id():
                 msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
             else:
                 msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
         else:
-            if match:
+            if target_qq != event.get_user_id():
                 msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
             else:
                 msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -680,44 +755,46 @@ async def _(event: GroupMessageEvent):
 
 @star50.handle()
 async def _(event: GroupMessageEvent):
-    msg_text = event.raw_message
-    pattern = r"\[CQ:at,qq=(\d+)\]"
-    match = re.search(pattern, msg_text)
-    if not match:
-        target_qq = event.get_user_id()
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
     else:
-        target_qq = match.group(1)
         if target_qq != event.get_user_id():
-            with shelve.open("./data/maimai/b50_config") as config:
-                if (
-                        target_qq in config
-                        and "allow_other" in config[target_qq]
-                        and not config[target_qq]["allow_other"]
-                ):
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
-                    )
-                    await star50.finish(msg)
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await star50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await star50.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await star50.finish(msg)
     records = data["records"]
     if not records:
-        if match:
+        if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
@@ -726,20 +803,20 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await star50.finish(msg)
-    find = re.search(r"dlxx50(( ?[1-5])+)", msg_text)
+    find = re.search(r"dlxx50(( ?[1-5])+)", event.get_plaintext())
     star35, star15, mask_enabled = await records_to_b50(records, songList, is_dxs=True, dx_star_count=find.group(1))
     if not star35 and not star15:
         if mask_enabled:
-            if match:
+            if target_qq != event.get_user_id():
                 msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
             else:
                 msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
         else:
-            if match:
+            if target_qq != event.get_user_id():
                 msg = MessageSegment.text("他还没有任何匹配的成绩呢~")
             else:
                 msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
@@ -765,6 +842,225 @@ async def _(event: GroupMessageEvent):
     await star50.send(msg)
 
 
+@cf50.handle()
+async def _(event: GroupMessageEvent):
+    sender_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == sender_qq:
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
+    else:
+        if target_qq != sender_qq:
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await cf50.finish(msg)
+    if target_qq == sender_qq:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "不可以比较自己哦~"
+            ),
+        )
+        await cf50.finish(msg)
+    sender_data, status = await get_player_records(sender_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
+            ),
+        )
+        await cf50.finish(msg)
+    elif status == 403:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "你已设置隐私或未同意用户协议"
+            ),
+        )
+        await cf50.finish(msg)
+    elif status != 200 or not sender_data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
+        )
+        await cf50.finish(msg)
+    target_data, status = await get_player_records(target_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
+            ),
+        )
+        await cf50.finish(msg)
+    elif status == 403:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "他已设置隐私或未同意用户协议"
+            ),
+        )
+        await cf50.finish(msg)
+    elif status != 200 or not target_data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
+        )
+        await cf50.finish(msg)
+    songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
+        )
+        await cf50.finish(msg)
+    sender_records = sender_data["records"]
+    if not sender_records:
+        msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        await cf50.finish((MessageSegment.reply(event.message_id), msg))
+    target_records = target_data["records"]
+    if not target_records:
+        msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await cf50.finish((MessageSegment.reply(event.message_id), msg))
+    songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
+        )
+        await cf50.finish(msg)
+    b35, b15, mask_enabled = await compare_b50(sender_records, target_records, songList)
+    if not b35 and not b15:
+        if mask_enabled:
+            msg = MessageSegment.text("启用了掩码，无法获取真实数据哦~")
+        else:
+            msg = MessageSegment.text("还没有任何匹配的成绩呢~")
+        await cf50.finish((MessageSegment.reply(event.message_id), msg))
+    await cf50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+        )
+    )
+    nickname = target_data["nickname"]
+    dani = target_data["additional_rating"]
+    img = await generateb50(
+        b35=b35,
+        b15=b15,
+        nickname=nickname,
+        qq=target_qq,
+        dani=dani,
+        type="cf50",
+        songList=songList,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await cf50.send(msg)
+
+
+@fd50.handle()
+async def _(event: GroupMessageEvent):
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
+    else:
+        if target_qq != event.get_user_id():
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他还没有允许其他人查询他的成绩呢"),
+            )
+            await fd50.finish(msg)
+    data, status = await get_player_records(target_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
+            ),
+        )
+        await fd50.finish(msg)
+    elif status != 200 or not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
+        )
+        await fd50.finish(msg)
+    records = data["records"]
+    if not records:
+        if target_qq != event.get_user_id():
+            msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+        else:
+            msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await fd50.finish((MessageSegment.reply(event.message_id), msg))
+    songList, _ = await get_music_data()
+    if not songList:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
+        )
+        await fd50.finish(msg)
+    b35, b15, mask_enabled = await records_to_b50(records, songList, is_fd=True)
+    if not b35 and not b15:
+        if mask_enabled:
+            if target_qq != event.get_user_id():
+                msg = MessageSegment.text("他启用了掩码，无法获取真实数据哦~")
+            else:
+                msg = MessageSegment.text("你启用了掩码，无法获取真实数据哦~")
+        else:
+            if target_qq != event.get_user_id():
+                msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
+            else:
+                msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
+        await fd50.finish((MessageSegment.reply(event.message_id), msg))
+    await fd50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+        )
+    )
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    img = await generateb50(
+        b35=b35,
+        b15=b15,
+        nickname=nickname,
+        qq=target_qq,
+        dani=dani,
+        type="fd50",
+        songList=songList,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await fd50.send(msg)
+
+
 @sunlist.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
@@ -773,15 +1069,15 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await sunlist.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await sunlist.finish(msg)
     records = data["records"]
@@ -792,8 +1088,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await sunlist.finish(msg)
     filted_records, mask_enabled = records_filter(records=records, is_sun=True, songList=songList)
@@ -848,15 +1144,15 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await locklist.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await locklist.finish(msg)
     records = data["records"]
@@ -867,8 +1163,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await locklist.finish(msg)
     filted_records, mask_enabled = records_filter(records=records, is_lock=True, songList=songList)
@@ -933,15 +1229,15 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text(
-                "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+                "迪拉熊未找到用户信息，可能是没有绑定查分器"
             ),
         )
         await wcb.finish(msg)
     elif status != 200 or not data:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await wcb.finish(msg)
     records = data["records"]
@@ -979,8 +1275,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await wcb.finish(msg)
     input_records = get_page_records(filted_records, page=page)
@@ -1013,8 +1309,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await songinfo.finish(msg)
     song_info = find_song_by_id(song_id, songList)
@@ -1051,8 +1347,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await playinfo.finish(msg)
     song_info = find_song_by_id(song, songList)
@@ -1117,8 +1413,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await scoreinfo.finish(msg)
     song_info = find_song_by_id(song_id, songList)
@@ -1151,8 +1447,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await playmp3.finish(msg)
     rep_ids = await find_songid_by_alias(song, songList)
@@ -1178,8 +1474,8 @@ async def _(event: GroupMessageEvent):
         if not file_bytes:
             msg = (
                 MessageSegment.reply(event.message_id),
-                MessageSegment.text("落雪好像出了点问题呢"),
-                MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+                MessageSegment.text("查分器好像出了点问题呢"),
+                MessageSegment.image(Path("./Static/Help/pleasewait.png")),
             )
             await playmp3.finish(msg)
         await playmp3.send(MessageSegment.record(file_bytes))
@@ -1199,8 +1495,8 @@ async def _(event: GroupMessageEvent):
                 if not file_bytes:
                     msg = (
                         MessageSegment.reply(event.message_id),
-                        MessageSegment.text("落雪好像出了点问题呢"),
-                        MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+                        MessageSegment.text("查分器好像出了点问题呢"),
+                        MessageSegment.image(Path("./Static/Help/pleasewait.png")),
                     )
                     await playmp3.finish(msg)
             await playmp3.send(MessageSegment.record(file_bytes))
@@ -1242,8 +1538,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await randomsong.finish(msg)
     for song in songList:
@@ -1275,8 +1571,8 @@ async def _(event: GroupMessageEvent):
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
-            MessageSegment.text("水鱼好像出了点问题呢"),
-            MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+            MessageSegment.text("查分器好像出了点问题呢"),
+            MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await maiwhat.finish(msg)
     song = random.choice(songList)
@@ -1310,8 +1606,8 @@ async def _(event: GroupMessageEvent):
         if not songList:
             msg = (
                 MessageSegment.reply(event.message_id),
-                MessageSegment.text("水鱼好像出了点问题呢"),
-                MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+                MessageSegment.text("查分器好像出了点问题呢"),
+                MessageSegment.image(Path("./Static/Help/pleasewait.png")),
             )
             await whatSong.finish(msg)
         rep_ids = await find_songid_by_alias(name, songList)
@@ -1381,15 +1677,6 @@ async def _(event: GroupMessageEvent):
         song_alias = "\n".join(alias[0]["aliases"])
         msg = MessageSegment.text(f"迪拉熊找到了~别名有：\n{song_alias}")
     await aliasSearch.send(msg)
-
-
-@aliasChange.handle()
-async def _():
-    await aliasChange.send(
-        MessageSegment.text(
-            "增删别名请通过这个网站实现~\nhttps://maimai.lxns.net/alias/vote"
-        )
-    )
 
 
 @all_frame.handle()
@@ -1526,23 +1813,3 @@ async def _(event: GroupMessageEvent):
 
     msg = MessageSegment.text("迪拉熊帮你禁用了代查~")
     await allow_other_off.send((MessageSegment.reply(event.message_id), msg))
-
-
-@old_1.handle()
-async def _(event: GroupMessageEvent):
-    await old_1.send(
-        (
-            MessageSegment.reply(event.message_id),
-            MessageSegment.text("迪拉熊猜你想找：dlxr50+评级…"),
-        )
-    )
-
-
-@old_2.handle()
-async def _(event: GroupMessageEvent):
-    await old_2.send(
-        (
-            MessageSegment.reply(event.message_id),
-            MessageSegment.text("迪拉熊猜你想找：dlxf50"),
-        )
-    )

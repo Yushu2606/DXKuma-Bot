@@ -35,9 +35,9 @@ async def _():
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
     if ran_number == 10:
-        pic_path = "./src/kuma-pic/xc/1.png"
+        pic_path = "./Static/WannaCao/1.png"
     else:
-        pic_path = "./src/kuma-pic/xc/0.png"
+        pic_path = "./Static/WannaCao/0.png"
     msg = (MessageSegment.text(text), MessageSegment.image(Path(pic_path)))
     await xc.send(msg)
 
@@ -47,7 +47,7 @@ async def _(event: GroupMessageEvent):
     msg = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text("迪拉熊也喜欢你❤️"),
-        MessageSegment.image(Path("./src/kuma-pic/response/like.png")),
+        MessageSegment.image(Path("./Static/LikeYou/0.png")),
     )
     await wxhn.send(msg)
 
@@ -57,7 +57,7 @@ async def _(event: GroupMessageEvent):
     msg = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text("迪拉熊也喜欢你❤️"),
-        MessageSegment.image(Path("./src/kuma-pic/response/like.png")),
+        MessageSegment.image(Path("./Static/LikeYou/0.png")),
     )
     await wxhn2.send(msg)
 
@@ -70,21 +70,21 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("没有选项要让迪拉熊怎么选嘛~"),
-            MessageSegment.image(Path("./src/kuma-pic/roll/1.png")),
+            MessageSegment.image(Path("./Static/Roll/1.png")),
         )
         await roll.finish(msg)
     if len(set(roll_list)) == 1:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("就一个选项要让迪拉熊怎么选嘛~"),
-            MessageSegment.image(Path("./src/kuma-pic/roll/1.png")),
+            MessageSegment.image(Path("./Static/Roll/1.png")),
         )
         await roll.finish(msg)
     output = random.choice(roll_list)
     msg = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text(f"迪拉熊建议你选择“{output}”呢~"),
-        MessageSegment.image(Path("./src/kuma-pic/roll/0.png")),
+        MessageSegment.image(Path("./Static/Roll/0.png")),
     )
     await roll.send(msg)
 
@@ -92,9 +92,9 @@ async def _(event: GroupMessageEvent):
 @cum.handle()
 async def _():
     weight = random.randint(0, 9)
-    imgpath = "./src/kuma-pic/cum/0.png"
+    imgpath = "./Static/Cum/0.png"
     if weight == 0:
-        imgpath = "./src/kuma-pic/cum/1.png"
+        imgpath = "./Static/Cum/1.png"
     msg = MessageSegment.image(Path(imgpath))
     await cum.send(msg)
 
@@ -104,6 +104,6 @@ async def _(event: GroupMessageEvent):
     msg = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text("谢谢~"),
-        MessageSegment.image(Path("./src/kuma-pic/response/eatbreak.png")),
+        MessageSegment.image(Path("./Static/EatBreak/0.png")),
     )
     await eatbreak.send(msg)

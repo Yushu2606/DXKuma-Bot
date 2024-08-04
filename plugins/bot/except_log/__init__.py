@@ -20,6 +20,6 @@ async def _(event: Event, matcher: Matcher, exception: Exception | None):
     feedback = (
         MessageSegment.reply(event.message_id),
         MessageSegment.text("迪拉熊出了点问题呢x"),
-        MessageSegment.image(Path("./src/kuma-pic/response/pleasewait.png")),
+        MessageSegment.image(Path("./Static/Help/pleasewait.png")),
     )
     await matcher.send(feedback)

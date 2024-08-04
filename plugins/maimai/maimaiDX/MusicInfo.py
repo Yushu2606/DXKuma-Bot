@@ -240,7 +240,7 @@ async def music_info(song_data, qq: str):
 async def play_info(song_data, qq: str):
     data, status = await get_player_record(qq, song_data["id"])
     if status == 400:
-        msg = "迪拉熊未找到用户信息，可能是没有绑定水鱼\n水鱼网址：https://www.diving-fish.com/maimaidx/prober/"
+        msg = "迪拉熊未找到用户信息，可能是没有绑定查分器"
         return msg
     if status == 200:
         if not data:

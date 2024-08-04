@@ -14,8 +14,8 @@ random = SystemRandom()
 kuma_pic = on_regex(r"^(随机迪拉熊|dlx)((涩|色|瑟)图|st)?$", re.RegexFlag.I)
 rank = on_regex(r"^(迪拉熊|dlx)(排行榜|list)$", re.RegexFlag.I)
 
-KUMAPIC = "./src/kuma-pic/normal"
-KUMAPIC_R18 = "./src/kuma-pic/r18"
+KUMAPIC = "./Static/Gallery/SFW"
+KUMAPIC_R18 = "./Static/Gallery/NSFW"
 DATA_PATH = "./data/random_pic/count"
 
 
@@ -79,10 +79,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
         236030263,
         938593095,
         783427193,
+        684416389,
     ]:  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
             MessageSegment.text("迪拉熊不准你看"),
-            MessageSegment.image(Path("./src/kuma-pic/response/noplay.png")),
+            MessageSegment.image(Path("./Static/Gallery/0.png")),
         )
         await kuma_pic.finish(msg)
     else:

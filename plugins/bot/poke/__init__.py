@@ -9,7 +9,7 @@ random = SystemRandom()
 
 poke = on_type(PokeNotifyEvent, rule=to_me())
 
-POKE_PIC = Path("./src/kuma-pic/poke")
+POKE_PIC = Path("./Static/Poke")
 
 conversations = {
     1: "不可以戳迪拉熊的屁股啦~",
@@ -30,7 +30,7 @@ async def _():
     weights = [9, 9, 9, 9, 9, 9, 9, 9, 4, 4]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
-    filename = str(ran_number).zfill(2) + ".png"
+    filename = str(ran_number - 1) + ".png"
     file_path = POKE_PIC / filename
     msg = (MessageSegment.text(text), MessageSegment.image(file_path))
     await poke.finish(msg)

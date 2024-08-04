@@ -299,6 +299,8 @@ def music_to_part(
         index: int,
         b_type: str,
         songList,
+        s_ra=-1,
+        preferred=None
 ):
     color = (255, 255, 255)
     if level_index == 4:
@@ -376,12 +378,25 @@ def music_to_part(
         (388, 238), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
     )
     # 定数和ra
-    if b_type == "fit50" and ((ds * 10) % 1) == 0:
-        ds_str = f"{ds}0"
+    if b_type == "fit50":
+        if ((ds * 10) % 1) == 0:
+            ds_str = f"{ds}0"
+        else:
+            ds_str = str(ds)
+        ttf = ImageFont.truetype(ttf_bold_path, size=24)
+        diff = round(ds - s_ra, 2)
+        ImageDraw.Draw(partbase).text((376, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf, fill=color, anchor="lm")
     else:
         ds_str = str(ds)
-    ImageDraw.Draw(partbase).text((375, 174), f"{ds_str} -> {ra}", font=ttf, fill=color)
+    ttf = ImageFont.truetype(ttf_bold_path, size=34)
+    ImageDraw.Draw(partbase).text((376, 196), ds_str, font=ttf, fill=color, anchor="lm")
+    ImageDraw.Draw(partbase).text((549, 196), str(ra), font=ttf, fill=color, anchor="rm")
+    if b_type in ("cf50", "fd50"):
+        ttf = ImageFont.truetype(ttf_bold_path, size=24)
+        diff = ra - s_ra
+        ImageDraw.Draw(partbase).text((549, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf, fill=color, anchor="rm")
     # dx分数和星星
+    ttf = ImageFont.truetype(ttf_bold_path, size=30)
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
     ImageDraw.Draw(partbase).text(

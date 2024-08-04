@@ -21,7 +21,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
         msg = MessageSegment.text(f"恭喜{user_name}（{qq}）发现了迪拉熊宝藏地带，发送dlxhelp试一下吧~")
     else:
         msg = MessageSegment.text(f"欢迎{user_name}（{qq}）加入本群，发送dlxhelp和迪拉熊一起玩吧~")
-    await groupIncrease.send((msg, MessageSegment.image(Path("./src/kuma-pic/crease/0.png"))))
+    await groupIncrease.send((msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))
 
 
 @groupDecrease.handle()
@@ -33,4 +33,4 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
         msg = MessageSegment.text(f"很遗憾，{user_name}（{qq}）离开了迪拉熊的小窝QAQ")
     else:
         msg = MessageSegment.text(f"{user_name}（{qq}）离开了迪拉熊QAQ")
-    await groupDecrease.send((msg, MessageSegment.image(Path("./src/kuma-pic/crease/1.png"))))
+    await groupDecrease.send((msg, MessageSegment.image(Path("./Static/MemberChange/1.png"))))

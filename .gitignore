@@ -162,5 +162,12 @@ config.toml
 lagrange/
 data/
 src/
+Static/
 test/
 .DS_Store
+appsettings.toml
+DeviceInfo.json
+DXKumaBot
+Keystore.json
+Storage.db
+Storage-log.db

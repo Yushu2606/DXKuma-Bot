@@ -8,7 +8,7 @@
 
 <div align="center">
 
-<img src="static/doc/dxkuma.png" width="20%">
+<img src="docs/dxkuma.png" width="20%">
 
 # 迪拉熊Bot / DXKuma Bot
 
