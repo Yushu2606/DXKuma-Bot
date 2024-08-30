@@ -3,6 +3,7 @@ import datetime
 import os
 import re
 import shelve
+import toml
 from pathlib import Path
 from random import SystemRandom
 
@@ -13,11 +14,13 @@ random = SystemRandom()
 
 kuma_pic = on_regex(r"^(随机迪拉熊|dlx)((涩|色|瑟)图|st)?$", re.RegexFlag.I)
 rank = on_regex(r"^(迪拉熊|dlx)(排行榜|list)$", re.RegexFlag.I)
+addNSFW = on_regex(r"^加色图 (\d+)$", re.RegexFlag.I)
 
 KUMAPIC = "./Static/Gallery/SFW"
 KUMAPIC_R18 = "./Static/Gallery/NSFW"
 DATA_PATH = "./data/random_pic/count"
 
+config = toml.load("./dxkuma.toml")
 
 def get_time():
     today = datetime.date.today()
@@ -75,12 +78,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         path = KUMAPIC_R18
     if group_id == 967611986:  # 不被限制的 group_id
         pass
-    elif type == "kuma_r18" and group_id not in [
-        236030263,
-        938593095,
-        783427193,
-        684416389,
-    ]:  # type 为 'kuma_r18' 且非指定 group_id
+    elif type == "kuma_r18" and group_id not in config["nsfw_groups"]:  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
             MessageSegment.text("迪拉熊不准你看"),
             MessageSegment.image(Path("./Static/Gallery/0.png")),
@@ -128,3 +126,18 @@ async def _(bot: Bot):
     msg = "\n".join(leaderboard_output)
     msg = f"本周迪拉熊厨力最高的人是……\n{msg}\n迪拉熊给上面{count}个宝宝一个大大的拥抱~\n（积分每周一重算）"
     await rank.finish(msg)
+
+@addNSFW.handle()
+async def _(event: GroupMessageEvent):
+    if event.group_id != 236030263:  # 不被限制的 group_id
+        return
+    gid = int(re.search(r"加色图 (\d+)", event.get_plaintext()).group(1))
+    config["nsfw_groups"].append(gid)
+    with open("./dxkuma.toml", "w") as f:
+        toml.dump(config, f)
+        f.close()
+    msg = (
+        MessageSegment.reply(event.message_id),
+        MessageSegment.text("成功"),
+    )
+    await addNSFW.finish(msg)

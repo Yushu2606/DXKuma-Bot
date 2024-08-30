@@ -171,6 +171,8 @@ def records_filter(
     filted_records = []
     mask_enabled = False
     for record in records:
+        if record["level_label"] == "Utage":
+            continue
         if level and record["level"] != level:
             continue
         if is_sun:
