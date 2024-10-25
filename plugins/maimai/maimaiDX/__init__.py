@@ -132,7 +132,7 @@ async def records_to_b50(
             record["s_ra"] = record["ds"] if is_fit else record["ra"]
             record["ds"] = round(fit_diff, 2)
             record["ra"] = int(
-                fit_diff * record["achievements"] * get_ra_in(record["rate"]) * 0.01
+                fit_diff * (record["achievements"] if record["achievements"] < 100.5 else 100.5) * get_ra_in(record["rate"]) * 0.01
             )
         if is_dxs:
             if record["achievements"] > 0 and record["dxScore"] == 0:
