@@ -8,6 +8,7 @@ from random import SystemRandom
 import aiohttp
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from asyncio import TimeoutError
 
 from util.DivingFish import get_chart_stats, get_music_data, get_player_data, get_player_records
 from .GenB50 import (
@@ -1470,7 +1471,10 @@ async def _(event: GroupMessageEvent):
             async with session.get(
                     f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
             ) as resp:
-                file_bytes = await resp.read()
+                try:
+                    file_bytes = await resp.read()
+                except TimeoutError:
+                    return
         if not file_bytes:
             msg = (
                 MessageSegment.reply(event.message_id),
@@ -1491,7 +1495,10 @@ async def _(event: GroupMessageEvent):
                 async with session.get(
                         f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
                 ) as resp:
-                    file_bytes = await resp.read()
+                    try:
+                        file_bytes = await resp.read()
+                    except TimeoutError:
+                        return
                 if not file_bytes:
                     msg = (
                         MessageSegment.reply(event.message_id),

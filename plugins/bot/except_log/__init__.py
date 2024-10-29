@@ -2,14 +2,15 @@ import traceback
 from pathlib import Path
 
 from nonebot import get_bot
-from nonebot.adapters.onebot.v11 import MessageSegment, Event, NetworkError
+from nonebot.adapters.onebot.v11 import MessageSegment, Event
+from nonebot.adapters.onebot.v11.exception import OneBotV11AdapterException
 from nonebot.internal.matcher import Matcher
 from nonebot.message import run_postprocessor
 
 
 @run_postprocessor
 async def _(event: Event, matcher: Matcher, exception: Exception | None):
-    if not exception or isinstance(exception, NetworkError):
+    if not exception or isinstance(exception, OneBotV11AdapterException):
         return
     bot = get_bot()
     trace = "".join(traceback.format_exception(exception)).replace("\\n", "\n")

@@ -40,7 +40,7 @@ class OpenChars(object):
     def get_game_data(self,group_id:int):
         try:
             game_data = self.collection.find_one({"_id":group_id})
-        except pymongo.errors.ServerSelectionTimeoutError:
+        except pymongo.errors.AutoReconnect:
             return None
         if game_data:
             return game_data

@@ -101,10 +101,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if type == "kuma_r18":
         msg_id = send_msg["message_id"]
         await asyncio.sleep(10)
-        try:
-            await bot.delete_msg(message_id=msg_id)
-        except ActionFailed:
-            pass
+        await bot.delete_msg(message_id=msg_id)
 
 
 @rank.handle()
