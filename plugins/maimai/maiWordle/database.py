@@ -36,7 +36,7 @@ class OpenChars(object):
                 return True,game_data
         else:
             return None,None
-    
+
     def get_game_data(self,group_id:int):
         try:
             game_data = self.collection.find_one({"_id":group_id})
@@ -46,9 +46,9 @@ class OpenChars(object):
             return game_data
         else:
             return None
-    
+
     def update_game_data(self,group_id:int,game_data):
         self.collection.update_one({"_id":group_id},{"$set":game_data})
 
-    
+
 openchars = OpenChars()

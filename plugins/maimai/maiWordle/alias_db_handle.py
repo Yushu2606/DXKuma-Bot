@@ -30,7 +30,7 @@ class Alias(object):
             return []
         music_ids = [m['music_id'] for m in search_result]
         return music_ids
-    
+
 
     def getNextCount(self,counter_id:str):
         ret = self.counters_collection.find_and_modify({"_id":counter_id},{"$inc": {"seq": 1}})
@@ -47,7 +47,7 @@ class Alias(object):
         uncount = self.alias_examine_collection.count_documents({"$expr": {"$lt": [{"$size": "$agreeList"}, 3]}})
         if uncount >= 35:
             return '目前投票列表未完成别名申请过多,建议使用<投票列表>给你心仪的别名投票,带未完成别名申请少于35条后再进行添加,或联系管理员添加别名', 0
-        
+
         cid = f'a{self.getNextCount("examin")}'
         now_time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         now_time_ts = int(time.time())
@@ -77,7 +77,7 @@ class Alias(object):
                     )
                     return examine_data, 1
                 return '投票成功',0
-            
+
     def adminAddAlias(self,user_id:str,group_id: str,music_id: str,alias: str,songTitle: str):
 
         cid = f'a{self.getNextCount("examin")}'
@@ -107,7 +107,7 @@ class Alias(object):
             return '添加成功'
         else:
             return '重复添加'
-    
+
 
     def getUnPassAlias(self):
         str2img = '当前票数未超过三次的别名列表如下:'
@@ -116,17 +116,17 @@ class Alias(object):
         update_result = self.alias_examine_collection.update_many(
             {
                 "create_ts":{'$lt': three_days_ago},
-                "$expr": {  
-                    "$lt": [{"$size": "$agreeList"}, 3]  
-                }  
+                "$expr": {
+                    "$lt": [{"$size": "$agreeList"}, 3]
+                }
             },
-            {  
-                "$push": {  
-                    "agreeList": {  
-                        "$each": ["别名处理","申请时间","超时"] 
-                    }  
-                }  
-            } 
+            {
+                "$push": {
+                    "agreeList": {
+                        "$each": ["别名处理","申请时间","超时"]
+                    }
+                }
+            }
         )
 
         remove_count = update_result.modified_count
@@ -143,7 +143,7 @@ class Alias(object):
             return str2img
         else:
             return "暂无"
-        
+
     def removeAlias(self,music_id:str,alias:str):
         update_result = self.alias_collection.update_one(
             {
@@ -161,24 +161,24 @@ class Alias(object):
             return '删除成功'
         else:
             return '未找到此别名'
-        
+
 
     def SearchAlias(self,music_id:str):
         alias_data = self.alias_collection.find_one({"music_id":music_id})
         return list(set(alias_data['alias']))
-        
+
     def steponAlias(self,cid:str):
         update_result = self.alias_examine_collection.update_one(
             {
                 "_id": cid
             },
-            {  
-                "$push": {  
-                    "agreeList": {  
-                        "$each": ["别名处理", "管理员", "踩"]  
-                    }  
-                }  
-            } 
+            {
+                "$push": {
+                    "agreeList": {
+                        "$each": ["别名处理", "管理员", "踩"]
+                    }
+                }
+            }
         )
         return update_result.modified_count
 
@@ -188,13 +188,13 @@ class Alias(object):
             {
                 "_id": cid
             },
-            {  
-                "$push": {  
-                    "agreeList": {  
+            {
+                "$push": {
+                    "agreeList": {
                         "$each": ["别名处理","管理员","通过"]
-                    }  
-                }  
-            } 
+                    }
+                }
+            }
         )
         if update_result.modified_count:
             examine_data = self.alias_examine_collection.find_one({"_id":cid})
@@ -208,7 +208,7 @@ class Alias(object):
             return examine_data
         else:
             return 0
-        
+
     def get_alias_examine(self,cid:str):
         examine_data = self.alias_examine_collection.find_one({"_id":cid})
         if examine_data:

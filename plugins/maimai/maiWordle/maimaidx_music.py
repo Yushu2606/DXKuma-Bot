@@ -115,7 +115,7 @@ class MusicList(List[Music]):
             if music.version in music_version:
                 musiclist.append(music)
         return musiclist
-    
+
     def by_versions_for_cn(self,music_version) -> Optional[Music]:
         musiclist = []
         for music in self:
@@ -124,8 +124,8 @@ class MusicList(List[Music]):
             if music.cn_version in music_version:
                 musiclist.append(music)
         return musiclist
-    
-    
+
+
     def by_id(self, music_id: str) -> Optional[Music]:
         for music in self:
             if music.id == music_id:
@@ -154,7 +154,7 @@ class MusicList(List[Music]):
             if music.version == music_version:
                 new_list.append(music)
         return new_list
-    
+
     def get_othversion_music(self,music_version: str):
         new_list = MusicList()
         for music in self:
@@ -165,7 +165,7 @@ class MusicList(List[Music]):
 
     def random(self):
         return random.choice(self)
-    
+
     def random_no_eng(self):
         while True:
             music = random.choice(self)
@@ -177,7 +177,7 @@ class MusicList(List[Music]):
             if need_continue:continue
             break
         return music
-        
+
     def level_unfinish_filter(self,level):
         new_list = MusicList()
         for music in self:
@@ -245,8 +245,8 @@ for item in obj:
     else:
         ez_ver = str(item['basic_info']['cn_from']).replace("maimai ","")
         item['basic_info']['ez_from'] = f"{ez_ver}({version_ez_map.get(ez_ver,ez_ver)})"
-    
-    
+
+
 
     if item['basic_info']['genre'] in ['舞萌','maimai']:
         item['basic_info']['genre'] = '舞萌痴'
@@ -260,7 +260,7 @@ for item in obj:
         item['basic_info']['genre'] = '车万Project'
     if item['basic_info']['genre'] in ['其他游戏','ゲームバラエティ']:
         item['basic_info']['genre'] = '骑她游嘻'
-    
+
 
 
 
@@ -303,7 +303,7 @@ for __i in range(len(total_list)):
 #     for __j in range(len(unfinish_list[__i].charts)):
 #         unfinish_list[__i].charts[__j] = Chart(unfinish_list[__i].charts[__j])
 
-        
+
 # def reset_usl():
 #     demolist = sz.get_abstract_id_list()
 #     unfinishobj = []

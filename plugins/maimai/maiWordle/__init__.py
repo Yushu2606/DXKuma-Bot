@@ -26,7 +26,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 open_chars = on_regex(r"^开 ?(.+)$", re.RegexFlag.I)
-@open_chars.handle()   
+@open_chars.handle()
 async def _(event: GroupMessageEvent):
     msg = event.get_plaintext()
     char = msg.replace("开", "").strip()
@@ -34,7 +34,7 @@ async def _(event: GroupMessageEvent):
 
     if len(char) != 1:
         await open_chars.finish()
-    
+
     is_start,game_data = openchars.open_char(group_id,char)
     if is_start is not None:
         if is_start:
@@ -63,7 +63,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
             music_ids = [int(songinfo.id)]
         elif not songinfo:
             music_ids = otherName.findSong(msg_content)
-    
+
         if music_ids:
             guess_success,game_data = check_music_id(game_data,music_ids)
             print(game_data)
@@ -76,10 +76,10 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
                 else:
                     openchars.update_game_data(group_id,game_data)
                 await start_open_chars.send(game_state)
-                
+
 
 pass_game = on_command('跳过猜歌',priority=20)
-@pass_game.handle()   
+@pass_game.handle()
 async def _(event: GroupMessageEvent):
     group_id = event.group_id
     game_data = openchars.get_game_data(group_id)

@@ -27,7 +27,7 @@ def generate_message_state(game_data):
         is_all_open = True
         for c in game_content['title']:
             if c.lower() in game_data['open_chars'] or c == ' ':
-                display_title += c 
+                display_title += c
             else:
                 display_title += "□"
                 is_all_open = False
@@ -43,7 +43,7 @@ def generate_message_state(game_data):
     #     game_state.append("所有歌曲已全部被开出来啦,游戏结束。")
     char_all_open = "猜对了！"+"\n".join(char_all_open) if char_all_open else None
     return is_game_over,"\n".join(game_state),char_all_open,game_data
-    
+
 def check_music_id(game_data,music_ids:list):
     guess_success = []
     for music_id in music_ids:

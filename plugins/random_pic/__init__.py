@@ -99,6 +99,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await kuma_pic.finish(msg)
 
     files = os.listdir(path)
+    if not files:
+        msg = (
+            MessageSegment.text("迪拉熊不准你看"),
+            MessageSegment.image(Path("./Static/Gallery/0.png")),
+        )
+        await kuma_pic.finish(msg)
     file = random.choice(files)
     pic_path = os.path.join(path, file)
     update_count(qq=qq, type=type)
