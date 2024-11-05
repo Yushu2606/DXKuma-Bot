@@ -108,7 +108,7 @@ async def records_to_b50(
     sd = []
     dx = []
     if is_fit or is_fd:
-        charts, _ = await get_chart_stats()
+        charts = await get_chart_stats()
     mask_enabled = False
     for record in records:
         if record["level_label"] == "Utage":
@@ -299,7 +299,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await best50.finish(msg)
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -382,7 +382,7 @@ async def _(event: GroupMessageEvent):
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await ap50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -464,7 +464,7 @@ async def _(event: GroupMessageEvent):
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await fc50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -546,7 +546,7 @@ async def _(event: GroupMessageEvent):
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await fit50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -636,7 +636,7 @@ async def _(event: GroupMessageEvent):
         await rate50.finish((MessageSegment.reply(event.message_id), msg))
     msg_text = event.get_plaintext().replace("+", "p").lower()
     rate_rules = re.findall(r"s{1,3}p?|a{1,3}|b{1,3}|[cd]", msg_text)
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -718,7 +718,7 @@ async def _(event: GroupMessageEvent):
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await dxs50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -806,7 +806,7 @@ async def _(event: GroupMessageEvent):
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await star50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -928,7 +928,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await cf50.finish(msg)
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -944,7 +944,7 @@ async def _(event: GroupMessageEvent):
     if not target_records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await cf50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1026,7 +1026,7 @@ async def _(event: GroupMessageEvent):
         else:
             msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await fd50.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1091,7 +1091,7 @@ async def _(event: GroupMessageEvent):
     if not records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1166,7 +1166,7 @@ async def _(event: GroupMessageEvent):
     if not records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1278,7 +1278,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
         )
     )
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1312,7 +1312,7 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1350,7 +1350,7 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
             )
         )
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1416,7 +1416,7 @@ async def _(event: GroupMessageEvent):
     msg = event.get_plaintext()
     type_index = ["绿", "黄", "红", "紫", "白"].index(re.search(r"绿|黄|红|紫|白", msg).group(0))
     song_id = re.search(r"\d+", msg).group(0)
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1450,7 +1450,7 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
             )
         )
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1533,7 +1533,7 @@ async def _(event: GroupMessageEvent):
     if "." in level:
         s_type = "ds"
     s_songs = []
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1566,7 +1566,7 @@ async def _(event: GroupMessageEvent):
 @maiwhat.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    songList, _ = await get_music_data()
+    songList = await get_music_data()
     if not songList:
         msg = (
             MessageSegment.reply(event.message_id),
@@ -1601,7 +1601,7 @@ async def _(event: GroupMessageEvent):
                 )
             )
 
-        songList, _ = await get_music_data()
+        songList = await get_music_data()
         if not songList:
             msg = (
                 MessageSegment.reply(event.message_id),

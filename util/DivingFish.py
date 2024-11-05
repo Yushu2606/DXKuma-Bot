@@ -1,3 +1,7 @@
+import json
+import os
+from datetime import date
+
 import aiohttp
 
 from util.Config import config
@@ -46,22 +50,38 @@ async def get_player_record(qq: str, music_id):
 
 
 async def get_music_data():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/music_data"
-        ) as resp:
-            if resp.status == 200:
-                obj = await resp.json()
-                return obj, 200
-            return None, resp.status
+    cache_dir = "./Cache/Data/MusicData/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://www.diving-fish.com/api/maimaidxprober/music_data"
+            ) as resp:
+                with open(cache_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+    with open(cache_path) as fd:
+        return json.loads(fd.read())
 
 
 async def get_chart_stats():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
-        ) as resp:
-            if resp.status == 200:
-                obj = await resp.json()
-                return obj, 200
-            return None, resp.status
+    cache_dir = "./Cache/Data/ChartStats/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
+            ) as resp:
+                with open(cache_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+    with open(cache_path) as fd:
+        return json.loads(fd.read())
