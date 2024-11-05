@@ -1695,24 +1695,32 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
-    dir_path = "./Static/maimai/Plate/"
-    file_name = f"UI_Plate_{id}.png"
-    file_path = Path(dir_path) / file_name
-    if os.path.exists(file_path):
-        with shelve.open("./data/maimai/b50_config.db") as config:
-            if qq not in config:
-                config.setdefault(qq, {"plate": id})
-            else:
-                cfg = config[qq]
-                if "plate" not in config[qq]:
-                    cfg.setdefault("plate", id)
-                else:
-                    cfg["plate"] = id
-                config[qq] = cfg
+    plate_path = f"./Cache/Plate/{id}.png"
+    if not os.path.exists(plate_path):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/plate/{id.lstrip("0")}.png"
+            ) as resp:
+                if resp.status != 200:
+                    msg = MessageSegment.text("迪拉熊没换成功，再试试吧~（输入ID错误）")
+                    await set_plate.finish((MessageSegment.reply(event.message_id), msg))
 
-        msg = MessageSegment.text("迪拉熊帮你换好啦~")
-    else:
-        msg = MessageSegment.text("迪拉熊没换成功，再试试吧~（输入id有误）")
+                with open(plate_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+
+    with shelve.open("./data/maimai/b50_config.db") as config:
+        if qq not in config:
+            config.setdefault(qq, {"plate": id})
+        else:
+            cfg = config[qq]
+            if "plate" not in config[qq]:
+                cfg.setdefault("plate", id)
+            else:
+                cfg["plate"] = id
+            config[qq] = cfg
+
+    msg = MessageSegment.text("迪拉熊帮你换好啦~")
     await set_plate.send((MessageSegment.reply(event.message_id), msg))
 
 
@@ -1738,7 +1746,7 @@ async def _(event: GroupMessageEvent):
 
         msg = MessageSegment.text("迪拉熊帮你换好啦~")
     else:
-        msg = MessageSegment.text("迪拉熊没换成功，再试试吧~（输入id有误）")
+        msg = MessageSegment.text("迪拉熊没换成功，再试试吧~（输入ID有误）")
     await set_frame.send((MessageSegment.reply(event.message_id), msg))
 
 
