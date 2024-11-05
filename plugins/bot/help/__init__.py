@@ -1,5 +1,5 @@
-from re import RegexFlag
 from pathlib import Path
+from re import RegexFlag
 
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageSegment

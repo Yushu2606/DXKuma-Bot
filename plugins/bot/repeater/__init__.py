@@ -1,7 +1,7 @@
 import re
 
 from nonebot import on_message, Bot
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, ActionFailed
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 
 from . import config
 

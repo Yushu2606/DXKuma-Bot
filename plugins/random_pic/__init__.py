@@ -3,12 +3,16 @@ import datetime
 import os
 import re
 import shelve
-import toml
 from pathlib import Path
 from random import SystemRandom
 
+import toml
+from dill import Pickler, Unpickler
 from nonebot import on_regex, Bot
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment, ActionFailed
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+
+shelve.Pickler = Pickler
+shelve.Unpickler = Unpickler
 
 random = SystemRandom()
 
@@ -18,9 +22,10 @@ addNSFW = on_regex(r"^加色图 (\d+)$", re.RegexFlag.I)
 
 KUMAPIC = "./Static/Gallery/SFW"
 KUMAPIC_R18 = "./Static/Gallery/NSFW"
-DATA_PATH = "./data/random_pic/count"
+DATA_PATH = "./data/random_pic/count.db"
 
 config = toml.load("./dxkuma.toml")
+
 
 def get_time():
     today = datetime.date.today()
@@ -123,6 +128,7 @@ async def _(bot: Bot):
     msg = "\n".join(leaderboard_output)
     msg = f"本周迪拉熊厨力最高的人是……\n{msg}\n迪拉熊给上面{count}个宝宝一个大大的拥抱~\n（积分每周一重算）"
     await rank.finish(msg)
+
 
 @addNSFW.handle()
 async def _(event: GroupMessageEvent):

@@ -8,7 +8,6 @@ from random import SystemRandom
 import aiohttp
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
-from asyncio import TimeoutError
 
 from util.DivingFish import get_chart_stats, get_music_data, get_player_data, get_player_records
 from .GenB50 import (
@@ -133,7 +132,8 @@ async def records_to_b50(
             record["s_ra"] = record["ds"] if is_fit else record["ra"]
             record["ds"] = round(fit_diff, 2)
             record["ra"] = int(
-                fit_diff * (record["achievements"] if record["achievements"] < 100.5 else 100.5) * get_ra_in(record["rate"]) * 0.01
+                fit_diff * (record["achievements"] if record["achievements"] < 100.5 else 100.5) * get_ra_in(
+                    record["rate"]) * 0.01
             )
         if is_dxs:
             if record["achievements"] > 0 and record["dxScore"] == 0:
@@ -141,7 +141,8 @@ async def records_to_b50(
                 continue
             if not dx_star_count:
                 song_data = find_song_by_id(str(record["song_id"]), songList)
-                record["achievements"] = record["dxScore"] / (sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
+                record["achievements"] = record["dxScore"] / (
+                        sum(song_data["charts"][record["level_index"]]["notes"]) * 3) * 101
                 record["ra"] = int(record["ds"] * record["achievements"] * get_ra_in(record["rate"]) * 0.01)
             else:
                 sum_dxscore = sum(song_data["charts"][record["level_index"]]["notes"]) * 3
@@ -157,14 +158,18 @@ async def records_to_b50(
     b35 = (
               sorted(
                   sd,
-                  key=lambda x: ((x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]) if is_fd else x["ra"], x["ds"], x["achievements"]),
+                  key=lambda x: (
+                      (x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]) if is_fd else x["ra"], x["ds"],
+                      x["achievements"]),
                   reverse=True,
               )
           )[:35]
     b15 = (
               sorted(
                   dx,
-                  key=lambda x: ((x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]) if is_fd else x["ra"], x["ds"], x["achievements"]),
+                  key=lambda x: (
+                      (x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]) if is_fd else x["ra"], x["ds"],
+                      x["achievements"]),
                   reverse=True,
               )
           )[:15]
@@ -189,7 +194,8 @@ async def compare_b50(sender_records, target_records, songList):
         if record["achievements"] > 0 and record["dxScore"] == 0:
             mask_enabled = True
             continue
-        other_record = [d for d in (sender_records if handle_type else target_records) if d["song_id"] == record["song_id"] and d["level_index"] == record["level_index"]]
+        other_record = [d for d in (sender_records if handle_type else target_records) if
+                        d["song_id"] == record["song_id"] and d["level_index"] == record["level_index"]]
         if not other_record:
             continue
         other_record = other_record[0]
@@ -255,11 +261,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -339,11 +345,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -421,11 +427,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -503,11 +509,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -591,11 +597,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -675,11 +681,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -763,11 +769,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -852,11 +858,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == sender_qq:
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -983,11 +989,11 @@ async def _(event: GroupMessageEvent):
         target_qq = message.data["qq"]
         if target_qq == event.get_user_id():
             continue
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if (
-                target_qq not in config
-                or "allow_other" not in config[target_qq]
-                or config[target_qq]["allow_other"]
+                    target_qq not in config
+                    or "allow_other" not in config[target_qq]
+                    or config[target_qq]["allow_other"]
             ):
                 break
     else:
@@ -1454,8 +1460,7 @@ async def _(event: GroupMessageEvent):
         await playmp3.finish(msg)
     rep_ids = await find_songid_by_alias(song, songList)
     if rep_ids:
-        song_id = rep_ids[0] if len(rep_ids[0]) < 5 else rep_ids[0][1:]
-        songinfo = find_song_by_id(song_id=song_id, songList=songList)
+        songinfo = find_song_by_id(song_id=rep_ids[0], songList=songList)
         if not songinfo:
             await playmp3.finish(
                 (
@@ -1467,46 +1472,33 @@ async def _(event: GroupMessageEvent):
         await playmp3.send(
             MessageSegment.text(f"迪拉熊找到了~\n正在播放{songinfo["id"]}.{songname}")
         )
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
-            ) as resp:
-                try:
-                    file_bytes = await resp.read()
-                except TimeoutError:
-                    return
-        if not file_bytes:
-            msg = (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("查分器好像出了点问题呢"),
-                MessageSegment.image(Path("./Static/Help/pleasewait.png")),
-            )
-            await playmp3.finish(msg)
-        await playmp3.send(MessageSegment.record(file_bytes))
+        music_path = f"./Cache/Music/{rep_ids[0][-4:].lstrip("0")}.mp3"
+        if not os.path.exists(music_path):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                        f"https://assets2.lxns.net/maimai/music/{rep_ids[0][-4:].lstrip("0")}.mp3"
+                ) as resp:
+                    with open(music_path, "wb") as fd:
+                        async for chunk in resp.content.iter_chunked(1024):
+                            fd.write(chunk)
+        await playmp3.send(MessageSegment.record(music_path))
     else:
         songinfo = find_song_by_id(song, songList)
         if songinfo:
-            song_id = song if len(song) < 5 else song[1:]
             songname = songinfo["title"]
             await playmp3.send(
                 MessageSegment.text(f"迪拉熊找到了~\n正在播放{songinfo["id"]}.{songname}")
             )
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                        f"https://assets2.lxns.net/maimai/music/{song_id}.mp3"
-                ) as resp:
-                    try:
-                        file_bytes = await resp.read()
-                    except TimeoutError:
-                        return
-                if not file_bytes:
-                    msg = (
-                        MessageSegment.reply(event.message_id),
-                        MessageSegment.text("查分器好像出了点问题呢"),
-                        MessageSegment.image(Path("./Static/Help/pleasewait.png")),
-                    )
-                    await playmp3.finish(msg)
-            await playmp3.send(MessageSegment.record(file_bytes))
+            music_path = f"./Cache/Music/{song[-4:].lstrip("0")}.mp3"
+            if not os.path.exists(music_path):
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(
+                            f"https://assets2.lxns.net/maimai/music/{song[-4:].lstrip("0")}.mp3"
+                    ) as resp:
+                        with open(music_path, "wb") as fd:
+                            async for chunk in resp.content.iter_chunked(1024):
+                                fd.write(chunk)
+            await playmp3.send(MessageSegment.record(music_path))
         else:
             await playmp3.send(
                 (
@@ -1688,13 +1680,13 @@ async def _(event: GroupMessageEvent):
 
 @all_frame.handle()
 async def _():
-    path = "./src/maimai/allFrame.png"
+    path = "./Static/maimai/allFrame.png"
     await all_frame.send(MessageSegment.image(Path(path)))
 
 
 @all_plate.handle()
 async def _():
-    path = "./src/maimai/allPlate.png"
+    path = "./Static/maimai/allPlate.png"
     await all_plate.send(MessageSegment.image(Path(path)))
 
 
@@ -1703,11 +1695,11 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
-    dir_path = "./src/maimai/Plate/"
+    dir_path = "./Static/maimai/Plate/"
     file_name = f"UI_Plate_{id}.png"
     file_path = Path(dir_path) / file_name
     if os.path.exists(file_path):
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if qq not in config:
                 config.setdefault(qq, {"plate": id})
             else:
@@ -1729,11 +1721,11 @@ async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
-    dir_path = "./src/maimai/Frame/"
+    dir_path = "./Static/maimai/Frame/"
     file_name = f"UI_Frame_{id}.png"
     file_path = Path(dir_path) / file_name
     if os.path.exists(file_path):
-        with shelve.open("./data/maimai/b50_config") as config:
+        with shelve.open("./data/maimai/b50_config.db") as config:
             if qq not in config:
                 config.setdefault(qq, {"frame": id})
             else:
@@ -1753,7 +1745,7 @@ async def _(event: GroupMessageEvent):
 @ratj_on.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config") as config:
+    with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
             config.setdefault(qq, {"rating_tj": True})
         else:
@@ -1771,7 +1763,7 @@ async def _(event: GroupMessageEvent):
 @ratj_off.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config") as config:
+    with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
             config.setdefault(qq, {"rating_tj": False})
         else:
@@ -1789,7 +1781,7 @@ async def _(event: GroupMessageEvent):
 @allow_other_on.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config") as config:
+    with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
             config.setdefault(qq, {"allow_other": True})
         else:
@@ -1807,7 +1799,7 @@ async def _(event: GroupMessageEvent):
 @allow_other_off.handle()
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
-    with shelve.open("./data/maimai/b50_config") as config:
+    with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
             config.setdefault(qq, {"allow_other": False})
         else:

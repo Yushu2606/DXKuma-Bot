@@ -1,4 +1,5 @@
 import math
+import os
 import shelve
 from io import BytesIO
 from random import SystemRandom
@@ -9,9 +10,7 @@ from PIL import Image, ImageFont, ImageDraw
 from .Config import (
     font_path,
     maimai_Static,
-    maimai_Jacket,
     maimai_Frame,
-    maimai_Plate,
     maimai_Dani,
     maimai_Rating,
     maimai_Level,
@@ -284,7 +283,7 @@ def compute_ra(ra: int):
     return 11
 
 
-def music_to_part(
+async def music_to_part(
         achievements: float,
         ds: float,
         dxScore: int,
@@ -295,7 +294,7 @@ def music_to_part(
         level_label: str,
         ra: int,
         rate: str,
-        song_id: str,
+        song_id: int,
         title: str,
         type: str,
         index: int,
@@ -313,7 +312,15 @@ def music_to_part(
     partbase = Image.open(partbase_path)
 
     # 歌曲封面
-    jacket_path = maimai_Jacket / f"UI_Jacket_{format_songid(song_id)}.png"
+    jacket_path = f"./Cache/Jacket/{song_id % 10000}.png"
+    if not os.path.exists(jacket_path):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/jacket/{song_id % 10000}.png"
+            ) as resp:
+                with open(jacket_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
     jacket = Image.open(jacket_path)
     jacket = resize_image(jacket, 0.56)
     partbase.paste(jacket, (36, 41), jacket)
@@ -387,7 +394,8 @@ def music_to_part(
             ds_str = str(ds)
         ttf = ImageFont.truetype(ttf_bold_path, size=24)
         diff = round(ds - s_ra, 2)
-        ImageDraw.Draw(partbase).text((376, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf, fill=color, anchor="lm")
+        ImageDraw.Draw(partbase).text((376, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf,
+                                      fill=color, anchor="lm")
     else:
         ds_str = str(ds)
     ttf = ImageFont.truetype(ttf_bold_path, size=34)
@@ -396,7 +404,8 @@ def music_to_part(
     if b_type in ("cf50", "fd50"):
         ttf = ImageFont.truetype(ttf_bold_path, size=24)
         diff = ra - s_ra
-        ImageDraw.Draw(partbase).text((549, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf, fill=color, anchor="rm")
+        ImageDraw.Draw(partbase).text((549, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf,
+                                      fill=color, anchor="rm")
     # dx分数和星星
     ttf = ImageFont.truetype(ttf_bold_path, size=30)
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
@@ -436,7 +445,7 @@ def music_to_part(
     return partbase
 
 
-def draw_best(bests: list, type: str, songList):
+async def draw_best(bests: list, type: str, songList):
     index = 0
     # 计算列数
     queue_nums = int(len(bests) / 4) + 1
@@ -466,7 +475,7 @@ def draw_best(bests: list, type: str, songList):
                 # 根据索引从列表中抽取数据
                 song_data = bests[index]
                 # 传入数据生成图片
-                part = music_to_part(
+                part = await music_to_part(
                     **song_data, index=index + 1, b_type=type, songList=songList
                 )
                 # 将图片粘贴到底图上
@@ -545,7 +554,7 @@ def rating_tj(b35max, b35min, b15max, b15min):
 async def generateb50(
         b35: list, b15: list, nickname: str, qq, dani: int, type: str, songList
 ):
-    with shelve.open("./data/maimai/b50_config") as config:
+    with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
             frame = "200502"
             plate = "000101"
@@ -581,7 +590,15 @@ async def generateb50(
     b50.paste(frame, (45, 45))
 
     # 牌子
-    plate_path = maimai_Plate / f"UI_Plate_{plate}.png"
+    plate_path = f"./Cache/Plate/{plate}.png"
+    if not os.path.exists(plate_path):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/plate/{plate.lstrip("0")}.png"
+            ) as resp:
+                with open(plate_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
     plate = Image.open(plate_path)
     b50.paste(plate, (60, 60), plate)
 
@@ -629,11 +646,11 @@ async def generateb50(
 
     # rating数字
     rating_str = str(rating).zfill(5)
-    num1 = Image.open(f"./src/maimai/number/{rating_str[0]}.png").resize((18, 21))
-    num2 = Image.open(f"./src/maimai/number/{rating_str[1]}.png").resize((18, 21))
-    num3 = Image.open(f"./src/maimai/number/{rating_str[2]}.png").resize((18, 21))
-    num4 = Image.open(f"./src/maimai/number/{rating_str[3]}.png").resize((18, 21))
-    num5 = Image.open(f"./src/maimai/number/{rating_str[4]}.png").resize((18, 21))
+    num1 = Image.open(f"./Static/maimai/number/{rating_str[0]}.png").resize((18, 21))
+    num2 = Image.open(f"./Static/maimai/number/{rating_str[1]}.png").resize((18, 21))
+    num3 = Image.open(f"./Static/maimai/number/{rating_str[2]}.png").resize((18, 21))
+    num4 = Image.open(f"./Static/maimai/number/{rating_str[3]}.png").resize((18, 21))
+    num5 = Image.open(f"./Static/maimai/number/{rating_str[4]}.png").resize((18, 21))
 
     b50.paste(num1, (253, 77), num1)
     b50.paste(num2, (267, 77), num2)
@@ -656,8 +673,8 @@ async def generateb50(
     )
 
     # b50
-    b35 = draw_best(b35, type, songList)
-    b15 = draw_best(b15, type, songList)
+    b35 = await draw_best(b35, type, songList)
+    b15 = await draw_best(b15, type, songList)
     b50.paste(b35, (25, 795), b35)
     b50.paste(b15, (25, 1985), b15)
 
@@ -681,7 +698,7 @@ async def generate_wcb(
         level: str | None = None,
         rate_count=None,
 ):
-    with shelve.open("./data/maimai/b50_config") as config:
+    with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config or "plate" not in config[qq]:
             plate = "000101"
         else:
@@ -692,7 +709,7 @@ async def generate_wcb(
             else:
                 frame = config[qq]["frame"]
 
-    bg = Image.open("./src/maimai/wcb_bg.png")
+    bg = Image.open("./Static/maimai/wcb_bg.png")
 
     # 底板
     if level:
@@ -704,7 +721,15 @@ async def generate_wcb(
     bg.paste(frame, (45, 45))
 
     # 牌子
-    plate_path = maimai_Plate / f"UI_Plate_{plate}.png"
+    plate_path = f"./Cache/Plate/{plate}.png"
+    if not os.path.exists(plate_path):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/plate/{plate.lstrip("0")}.png"
+            ) as resp:
+                with open(plate_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
     plate = Image.open(plate_path)
     bg.paste(plate, (60, 60), plate)
 
@@ -742,11 +767,11 @@ async def generate_wcb(
 
     # rating数字
     rating_str = str(rating).zfill(5)
-    num1 = Image.open(f"./src/maimai/number/{rating_str[0]}.png").resize((18, 21))
-    num2 = Image.open(f"./src/maimai/number/{rating_str[1]}.png").resize((18, 21))
-    num3 = Image.open(f"./src/maimai/number/{rating_str[2]}.png").resize((18, 21))
-    num4 = Image.open(f"./src/maimai/number/{rating_str[3]}.png").resize((18, 21))
-    num5 = Image.open(f"./src/maimai/number/{rating_str[4]}.png").resize((18, 21))
+    num1 = Image.open(f"./Static/maimai/number/{rating_str[0]}.png").resize((18, 21))
+    num2 = Image.open(f"./Static/maimai/number/{rating_str[1]}.png").resize((18, 21))
+    num3 = Image.open(f"./Static/maimai/number/{rating_str[2]}.png").resize((18, 21))
+    num4 = Image.open(f"./Static/maimai/number/{rating_str[3]}.png").resize((18, 21))
+    num5 = Image.open(f"./Static/maimai/number/{rating_str[4]}.png").resize((18, 21))
 
     bg.paste(num1, (253, 77), num1)
     bg.paste(num2, (267, 77), num2)
@@ -803,7 +828,7 @@ async def generate_wcb(
     )
 
     # 绘制当前页面的成绩
-    records_parts = draw_best(input_records, type="wcb", songList=songList)
+    records_parts = await draw_best(input_records, type="wcb", songList=songList)
     bg.paste(records_parts, (25, 795), records_parts)
 
     img_byte_arr = BytesIO()

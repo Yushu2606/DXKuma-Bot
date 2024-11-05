@@ -1,12 +1,12 @@
-from io import BytesIO
 import os
+from io import BytesIO
 
+import aiohttp
 from PIL import Image, ImageDraw, ImageFont
 
 from util.DivingFish import get_player_data, get_player_record
 from .Config import (
     font_path,
-    maimai_Jacket,
     maimai_Static,
     maimai_Version,
     maimai_Plus,
@@ -44,7 +44,7 @@ def format_songid(id):
 
 async def music_info(song_data, qq: str):
     # 底图
-    bg = Image.open("./src/maimai/musicinfo_bg.png")
+    bg = Image.open("./Static/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
     # 初始化用户数据
@@ -57,10 +57,15 @@ async def music_info(song_data, qq: str):
         b50_status = False
 
     # 歌曲封面
-    cover_id = format_songid(song_data["id"])
-    cover_path = maimai_Jacket / f"UI_Jacket_{cover_id}.png"
+    cover_path = f"./Cache/Jacket/{song_data["id"][-4:]}.png"
     if not os.path.exists(cover_path):
-        cover_path = maimai_Jacket / "UI_Jacket_000000.png"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+            ) as resp:
+                with open(cover_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
     cover = Image.open(cover_path).resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 
@@ -253,12 +258,20 @@ async def play_info(song_data, qq: str):
 
     playdata = sorted(records, key=lambda x: x["level_index"])
     # 底图
-    bg = Image.open("./src/maimai/playinfo_bg.png")
+    bg = Image.open("./Static/maimai/playinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
     # 歌曲封面
-    cover_id = format_songid(song_data["id"])
-    cover = Image.open(maimai_Jacket / f"UI_Jacket_{cover_id}.png").resize((295, 295))
+    cover_path = f"./Cache/Jacket/{song_data["id"][-4:].lstrip("0")}.png"
+    if not os.path.exists(cover_path):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+            ) as resp:
+                with open(cover_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+    cover = Image.open(cover_path).resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 
     # 绘制标题
@@ -431,14 +444,19 @@ async def play_info(song_data, qq: str):
 
 async def utage_music_info(song_data, index=0):
     # 底图
-    bg = Image.open("./src/maimai/utage_musicinfo_bg.png")
+    bg = Image.open("./Static/maimai/utage_musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
 
     # 歌曲封面
-    cover_id = format_songid(song_data["id"])
-    cover_path = maimai_Jacket / f"UI_Jacket_{cover_id}.png"
+    cover_path = f"./Cache/Jacket/{song_data["id"][-4:].lstrip("0")}.png"
     if not os.path.exists(cover_path):
-        cover_path = maimai_Jacket / "UI_Jacket_000000.png"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+            ) as resp:
+                with open(cover_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
     cover = Image.open(cover_path).resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 
@@ -544,7 +562,6 @@ async def utage_music_info(song_data, index=0):
         (863, 1415), str(dx_num), anchor="mm", font=ttf, fill=(28, 43, 110)
     )
 
-
     img_byte_arr = BytesIO()
     bg.save(img_byte_arr, format="PNG")
     img_byte_arr.seek(0)
@@ -555,14 +572,20 @@ async def utage_music_info(song_data, index=0):
 
 async def score_info(song_data, index):
     # 底图
-    bg = Image.open(f"./src/maimai/Static/scoreinfo_bg_{["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][index]}.png")
+    bg = Image.open(
+        f"./Static/maimai/Static/scoreinfo_bg_{["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][index]}.png")
     drawtext = ImageDraw.Draw(bg)
 
     # 歌曲封面
-    cover_id = format_songid(song_data["id"])
-    cover_path = maimai_Jacket / f"UI_Jacket_{cover_id}.png"
-    if not os.path.exists(cover_path):
-        cover_path = maimai_Jacket / "UI_Jacket_000000.png"
+    cover_path = f"./Cache/Jacket/{song_data["id"][-4:].lstrip("0")}.png"
+    if not os.path.exists():
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+            ) as resp:
+                with open(cover_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
     cover = Image.open(cover_path).resize((295, 295))
     bg.paste(cover, (204, 440), cover)
 
