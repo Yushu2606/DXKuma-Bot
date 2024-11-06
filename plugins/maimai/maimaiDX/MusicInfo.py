@@ -578,7 +578,7 @@ async def score_info(song_data, index):
 
     # 歌曲封面
     cover_path = f"./Cache/Jacket/{song_data["id"][-4:].lstrip("0")}.png"
-    if not os.path.exists():
+    if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
                     f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"

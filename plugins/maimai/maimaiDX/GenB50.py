@@ -713,7 +713,7 @@ async def generate_wcb(
 
     # 底板
     if level:
-        frame_path = "./src/maimai/wcb_frame.png"
+        frame_path = "./Static/maimai/wcb_frame.png"
     else:
         frame_path = maimai_Frame / f"UI_Frame_{frame}.png"
     frame = Image.open(frame_path)

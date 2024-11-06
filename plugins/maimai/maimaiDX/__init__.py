@@ -1699,7 +1699,7 @@ async def _(event: GroupMessageEvent):
     if not os.path.exists(plate_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/plate/{id.lstrip("0")}.png"
+                    f"https://assets2.lxns.net/maimai/plate/{id.lstrip("0") or "0"}.png"
             ) as resp:
                 if resp.status != 200:
                     msg = MessageSegment.text("迪拉熊没换成功，再试试吧~（输入ID错误）")
