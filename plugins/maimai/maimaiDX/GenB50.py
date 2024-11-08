@@ -316,7 +316,7 @@ async def music_to_part(
     if not os.path.exists(jacket_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/jacket/{song_id % 10000}.png"
+                    f"https://www.diving-fish.com/covers/{str(song_id).zfill(5)}.png"
             ) as resp:
                 with open(jacket_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):

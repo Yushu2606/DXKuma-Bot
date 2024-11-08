@@ -57,11 +57,11 @@ async def music_info(song_data, qq: str):
         b50_status = False
 
     # 歌曲封面
-    cover_path = f"./Cache/Jacket/{song_data["id"][-4:]}.png"
+    cover_path = f"./Cache/Jacket/{song_data["id"][-4:].lstrip("0")}.png"
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -266,7 +266,7 @@ async def play_info(song_data, qq: str):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -452,7 +452,7 @@ async def utage_music_info(song_data, index=0):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -581,7 +581,7 @@ async def score_info(song_data, index):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/jacket/{song_data["id"][-4:].lstrip("0")}.png"
+                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
