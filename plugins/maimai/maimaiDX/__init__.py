@@ -19,43 +19,44 @@ from .GenB50 import (
     records_filter,
     find_song_by_id,
     dxscore_proc,
+    get_fit_diff,
 )
 from .MusicInfo import music_info, play_info, utage_music_info, score_info
 
 random = SystemRandom()
 
-best50 = on_regex(r"^dlxb?50( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
-fit50 = on_regex(r"^dlxf50( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
-dxs50 = on_regex(r"^dlxs50( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
-star50 = on_regex(r"^dlxx50( ?[1-5])+( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
+best50 = on_regex(r"^dlxb?50( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+fit50 = on_regex(r"^dlxf50( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+dxs50 = on_regex(r"^dlxs50( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+star50 = on_regex(r"^dlxx50( *[1-5])+( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 rate50 = on_regex(
-    r"^dlxr50( ?(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$",
-    re.RegexFlag.I,
+    r"^dlxr50( *(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( *\[CQ:at,qq=\d+,name=@.+\] *)?$",
+    re.I,
 )
-ap50 = on_regex(r"^dlxap(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
-fc50 = on_regex(r"^dlxfc(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
-cf50 = on_regex(r"^dlxcf(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)$", re.RegexFlag.I)
-fd50 = on_regex(r"^dlxfd(50)?( ?\[CQ:at,qq=(\d+),name=@(.+)\] ?)?$", re.RegexFlag.I)
-sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( ?(\d+?))?$", re.RegexFlag.I)
-locklist = on_regex(r"^dlx(suo|锁|🔒)( ?(\d+?))?$", re.RegexFlag.I)
+ap50 = on_regex(r"^dlxap(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+fc50 = on_regex(r"^dlxfc(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+cf50 = on_regex(r"^dlxcf(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)$", re.I)
+fd50 = on_regex(r"^dlxfd(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( *\d+?)?$", re.I)
+locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
 
-songinfo = on_regex(r"^id ?(\d+)$", re.RegexFlag.I)
-playinfo = on_regex(r"^info ?(.+)$", re.RegexFlag.I)
-scoreinfo = on_regex(r"^分数表 ?(绿|黄|红|紫|白) ?(\d+)$", re.RegexFlag.I)
-playmp3 = on_regex(r"^dlx点歌 ?(.+)$", re.RegexFlag.I)
-randomsong = on_regex(r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?$")
+songinfo = on_regex(r"^id *\d+$", re.I)
+playinfo = on_regex(r"^info *.+$", re.I)
+scoreinfo = on_regex(r"^(score|分数表) *(绿|黄|红|紫|白) *\d+$", re.I)
+playmp3 = on_regex(r"^dlx点歌 *.+$", re.I)
+randomsong = on_regex(r"^随(个|歌) *(绿|黄|红|紫|白)? *\d+(\.\d|\+)?$")
 maiwhat = on_fullmatch("mai什么")
 
-wcb = on_regex(r"^完成表 ?((\d+)(\.\d|\+)?)( (\d+))?$")
+wcb = on_regex(r"^(list|完成表) *(\d+(\.\d|\+)?|真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|霸者|舞|熊|华|爽|煌|宙|星|祭|祝|双)( +\d+)?$")
 
-whatSong = on_regex(r"^((search|查歌) ?(.+)|(.+)是什么歌)$", re.RegexFlag.I)
-aliasSearch = on_regex(r"^(查看?别名 ?(\d+)|(\d+)有什么别名)$")
+whatSong = on_regex(r"^((search|查歌) *.+|.+是什么歌)$", re.I)
+aliasSearch = on_regex(r"^(查看?别名 *\d+|\d+有什么别名)$")
 
-all_plate = on_regex(r"^(plate|看牌子)$", re.RegexFlag.I)
-all_frame = on_regex(r"^(frame|看底板)$", re.RegexFlag.I)
+all_plate = on_regex(r"^(plate|看牌子)$", re.I)
+all_frame = on_regex(r"^(frame|看底板)$", re.I)
 
-set_plate = on_regex(r"^(setplate|设置?牌子) ?(\d{6})$", re.RegexFlag.I)
-set_frame = on_regex(r"^(setframe|设置?底板) ?(\d{6})$", re.RegexFlag.I)
+set_plate = on_regex(r"^(setplate|设置?牌子) *\d{6}$", re.I)
+set_frame = on_regex(r"^(setframe|设置?底板) *\d{6}$", re.I)
 
 ratj_on = on_regex(r"^(开启?|启用)分数推荐$")
 ratj_off = on_regex(r"^(关闭?|禁用)分数推荐$")
@@ -236,16 +237,6 @@ async def compare_b50(sender_records, target_records, songList):
               )
           )[:15]
     return b35, b15, mask_enabled
-
-
-def get_fit_diff(song_id: str, level_index: int, ds: float, charts) -> float:
-    if song_id not in charts["charts"]:
-        return ds
-    level_data = charts["charts"][song_id][level_index]
-    if "fit_diff" not in level_data:
-        return ds
-    fit_diff = level_data["fit_diff"]
-    return fit_diff
 
 
 def get_ra_in(rate: str) -> float:
@@ -814,7 +805,7 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await star50.finish(msg)
-    find = re.search(r"dlxx50(( ?[1-5])+)", event.get_plaintext())
+    find = re.search(r"dlxx50((?: *[1-5])+)", event.get_plaintext())
     star35, star15, mask_enabled = await records_to_b50(records, songList, is_dxs=True, dx_star_count=find.group(1))
     if not star35 and not star15:
         if mask_enabled:
@@ -1222,15 +1213,8 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    pattern = r"完成表 ?((\d+)(\.\d|\+)?)( (\d+))?"
+    pattern = r"完成表 *(?:((?:\d+)(?:\.\d|\+)?)|(真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|霸者|舞|熊|华|爽|煌|宙|星|祭|祝|双))(?: *(\d+))?"
     match = re.match(pattern, msg)
-    if not match:
-        await wcb.finish(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊觉得输入的信息好像有点问题呢"),
-            )
-        )
     data, status = await get_player_records(qq)
     if status == 400:
         msg = (
@@ -1251,33 +1235,6 @@ async def _(event: GroupMessageEvent):
     if not records:
         msg = MessageSegment.text("你还没有游玩任何一个谱面呢~")
         await wcb.finish((MessageSegment.reply(event.message_id), msg))
-    if match.group(3):
-        level = f"{match.group(2)}{match.group(3)}"
-    else:
-        level = match.group(2)
-    filted_records, _ = records_filter(records=records, level=level)
-    if len(filted_records) == 0:
-        msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
-        await wcb.finish((MessageSegment.reply(event.message_id), msg))
-
-    if match.group(5):
-        page = int(match.group(5).strip())
-        if page == 0:
-            page = 1
-    else:
-        page = 1
-    all_page_num = math.ceil(len(filted_records) / 55)
-    if page > all_page_num:
-        msg = MessageSegment.text(
-            f"迪拉熊发现你的{level}完成表的最大页码为{all_page_num}"
-        )
-        await wcb.finish((MessageSegment.reply(event.message_id), msg))
-    await wcb.send(
-        (
-            MessageSegment.reply(event.message_id),
-            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
-        )
-    )
     songList = await get_music_data()
     if not songList:
         msg = (
@@ -1286,6 +1243,31 @@ async def _(event: GroupMessageEvent):
             MessageSegment.image(Path("./Static/Help/pleasewait.png")),
         )
         await wcb.finish(msg)
+    level = match.group(1)
+    gen = match.group(2)
+    filted_records, _ = records_filter(records=records, level=level, gen=gen, songList=songList)
+    if len(filted_records) == 0:
+        msg = MessageSegment.text("你还没有任何匹配的成绩呢~")
+        await wcb.finish((MessageSegment.reply(event.message_id), msg))
+
+    if match.group(3):
+        page = int(match.group(3))
+        if page == 0:
+            page = 1
+    else:
+        page = 1
+    all_page_num = math.ceil(len(filted_records) / 55)
+    if page > all_page_num:
+        msg = MessageSegment.text(
+            f"迪拉熊发现你的{level or gen}完成表的最大页码为{all_page_num}"
+        )
+        await wcb.finish((MessageSegment.reply(event.message_id), msg))
+    await wcb.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+        )
+    )
     input_records = get_page_records(filted_records, page=page)
     rate_count = compute_record(records=filted_records)
     nickname = data["nickname"]
@@ -1294,6 +1276,7 @@ async def _(event: GroupMessageEvent):
     img = await generate_wcb(
         qq=qq,
         level=level,
+        gen=gen,
         page=page,
         nickname=nickname,
         dani=dani,
@@ -1333,7 +1316,7 @@ async def _(event: GroupMessageEvent):
         if song_info["basic_info"]["genre"] == "宴会場":
             img = await utage_music_info(song_data=song_info)
         else:
-            img = await music_info(qq=qq, song_data=song_info)
+            img = await music_info(song_data=song_info)
         msg = MessageSegment.image(img)
     await songinfo.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1512,9 +1495,9 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    pattern = r"^随(个|歌) ?(绿|黄|红|紫|白)?(\d+)(\.\d|\+)?"
+    pattern = r"^随(?:个|歌) *(绿|黄|红|紫|白)? *((?:\d+)(?:\.\d|\+)?)"
     match = re.match(pattern, msg)
-    level_label = match.group(2)
+    level_label = match.group(1)
     if level_label:
         level_index = (
             level_label.replace("绿", "0")
@@ -1526,9 +1509,7 @@ async def _(event: GroupMessageEvent):
         level_index = int(level_index)
     else:
         level_index = None
-    level = match.group(3)
-    if match.group(4):
-        level += match.group(4)
+    level = match.group(2)
     s_type = "level"
     if "." in level:
         s_type = "ds"
@@ -1558,7 +1539,7 @@ async def _(event: GroupMessageEvent):
     if song["basic_info"]["genre"] == "宴会場":
         img = await utage_music_info(song_data=song)
     else:
-        img = await music_info(song_data=song, qq=qq)
+        img = await music_info(song_data=song)
     msg = MessageSegment.image(img)
     await randomsong.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1578,7 +1559,7 @@ async def _(event: GroupMessageEvent):
     if song["basic_info"]["genre"] == "宴会場":
         img = await utage_music_info(song_data=song)
     else:
-        img = await music_info(qq=qq, song_data=song)
+        img = await music_info(song_data=song)
     msg = MessageSegment.image(img)
     await maiwhat.send((MessageSegment.reply(event.message_id), msg))
 
@@ -1587,12 +1568,12 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    match = re.match(r"/?(search|查歌)\s*(.*)|(.*?)是什么歌", msg, re.I)
+    match = re.match(r"/?(?:search|查歌) *(.*)|(.*?)是什么歌", msg, re.I)
     if match:
-        if match.group(2):
-            name = match.group(2).strip()
-        elif match.group(3):
-            name = match.group(3).strip()
+        if match.group(1):
+            name = match.group(1)
+        elif match.group(2):
+            name = match.group(2)
         else:
             await whatSong.finish(
                 (
@@ -1639,7 +1620,7 @@ async def _(event: GroupMessageEvent):
             if song_info["basic_info"]["genre"] == "宴会場":
                 img = await utage_music_info(song_data=song_info)
             else:
-                img = await music_info(qq=qq, song_data=song_info)
+                img = await music_info(song_data=song_info)
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
         else:
             output_lst = "迪拉熊找到了~结果有："

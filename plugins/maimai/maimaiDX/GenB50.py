@@ -19,6 +19,7 @@ from .Config import (
     maimai_MusicIcon,
     maimai_Rank,
 )
+from ..maiWordle.GLOBAL_CONSTANT import version_df_maps
 
 random = SystemRandom()
 
@@ -163,6 +164,7 @@ def get_min_score(notes: list[int]):
 def records_filter(
         records: list,
         level: str | None = None,
+        gen: str | None = None,
         is_sun: bool = False,
         is_lock: bool = False,
         songList=None,
@@ -174,6 +176,12 @@ def records_filter(
             continue
         if level and record["level"] != level:
             continue
+        song_data = find_song_by_id(str(record["song_id"]), songList)
+        if gen and song_data["basic_info"]["from"] not in version_df_maps[gen[0]]:
+            continue
+        min_score = get_min_score(
+            song_data["charts"][record["level_index"]]["notes"]
+        )
         if is_sun:
             if record["dxScore"] == 0:
                 mask_enabled = True
@@ -181,10 +189,7 @@ def records_filter(
             passed = False
             for _, ra_dt in ratings.items():
                 max_acc = ra_dt[0] * 100
-                song_data = find_song_by_id(str(record["song_id"]), songList)
-                min_acc = max_acc - get_min_score(
-                    song_data["charts"][record["level_index"]]["notes"]
-                )
+                min_acc = max_acc - min_score
                 if min_acc <= record["achievements"] < max_acc:
                     passed = True
             if not passed:
@@ -195,10 +200,7 @@ def records_filter(
                 continue
             ra_in = ratings[record["rate"]][0]
             min_acc = ra_in * 100
-            song_data = find_song_by_id(str(record["song_id"]), songList)
-            max_acc = min_acc + get_min_score(
-                song_data["charts"][record["level_index"]]["notes"]
-            )
+            max_acc = min_acc + min_score
             if max_acc < record["achievements"] or record["achievements"] < min_acc:
                 continue
         filted_records.append(record)
@@ -208,13 +210,14 @@ def records_filter(
     return filted_records, mask_enabled
 
 
-def song_list_filter(level: str, songList):
-    filted_song_list = []
+def song_list_filter(songList, level: str | None = None, gen: str | None = None):
+    count = 0
     for song in songList:
-        for song_level in song["level"]:
-            if level == song_level:
-                filted_song_list.append(song)
-    return filted_song_list
+        if level and level in song["level"]:
+            count += song["level"].count(level)
+        if gen and song["basic_info"]["from"] in version_df_maps[gen[0]]:
+            count += len(song["level"])
+    return count
 
 
 def get_page_records(records, page):
@@ -281,6 +284,16 @@ def compute_ra(ra: int):
     if ra < 14999:
         return 10
     return 11
+
+
+def get_fit_diff(song_id: str, level_index: int, ds: float, charts) -> float:
+    if song_id not in charts["charts"]:
+        return ds
+    level_data = charts["charts"][song_id][level_index]
+    if "fit_diff" not in level_data:
+        return ds
+    fit_diff = level_data["fit_diff"]
+    return fit_diff
 
 
 async def music_to_part(
@@ -696,6 +709,7 @@ async def generate_wcb(
         all_page_num,
         songList,
         level: str | None = None,
+        gen: str | None = None,
         rate_count=None,
 ):
     with shelve.open("./data/maimai/b50_config.db") as config:
@@ -703,7 +717,7 @@ async def generate_wcb(
             plate = "000101"
         else:
             plate = config[qq]["plate"]
-        if not level:
+        if not level and not gen:
             if qq not in config or "frame" not in config[qq]:
                 frame = "200502"
             else:
@@ -712,7 +726,7 @@ async def generate_wcb(
     bg = Image.open("./Static/maimai/wcb_bg.png")
 
     # 底板
-    if level:
+    if level or gen:
         frame_path = "./Static/maimai/wcb_frame.png"
     else:
         frame_path = maimai_Frame / f"UI_Frame_{frame}.png"
@@ -790,8 +804,9 @@ async def generate_wcb(
         level_icon = resize_image(level_icon, 0.70)
         bg.paste(level_icon, (755 - (len(level) * 8), 45), level_icon)
 
+    if level or gen:
         # 绘制各达成数目
-        all_count = len(song_list_filter(level, songList))
+        all_count = song_list_filter(songList, level, gen)
         ttf = ImageFont.truetype(font=ttf_bold_path, size=20)
         rate_list = ["sssp", "sss", "ssp", "ss", "sp", "s", "clear"]
         fcfs_list = ["app", "ap", "fcp", "fc", "fsdp", "fsd", "fsp", "fs"]

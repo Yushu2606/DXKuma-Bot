@@ -4,7 +4,7 @@ from io import BytesIO
 import aiohttp
 from PIL import Image, ImageDraw, ImageFont
 
-from util.DivingFish import get_player_data, get_player_record
+from util.DivingFish import get_chart_stats, get_player_record
 from .Config import (
     font_path,
     maimai_Static,
@@ -13,6 +13,7 @@ from .Config import (
     maimai_MusicType,
     maimai_Rank,
 )
+from .GenB50 import get_fit_diff
 
 ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
 ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
@@ -42,19 +43,10 @@ def format_songid(id):
     return id_str.zfill(6)
 
 
-async def music_info(song_data, qq: str):
+async def music_info(song_data):
     # 底图
     bg = Image.open("./Static/maimai/musicinfo_bg.png")
     drawtext = ImageDraw.Draw(bg)
-
-    # 初始化用户数据
-    data, status = await get_player_data(qq)
-    if status == 200:
-        b50_status = True
-        b35 = data["charts"]["sd"]
-        b15 = data["charts"]["dx"]
-    else:
-        b50_status = False
 
     # 歌曲封面
     cover_path = f"./Cache/Jacket/{song_data["id"][-4:].lstrip("0")}.png"
@@ -167,37 +159,20 @@ async def music_info(song_data, qq: str):
         level_x += 170
 
     # 定数->ra
-    ttf = ImageFont.truetype(ttf_bold_path, size=18)
+    ttf = ImageFont.truetype(ttf_bold_path, size=16)
     songs_ds = song_data["ds"]
-    is_new = song_data["basic_info"]["is_new"]
-    song_ra = [int(value * 1.005 * 22.4) for value in songs_ds]  # 该ds鸟加的ra值
     ds_x = 395
     ds_y = 1124
-    basic_ra = 0
-    if b50_status:
-        if b35:
-            basic_ra = b35[-1]["ra"]
-        if is_new:
-            if b15:
-                basic_ra = b15[-1]["ra"]
+    charts = await get_chart_stats()
     for i, song_ds in enumerate(songs_ds):
         ds_position = (ds_x, ds_y)
-        if b50_status and basic_ra > 0:
-            drawtext.text(
-                ds_position,
-                f"{song_ds} -> +{song_ra[i] - basic_ra if song_ra[i] - basic_ra >= 0 else 0}",
-                anchor="mm",
-                font=ttf,
-                fill=(28, 43, 110),
-            )
-        else:
-            drawtext.text(
-                ds_position,
-                f"{song_ds} -> +{song_ra[i]}",
-                anchor="mm",
-                font=ttf,
-                fill=(28, 43, 110),
-            )
+        drawtext.text(
+            ds_position,
+            f"{song_ds} ({round(get_fit_diff(song_data["id"], i, song_ds, charts), 2)})",
+            anchor="mm",
+            font=ttf,
+            fill=(28, 43, 110),
+        )
         ds_x += 170
 
     # 物量

@@ -8,11 +8,11 @@ from nonebot.rule import to_me
 
 random = SystemRandom()
 
-xc = on_regex(r"^(香草|想草)(迪拉熊|dlx)$", re.RegexFlag.I)
-wxhn = on_regex(r"^(迪拉熊|dlx)我喜欢你$", re.RegexFlag.I)
+xc = on_regex(r"^(香草|想草)(迪拉熊|dlx)$", re.I)
+wxhn = on_regex(r"^(迪拉熊|dlx)我喜欢你$", re.I)
 wxhn2 = on_fullmatch("我喜欢你", rule=to_me())
 roll = on_regex(r"^(?:.*?是)(.+)(?:还是(.+))+$", rule=to_me())
-cum = on_regex(r"dlxcum", re.RegexFlag.I)
+cum = on_regex(r"dlxcum", re.I)
 eatbreak = on_regex(r"^(绝赞(给|请)你吃|(给|请)你吃绝赞)$", rule=to_me())
 
 conversations = {

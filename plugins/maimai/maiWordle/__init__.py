@@ -25,7 +25,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         #     await start_open_chars.send('全部答对啦，恭喜各位🎉\n本轮猜歌已结束，可发送“dlx猜歌”再次游玩')
 
 
-open_chars = on_regex(r"^开 ?(.+)$", re.RegexFlag.I)
+open_chars = on_regex(r"^开 ?(.+)$", re.I)
 @open_chars.handle()
 async def _(event: GroupMessageEvent):
     msg = event.get_plaintext()
