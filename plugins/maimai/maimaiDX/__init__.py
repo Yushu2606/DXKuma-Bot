@@ -1389,10 +1389,11 @@ async def _(event: GroupMessageEvent):
                     MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
                 )
             )
-        for song_id in rep_ids:
+        for song_id in rep_ids.copy():
             song_info = find_song_by_id(song_id, songList)
             if not song_info:
                 rep_ids.remove(song_id)
+                continue
             song_id_len = len(song_id)
             if song_id_len < 5:
                 other_id = f"1{int(song_id):04d}"
@@ -1642,10 +1643,11 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.reply(event.message_id),
                 MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
             )
-        for song_id in rep_ids:
+        for song_id in rep_ids.copy():
             song_info = find_song_by_id(song_id, songList)
             if not song_info:
                 rep_ids.remove(song_id)
+                continue
             song_id_len = len(song_id)
             if song_id_len < 5:
                 other_id = f"1{int(song_id):04d}"

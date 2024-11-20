@@ -177,7 +177,9 @@ def records_filter(
         if level and record["level"] != level:
             continue
         song_data = find_song_by_id(str(record["song_id"]), songList)
-        if gen and song_data["basic_info"]["from"] not in version_df_maps[gen[0]]:
+        if gen and song_data["basic_info"]["from"] not in version_df_maps[gen]:
+            continue
+        if gen != "舞" and record["level_index"] == 4:
             continue
         min_score = get_min_score(
             song_data["charts"][record["level_index"]]["notes"]
@@ -215,8 +217,8 @@ def song_list_filter(songList, level: str | None = None, gen: str | None = None)
     for song in songList:
         if level and level in song["level"]:
             count += song["level"].count(level)
-        if gen and song["basic_info"]["from"] in version_df_maps[gen[0]]:
-            count += len(song["level"])
+        if gen and song["basic_info"]["from"] in version_df_maps[gen]:
+            count += len(song["level"]) if gen == "舞" else 4
     return count
 
 

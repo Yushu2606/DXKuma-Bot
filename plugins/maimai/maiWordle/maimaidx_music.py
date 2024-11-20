@@ -1,5 +1,6 @@
 import json
 import random,os
+from datetime import date
 from typing import Dict, List, Optional, Union, Tuple, Any
 from copy import deepcopy
 from .GLOBAL_CONSTANT import version_ez_map
@@ -222,7 +223,21 @@ class MusicList(List[Music]):
 
 
 
-obj = requests.get('https://download.fanyu.site/maimai/music_data.json').json()
+try:
+    cache_dir = "./Cache/Data/MusicDataWordle/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        resp = requests.get('https://download.fanyu.site/maimai/music_data.json')
+        with open(cache_path, "w") as fd:
+            fd.write(resp.text)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+    with open(cache_path) as fd:
+        obj = json.loads(fd.read())
+except:
+    obj = []
 # with open('./data/music_data.json', 'r') as file:
 #     obj = json.load(file)
 # print(obj)
