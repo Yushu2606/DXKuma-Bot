@@ -687,7 +687,7 @@ async def score_info(song_data, index):
                     score += ex_score * 0.01
             else:
                 score = 0
-            score_text = "-" + (str(score * 100)[:6] + "%" if score > 0 else "")
+            score_text = f"{-score:.4%}"
             drawtext.text(
                 score_position, score_text, anchor="mm", font=ttf, fill=(255, 255, 255)
             )

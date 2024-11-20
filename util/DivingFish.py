@@ -54,9 +54,6 @@ async def get_music_data():
     cache_path = f"{cache_dir}{date.today().isoformat()}.json"
     if not os.path.exists(cache_path):
         files = os.listdir(cache_dir)
-        if files:
-            for file in files:
-                os.remove(f"{cache_dir}{file}")
         async with aiohttp.ClientSession() as session:
             async with session.get(
                     "https://www.diving-fish.com/api/maimaidxprober/music_data"
@@ -64,6 +61,9 @@ async def get_music_data():
                 with open(cache_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
                         fd.write(chunk)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
     with open(cache_path) as fd:
         return json.loads(fd.read())
 
@@ -73,9 +73,6 @@ async def get_chart_stats():
     cache_path = f"{cache_dir}{date.today().isoformat()}.json"
     if not os.path.exists(cache_path):
         files = os.listdir(cache_dir)
-        if files:
-            for file in files:
-                os.remove(f"{cache_dir}{file}")
         async with aiohttp.ClientSession() as session:
             async with session.get(
                     "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
@@ -83,5 +80,8 @@ async def get_chart_stats():
                 with open(cache_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
                         fd.write(chunk)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
     with open(cache_path) as fd:
         return json.loads(fd.read())

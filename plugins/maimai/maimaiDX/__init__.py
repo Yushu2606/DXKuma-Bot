@@ -1,7 +1,9 @@
+import json
 import math
 import os
 import re
 import shelve
+from datetime import date
 from pathlib import Path
 from random import SystemRandom
 
@@ -75,11 +77,22 @@ async def find_songid_by_alias(name, song_list):
         if name in info["title"] or name.lower() in info["title"].lower():
             matched_ids.append(info["id"])
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://maimai.lxns.net/api/v0/maimai/alias/list"
-        ) as resp:
-            alias_list = await resp.json()
+    cache_dir = "./Cache/Data/Alias/Lxns/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://maimai.lxns.net/api/v0/maimai/alias/list"
+            ) as resp:
+                with open(cache_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+    with open(cache_path) as fd:
+        alias_list = json.loads(fd.read())
 
     for info in alias_list["aliases"]:
         if str(info["song_id"]) in matched_ids:
@@ -89,11 +102,36 @@ async def find_songid_by_alias(name, song_list):
                 matched_ids.append(str(info["song_id"]))
                 break
 
+    cache_dir = "./Cache/Data/Alias/YuzuChaN/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://api.yuzuchan.moe/maimaidx/maimaidxalias"
+            ) as resp:
+                with open(cache_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+    with open(cache_path) as fd:
+        alias_list = json.loads(fd.read())
+
+    for info in alias_list["content"]:
+        if str(info["SongID"]) in matched_ids:
+            continue
+        for alias in info["Alias"]:
+            if name == alias or name.lower() == alias.lower():
+                matched_ids.append(str(info["SongID"]))
+                break
+
     # 芝士排序
-    sorted_matched_ids = sorted(matched_ids, key=int)
+    # sorted_matched_ids = sorted(matched_ids, key=int)
 
     # 芝士输出
-    return sorted_matched_ids
+    return matched_ids
 
 
 async def records_to_b50(
@@ -1213,7 +1251,7 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    pattern = r"完成表 *(?:((?:\d+)(?:\.\d|\+)?)|(真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|霸者|舞|熊|华|爽|煌|宙|星|祭|祝|双))(?: *(\d+))?"
+    pattern = r"(?:list|完成表) *(?:((?:\d+)(?:\.\d|\+)?)|(真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|霸者|舞|熊|华|爽|煌|宙|星|祭|祝|双))(?: *(\d+))?"
     match = re.match(pattern, msg)
     data, status = await get_player_records(qq)
     if status == 400:
@@ -1351,30 +1389,38 @@ async def _(event: GroupMessageEvent):
                     MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
                 )
             )
-        rep_ids_set = set(rep_ids)
         for song_id in rep_ids:
             song_info = find_song_by_id(song_id, songList)
             if not song_info:
-                rep_ids_set.remove(song_id)
+                rep_ids.remove(song_id)
             song_id_len = len(song_id)
             if song_id_len < 5:
                 other_id = f"1{int(song_id):04d}"
+                if other_id in rep_ids:
+                    continue
                 other_info = find_song_by_id(other_id, songList)
                 if other_info:
-                    rep_ids_set.add(other_id)
-        if not rep_ids_set:
+                    rep_ids.append(other_id)
+        if not rep_ids:
             await playinfo.finish(
                 (
                     MessageSegment.reply(event.message_id),
                     MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
                 )
             )
-        elif len(rep_ids_set) == 1:
-            song_id = rep_ids_set.pop()
+        elif len(rep_ids) == 1:
+            song_id = rep_ids.pop()
             song_info = find_song_by_id(song_id, songList)
+        elif len(rep_ids) > 20:
+            await playinfo.finish(
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("结果太多啦，缩小范围再试试吧~"),
+                )
+            )
         else:
             output_lst = "迪拉熊找到了~结果有："
-            for song_id in rep_ids_set:
+            for song_id in sorted(rep_ids, key=int):
                 song_info = find_song_by_id(song_id, songList)
                 song_title = song_info["title"]
                 output_lst += f"\n{song_id}：{song_title}"
@@ -1596,35 +1642,43 @@ async def _(event: GroupMessageEvent):
                 MessageSegment.reply(event.message_id),
                 MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
             )
-        rep_ids_set = set(rep_ids)
         for song_id in rep_ids:
             song_info = find_song_by_id(song_id, songList)
             if not song_info:
-                rep_ids_set.remove(song_id)
+                rep_ids.remove(song_id)
             song_id_len = len(song_id)
             if song_id_len < 5:
                 other_id = f"1{int(song_id):04d}"
+                if other_id in rep_ids:
+                    continue
                 other_info = find_song_by_id(other_id, songList)
                 if other_info:
-                    rep_ids_set.add(other_id)
-        if not rep_ids_set:
+                    rep_ids.append(other_id)
+        if not rep_ids:
             await playinfo.finish(
                 (
                     MessageSegment.reply(event.message_id),
                     MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
                 )
             )
-        elif len(rep_ids_set) == 1:
-            song_id = rep_ids_set.pop()
+        elif len(rep_ids) == 1:
+            song_id = rep_ids.pop()
             song_info = find_song_by_id(song_id, songList)
             if song_info["basic_info"]["genre"] == "宴会場":
                 img = await utage_music_info(song_data=song_info)
             else:
                 img = await music_info(song_data=song_info)
             msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+        elif len(rep_ids) > 20:
+            await whatSong.finish(
+                (
+                    MessageSegment.reply(event.message_id),
+                    MessageSegment.text("结果太多啦，缩小范围再试试吧~"),
+                )
+            )
         else:
             output_lst = "迪拉熊找到了~结果有："
-            for song_id in rep_ids_set:
+            for song_id in sorted(rep_ids, key=int):
                 song_info = find_song_by_id(song_id, songList)
                 song_title = song_info["title"]
                 output_lst += f"\n{song_id}：{song_title}"
@@ -1638,23 +1692,52 @@ async def _(event: GroupMessageEvent):
     msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                "https://maimai.lxns.net/api/v0/maimai/alias/list"
-        ) as resp:
-            alias_list = await resp.json()
-    alias = [
-        d
-        for d in alias_list["aliases"]
-        if d["song_id"] in [int(song_id), int(song_id) / 10]
-    ]
-    if not alias or len(alias) > 1:
+    alias = set()
+    cache_dir = "./Cache/Data/Alias/Lxns/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://maimai.lxns.net/api/v0/maimai/alias/list"
+            ) as resp:
+                with open(cache_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+    with open(cache_path) as fd:
+        alias_list = json.loads(fd.read())
+    for d in alias_list["aliases"]:
+        if d["song_id"] in [int(song_id), int(song_id) / 10]:
+            alias |= set(d["aliases"])
+    cache_dir = "./Cache/Data/Alias/YuzuChaN/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    "https://api.yuzuchan.moe/maimaidx/maimaidxalias"
+            ) as resp:
+                with open(cache_path, "wb") as fd:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        fd.write(chunk)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+    with open(cache_path) as fd:
+        alias_list = json.loads(fd.read())
+    for d in alias_list["content"]:
+        if d["SongID"] in [int(song_id), int(song_id) / 10]:
+            alias |= set(d["Alias"])
+    if not alias:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("迪拉熊好像没找到，换一个试试吧~"),
         )
     else:
-        song_alias = "\n".join(alias[0]["aliases"])
+        song_alias = "\n".join(alias)
         msg = MessageSegment.text(f"迪拉熊找到了~别名有：\n{song_alias}")
     await aliasSearch.send(msg)
 
