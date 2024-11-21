@@ -337,7 +337,7 @@ async def _(event: GroupMessageEvent):
         )
         await best50.finish(msg)
     charts = data["charts"]
-    b35, b15 = charts["sd"], charts["dx"]
+    b35, b15 = sorted(charts["sd"], key=lambda x: (x["ra"], x["ds"], x["achievements"]), reverse=True), sorted(charts["dx"], key=lambda x: (x["ra"], x["ds"], x["achievements"]), reverse=True)
     if not b35 and not b15:
         if target_qq != event.get_user_id():
             msg = MessageSegment.text("他还没有游玩任何一个谱面呢~")
