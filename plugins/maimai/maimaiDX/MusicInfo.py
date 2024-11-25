@@ -4,7 +4,8 @@ from io import BytesIO
 import aiohttp
 from PIL import Image, ImageDraw, ImageFont
 
-from util.DivingFish import get_chart_stats, get_player_record
+from util.Data import get_chart_stats
+from util.DivingFish import get_player_record
 from .Config import (
     font_path,
     maimai_Static,

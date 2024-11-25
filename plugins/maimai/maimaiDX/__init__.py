@@ -11,7 +11,8 @@ import aiohttp
 from nonebot import on_regex, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 
-from util.DivingFish import get_chart_stats, get_music_data, get_player_data, get_player_records
+from util.Data import get_chart_stats, get_music_data, get_alias_list_lxns, get_alias_list_ycn
+from util.DivingFish import get_player_data, get_player_records
 from .GenB50 import (
     compute_record,
     generateb50,
@@ -77,23 +78,7 @@ async def find_songid_by_alias(name, song_list):
         if name in info["title"] or name.lower() in info["title"].lower():
             matched_ids.append(info["id"])
 
-    cache_dir = "./Cache/Data/Alias/Lxns/"
-    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
-    if not os.path.exists(cache_path):
-        files = os.listdir(cache_dir)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    "https://maimai.lxns.net/api/v0/maimai/alias/list"
-            ) as resp:
-                with open(cache_path, "wb") as fd:
-                    async for chunk in resp.content.iter_chunked(1024):
-                        fd.write(chunk)
-        if files:
-            for file in files:
-                os.remove(f"{cache_dir}{file}")
-    with open(cache_path) as fd:
-        alias_list = json.loads(fd.read())
-
+    alias_list = await get_alias_list_lxns()
     for info in alias_list["aliases"]:
         if str(info["song_id"]) in matched_ids:
             continue
@@ -102,23 +87,7 @@ async def find_songid_by_alias(name, song_list):
                 matched_ids.append(str(info["song_id"]))
                 break
 
-    cache_dir = "./Cache/Data/Alias/YuzuChaN/"
-    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
-    if not os.path.exists(cache_path):
-        files = os.listdir(cache_dir)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    "https://api.yuzuchan.moe/maimaidx/maimaidxalias"
-            ) as resp:
-                with open(cache_path, "wb") as fd:
-                    async for chunk in resp.content.iter_chunked(1024):
-                        fd.write(chunk)
-        if files:
-            for file in files:
-                os.remove(f"{cache_dir}{file}")
-    with open(cache_path) as fd:
-        alias_list = json.loads(fd.read())
-
+    alias_list = await get_alias_list_ycn()
     for info in alias_list["content"]:
         if str(info["SongID"]) in matched_ids:
             continue
@@ -1695,41 +1664,11 @@ async def _(event: GroupMessageEvent):
     song_id = re.search(r"\d+", msg).group(0)
 
     alias = set()
-    cache_dir = "./Cache/Data/Alias/Lxns/"
-    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
-    if not os.path.exists(cache_path):
-        files = os.listdir(cache_dir)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    "https://maimai.lxns.net/api/v0/maimai/alias/list"
-            ) as resp:
-                with open(cache_path, "wb") as fd:
-                    async for chunk in resp.content.iter_chunked(1024):
-                        fd.write(chunk)
-        if files:
-            for file in files:
-                os.remove(f"{cache_dir}{file}")
-    with open(cache_path) as fd:
-        alias_list = json.loads(fd.read())
+    alias_list = await get_alias_list_lxns()
     for d in alias_list["aliases"]:
         if d["song_id"] in [int(song_id), int(song_id) / 10]:
             alias |= set(d["aliases"])
-    cache_dir = "./Cache/Data/Alias/YuzuChaN/"
-    cache_path = f"{cache_dir}{date.today().isoformat()}.json"
-    if not os.path.exists(cache_path):
-        files = os.listdir(cache_dir)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    "https://api.yuzuchan.moe/maimaidx/maimaidxalias"
-            ) as resp:
-                with open(cache_path, "wb") as fd:
-                    async for chunk in resp.content.iter_chunked(1024):
-                        fd.write(chunk)
-        if files:
-            for file in files:
-                os.remove(f"{cache_dir}{file}")
-    with open(cache_path) as fd:
-        alias_list = json.loads(fd.read())
+    alias_list = await get_alias_list_ycn()
     for d in alias_list["content"]:
         if d["SongID"] in [int(song_id), int(song_id) / 10]:
             alias |= set(d["Alias"])
