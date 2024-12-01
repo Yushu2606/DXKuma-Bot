@@ -11,7 +11,11 @@ from nonebot.message import run_postprocessor
 
 @run_postprocessor
 async def _(event: Event, matcher: Matcher, exception: Exception | None):
-    if not exception or isinstance(exception, OneBotV11AdapterException) or isinstance(exception, ClientError):
+    if (
+        not exception
+        or isinstance(exception, OneBotV11AdapterException)
+        or isinstance(exception, ClientError)
+    ):
         return
     bot = get_bot()
     trace = "".join(traceback.format_exception(exception)).replace("\\n", "\n")
@@ -21,7 +25,7 @@ async def _(event: Event, matcher: Matcher, exception: Exception | None):
     await bot.send_msg(group_id=236030263, message=msg)
     feedback = (
         MessageSegment.reply(event.message_id),
-        MessageSegment.text("迪拉熊出了点问题呢x"),
+        MessageSegment.text("（迪拉熊出了点问题）"),
         MessageSegment.image(Path("./Static/Help/pleasewait.png")),
     )
     await matcher.send(feedback)

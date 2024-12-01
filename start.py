@@ -21,7 +21,7 @@ if __name__ == "__main__":
             logger.critical("未找到Lagrange程序目录，自动生成了目录。")
             os.mkdir("./lagrange")
         if not os.path.exists("./lagrange/Lagrange.OneBot.exe") and not os.path.exists(
-                "./lagrange/Lagrange.OneBot"
+            "./lagrange/Lagrange.OneBot"
         ):
             logger.info("未找到Lagrange可执行程序！")
             logger.info(
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             f"PORT={config.listen_port}\n"
             f"ONEBOT_ACCESS_TOKEN={config.token}\n"
             f'COMMAND_START=["."]\n'
-            f'LOG_LEVEL=SUCCESS\n'
+            f"LOG_LEVEL=SUCCESS\n"
         )
         v.write(file)
         logger.info("生成了NoneBot的环境配置文件.env")
@@ -74,10 +74,8 @@ if __name__ == "__main__":
     logger.info("正在启动nonebot...")
     nonebot_init()
 
-
     def terminate_process():
         logger.info("检测到进程即将退出，自动结束Lagrange")
         process.terminate()
-
 
     atexit.register(terminate_process)

@@ -1,10 +1,10 @@
 import json
 import os
+from asyncio import Lock
 from datetime import date
 from os import path
 
 from aiohttp import ClientSession
-from asyncio import Lock
 
 music_data_lock = Lock()
 chart_stats_lock = Lock()
@@ -20,7 +20,7 @@ async def get_music_data():
             files = os.listdir(cache_dir)
             async with ClientSession() as session:
                 async with session.get(
-                        "https://www.diving-fish.com/api/maimaidxprober/music_data"
+                    "https://www.diving-fish.com/api/maimaidxprober/music_data"
                 ) as resp:
                     with open(cache_path, "wb") as fd:
                         async for chunk in resp.content.iter_chunked(1024):
@@ -40,7 +40,7 @@ async def get_chart_stats():
             files = os.listdir(cache_dir)
             async with ClientSession() as session:
                 async with session.get(
-                        "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
+                    "https://www.diving-fish.com/api/maimaidxprober/chart_stats"
                 ) as resp:
                     with open(cache_path, "wb") as fd:
                         async for chunk in resp.content.iter_chunked(1024):
@@ -60,7 +60,7 @@ async def get_alias_list_lxns():
             files = os.listdir(cache_dir)
             async with ClientSession() as session:
                 async with session.get(
-                        "https://maimai.lxns.net/api/v0/maimai/alias/list"
+                    "https://maimai.lxns.net/api/v0/maimai/alias/list"
                 ) as resp:
                     with open(cache_path, "wb") as fd:
                         async for chunk in resp.content.iter_chunked(1024):
@@ -80,7 +80,7 @@ async def get_alias_list_ycn():
             files = os.listdir(cache_dir)
             async with ClientSession() as session:
                 async with session.get(
-                        "https://api.yuzuchan.moe/maimaidx/maimaidxalias"
+                    "https://api.yuzuchan.moe/maimaidx/maimaidxalias"
                 ) as resp:
                     with open(cache_path, "wb") as fd:
                         async for chunk in resp.content.iter_chunked(1024):

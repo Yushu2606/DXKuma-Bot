@@ -54,7 +54,7 @@ async def music_info(song_data):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
+                f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -221,15 +221,15 @@ async def music_info(song_data):
 async def play_info(song_data, qq: str):
     data, status = await get_player_record(qq, song_data["id"])
     if status == 400:
-        msg = "迪拉熊未找到用户信息，可能是没有绑定查分器"
+        msg = "迪拉熊没有找到你的信息"
         return msg
     if status == 200:
         if not data:
-            msg = "迪拉熊发现你未游玩过该乐曲"
+            msg = "迪拉熊没有找到你在这首乐曲上的成绩"
             return msg
         records = data[song_data["id"]]
     else:
-        msg = "迪拉熊发现你未游玩过该乐曲"
+        msg = "迪拉熊没有找到你在这首乐曲上的成绩"
         return msg
 
     playdata = sorted(records, key=lambda x: x["level_index"])
@@ -242,7 +242,7 @@ async def play_info(song_data, qq: str):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
+                f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -428,7 +428,7 @@ async def utage_music_info(song_data, index=0):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
+                f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -534,9 +534,7 @@ async def utage_music_info(song_data, index=0):
         (438, 1415), str(total_num), anchor="mm", font=ttf, fill=(28, 43, 110)
     )
     dx_num = total_num * 3
-    drawtext.text(
-        (863, 1415), str(dx_num), anchor="mm", font=ttf, fill=(28, 43, 110)
-    )
+    drawtext.text((863, 1415), str(dx_num), anchor="mm", font=ttf, fill=(28, 43, 110))
 
     img_byte_arr = BytesIO()
     bg.save(img_byte_arr, format="PNG")
@@ -549,7 +547,8 @@ async def utage_music_info(song_data, index=0):
 async def score_info(song_data, index):
     # 底图
     bg = Image.open(
-        f"./Static/maimai/Static/scoreinfo_bg_{["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][index]}.png")
+        f"./Static/maimai/Static/scoreinfo_bg_{["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][index]}.png"
+    )
     drawtext = ImageDraw.Draw(bg)
 
     # 歌曲封面
@@ -557,7 +556,7 @@ async def score_info(song_data, index):
     if not os.path.exists(cover_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
+                f"https://www.diving-fish.com/covers/{song_data["id"].zfill(5)}.png"
             ) as resp:
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -653,7 +652,9 @@ async def score_info(song_data, index):
         plus_path = maimai_Plus / f"{level_label}.png"
         plus_icon = Image.open(plus_path)
         bg.paste(plus_icon, (302, 953), plus_icon)
-    drawtext.text((251, 1000), song_level, anchor="mm", font=ttf, fill=level_color[index])
+    drawtext.text(
+        (251, 1000), song_level, anchor="mm", font=ttf, fill=level_color[index]
+    )
 
     # 分数
     ttf = ImageFont.truetype(ttf_heavy_path, size=36)
@@ -681,10 +682,14 @@ async def score_info(song_data, index):
             score_position = (score_x, score_y)
             if notes[type_index] > 0:
                 weight = [0, great_weight, good_weight, 1][j]
-                score = (1 - ((sum_score - (500 * weight * type_weight[type_index])) / sum_score))
+                score = 1 - (
+                    (sum_score - (500 * weight * type_weight[type_index])) / sum_score
+                )
                 if i > 3:
                     ex_weight = [ex_weight, 0.6, 0.7, 1][j]
-                    ex_score = (1 - (((notes[-1] * 100) - (100 * ex_weight)) / (notes[-1] * 100)))
+                    ex_score = 1 - (
+                        ((notes[-1] * 100) - (100 * ex_weight)) / (notes[-1] * 100)
+                    )
                     score += ex_score * 0.01
             else:
                 score = 0

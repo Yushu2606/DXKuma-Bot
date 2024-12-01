@@ -83,7 +83,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
         path = KUMAPIC_R18
     if group_id == 967611986:  # 不被限制的 group_id
         pass
-    elif type == "kuma_r18" and group_id not in config["nsfw_groups"]:  # type 为 'kuma_r18' 且非指定 group_id
+    elif (
+        type == "kuma_r18" and group_id not in config["nsfw_groups"]
+    ):  # type 为 'kuma_r18' 且非指定 group_id
         msg = (
             MessageSegment.text("迪拉熊不准你看"),
             MessageSegment.image(Path("./Static/Gallery/0.png")),
@@ -93,7 +95,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
         weight = random.randint(0, 9)
         if weight == 0:
             if type == "kuma":
-                msg = MessageSegment.text("迪拉熊提醒你：不要发太多刷屏啦~再试一下吧~")
+                msg = MessageSegment.text(
+                    "迪拉熊提醒你：不要发太多刷屏啦，休息下再试试吧~"
+                )
             elif type == "kuma_r18":
                 msg = MessageSegment.text("迪拉熊关心你的身体健康，所以图就先不发了~")
             await kuma_pic.finish(msg)

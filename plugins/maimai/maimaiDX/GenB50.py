@@ -162,12 +162,12 @@ def get_min_score(notes: list[int]):
 
 
 def records_filter(
-        records: list,
-        level: str | None = None,
-        gen: str | None = None,
-        is_sun: bool = False,
-        is_lock: bool = False,
-        songList=None,
+    records: list,
+    level: str | None = None,
+    gen: str | None = None,
+    is_sun: bool = False,
+    is_lock: bool = False,
+    songList=None,
 ):
     filted_records = []
     mask_enabled = False
@@ -181,9 +181,7 @@ def records_filter(
             continue
         if gen != "舞" and record["level_index"] == 4:
             continue
-        min_score = get_min_score(
-            song_data["charts"][record["level_index"]]["notes"]
-        )
+        min_score = get_min_score(song_data["charts"][record["level_index"]]["notes"])
         if is_sun:
             if record["dxScore"] == 0:
                 mask_enabled = True
@@ -299,24 +297,24 @@ def get_fit_diff(song_id: str, level_index: int, ds: float, charts) -> float:
 
 
 async def music_to_part(
-        achievements: float,
-        ds: float,
-        dxScore: int,
-        fc: str,
-        fs: str,
-        level: str,
-        level_index: int,
-        level_label: str,
-        ra: int,
-        rate: str,
-        song_id: int,
-        title: str,
-        type: str,
-        index: int,
-        b_type: str,
-        songList,
-        s_ra=-1,
-        preferred=None
+    achievements: float,
+    ds: float,
+    dxScore: int,
+    fc: str,
+    fs: str,
+    level: str,
+    level_index: int,
+    level_label: str,
+    ra: int,
+    rate: str,
+    song_id: int,
+    title: str,
+    type: str,
+    index: int,
+    b_type: str,
+    songList,
+    s_ra=-1,
+    preferred=None,
 ):
     color = (255, 255, 255)
     if level_index == 4:
@@ -331,7 +329,7 @@ async def music_to_part(
     if not os.path.exists(jacket_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://www.diving-fish.com/covers/{str(song_id).zfill(5)}.png"
+                f"https://www.diving-fish.com/covers/{str(song_id).zfill(5)}.png"
             ) as resp:
                 with open(jacket_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -409,18 +407,30 @@ async def music_to_part(
             ds_str = str(ds)
         ttf = ImageFont.truetype(ttf_bold_path, size=24)
         diff = round(ds - s_ra, 2)
-        ImageDraw.Draw(partbase).text((376, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf,
-                                      fill=color, anchor="lm")
+        ImageDraw.Draw(partbase).text(
+            (376, 168),
+            f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}",
+            font=ttf,
+            fill=color,
+            anchor="lm",
+        )
     else:
         ds_str = str(ds)
     ttf = ImageFont.truetype(ttf_bold_path, size=34)
     ImageDraw.Draw(partbase).text((376, 196), ds_str, font=ttf, fill=color, anchor="lm")
-    ImageDraw.Draw(partbase).text((549, 196), str(ra), font=ttf, fill=color, anchor="rm")
+    ImageDraw.Draw(partbase).text(
+        (549, 196), str(ra), font=ttf, fill=color, anchor="rm"
+    )
     if b_type in ("cf50", "fd50"):
         ttf = ImageFont.truetype(ttf_bold_path, size=24)
         diff = ra - s_ra
-        ImageDraw.Draw(partbase).text((549, 168), f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}", font=ttf,
-                                      fill=color, anchor="rm")
+        ImageDraw.Draw(partbase).text(
+            (549, 168),
+            f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}",
+            font=ttf,
+            fill=color,
+            anchor="rm",
+        )
     # dx分数和星星
     ttf = ImageFont.truetype(ttf_bold_path, size=30)
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
@@ -567,7 +577,7 @@ def rating_tj(b35max, b35min, b15max, b15min):
 
 
 async def generateb50(
-        b35: list, b15: list, nickname: str, qq, dani: int, type: str, songList
+    b35: list, b15: list, nickname: str, qq, dani: int, type: str, songList
 ):
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
@@ -609,7 +619,7 @@ async def generateb50(
     if not os.path.exists(plate_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/plate/{plate.lstrip("0")}.png"
+                f"https://assets2.lxns.net/maimai/plate/{plate.lstrip("0")}.png"
             ) as resp:
                 with open(plate_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -625,7 +635,7 @@ async def generateb50(
     # 头像
     async with aiohttp.ClientSession() as session:
         async with session.get(
-                f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
+            f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
         ) as resp:
             icon = await resp.read()
     icon = Image.open(BytesIO(icon)).resize((88, 88))
@@ -681,7 +691,7 @@ async def generateb50(
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
         (334, 154),
-        f"过往版本：{b35_ra} | 现行版本：{b15_ra}",
+        f"历史版本：{b35_ra} | 现行版本：{b15_ra}",
         font=ttf,
         fill=(255, 255, 255),
         anchor="mm",
@@ -702,17 +712,17 @@ async def generateb50(
 
 
 async def generate_wcb(
-        qq: str,
-        page: int,
-        nickname: str,
-        dani: int,
-        rating: int,
-        input_records,
-        all_page_num,
-        songList,
-        level: str | None = None,
-        gen: str | None = None,
-        rate_count=None,
+    qq: str,
+    page: int,
+    nickname: str,
+    dani: int,
+    rating: int,
+    input_records,
+    all_page_num,
+    songList,
+    level: str | None = None,
+    gen: str | None = None,
+    rate_count=None,
 ):
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config or "plate" not in config[qq]:
@@ -741,7 +751,7 @@ async def generate_wcb(
     if not os.path.exists(plate_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://assets2.lxns.net/maimai/plate/{plate.lstrip("0")}.png"
+                f"https://assets2.lxns.net/maimai/plate/{plate.lstrip("0")}.png"
             ) as resp:
                 with open(plate_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -757,7 +767,7 @@ async def generate_wcb(
     # 头像
     async with aiohttp.ClientSession() as session:
         async with session.get(
-                f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
+            f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
         ) as resp:
             icon = await resp.read()
     icon = Image.open(BytesIO(icon)).resize((88, 88))

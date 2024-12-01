@@ -18,11 +18,11 @@ eatbreak = on_regex(r"^(绝赞(给|请)你吃|(给|请)你吃绝赞)$", rule=to_
 conversations = {
     1: "变态！！！",
     2: "走开！！！",
-    3: "别靠近迪拉熊！！！",
+    3: "不要靠近迪拉熊！！！",
     4: "迪拉熊不和你玩了！",
-    5: "信不信迪拉熊吃你绝赞！",
-    6: "信不信迪拉熊吃你星星！",
-    7: "你不能这样对迪拉熊！",
+    5: "小心迪拉熊吃你绝赞！",
+    6: "小心迪拉熊吃你星星！",
+    7: "你不可以这样对迪拉熊！",
     8: "迪拉熊不想理你了，哼！",
     9: "不把白潘AP了就别想！",
     10: "……你会对迪拉熊负责的，对吧？",
@@ -46,7 +46,7 @@ async def _():
 async def _(event: GroupMessageEvent):
     msg = (
         MessageSegment.reply(event.message_id),
-        MessageSegment.text("迪拉熊也喜欢你❤️"),
+        MessageSegment.text("迪拉熊也喜欢你mai~❤️"),
         MessageSegment.image(Path("./Static/LikeYou/0.png")),
     )
     await wxhn.send(msg)
@@ -56,7 +56,7 @@ async def _(event: GroupMessageEvent):
 async def _(event: GroupMessageEvent):
     msg = (
         MessageSegment.reply(event.message_id),
-        MessageSegment.text("迪拉熊也喜欢你❤️"),
+        MessageSegment.text("迪拉熊也喜欢你mai~❤️"),
         MessageSegment.image(Path("./Static/LikeYou/0.png")),
     )
     await wxhn2.send(msg)
