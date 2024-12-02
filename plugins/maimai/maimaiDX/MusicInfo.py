@@ -16,9 +16,11 @@ from .Config import (
 )
 from .GenB50 import get_fit_diff
 
-ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
-ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
-ttf_regular_path = font_path / "SourceHanSans-Regular.ttc"
+# 字体路径
+ttf_black_path = font_path / "NotoSansCJKjp-Black.otf"
+ttf_bold_path = font_path / "NotoSansCJKjp-Bold.otf"
+ttf_regular_path = font_path / "NotoSansCJKjp-Regular.otf"
+ttf2_bold_path = font_path / "Comfortaa-Bold.otf"
 
 
 def resize_image(image, scale):
@@ -135,7 +137,7 @@ async def music_info(song_data):
     bg.paste(song_ver, (860, 768), song_ver)
 
     # 等级
-    ttf = ImageFont.truetype(ttf_heavy_path, size=50)
+    ttf = ImageFont.truetype(ttf_black_path, size=50)
     songs_level = song_data["level"]
     level_color = [
         (14, 117, 54),
@@ -160,7 +162,7 @@ async def music_info(song_data):
         level_x += 170
 
     # 定数->ra
-    ttf = ImageFont.truetype(ttf_bold_path, size=16)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=16)
     songs_ds = song_data["ds"]
     ds_x = 395
     ds_y = 1124
@@ -177,7 +179,7 @@ async def music_info(song_data):
         ds_x += 170
 
     # 物量
-    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=40)
     song_charts = song_data["charts"]
     notes_x = 395
     for chart in song_charts:
@@ -198,7 +200,7 @@ async def music_info(song_data):
         notes_x += 170
 
     # 谱师
-    ttf = ImageFont.truetype(ttf_bold_path, size=20)
+    ttf = ImageFont.truetype(ttf_regular_path, size=20)
     song_charters = [item["charter"] for item in song_charts[2:]]
     charter_x = 448
     charter_y = 1792
@@ -376,11 +378,11 @@ async def play_info(song_data, qq: str):
             plus_path = maimai_Plus / f"{level_label}.png"
             plus_icon = Image.open(plus_path)
             bg.paste(plus_icon, (plus_x, plus_y), plus_icon)
-        ttf = ImageFont.truetype(ttf_heavy_path, size=50)
+        ttf = ImageFont.truetype(ttf_black_path, size=50)
         drawtext.text((level_x, level_y), level, font=ttf, fill=color, anchor="mm")
 
         # 达成率
-        ttf = ImageFont.truetype(ttf_bold_path, size=43)
+        ttf = ImageFont.truetype(ttf2_bold_path, size=43)
         drawtext.text(
             (achieve_x, achieve_y), achieve, font=ttf, fill=color, anchor="mm"
         )
@@ -405,7 +407,7 @@ async def play_info(song_data, qq: str):
             bg.paste(fs, (fs_x, fs_y), fs)
 
         # 定数->ra
-        ttf = ImageFont.truetype(ttf_bold_path, size=20)
+        ttf = ImageFont.truetype(ttf2_bold_path, size=20)
         drawtext.text(
             (dsra_x, dsra_y), f"{ds}->{ra}", font=ttf, fill=color, anchor="mm"
         )
@@ -511,12 +513,12 @@ async def utage_music_info(song_data, index=0):
     bg.paste(song_ver, (860, 768), song_ver)
 
     # 等级
-    ttf = ImageFont.truetype(ttf_heavy_path, size=50)
+    ttf = ImageFont.truetype(ttf_black_path, size=50)
     song_level = song_data["level"][0].replace("?", "")
     drawtext.text((650, 1046), song_level, anchor="mm", font=ttf, fill=(131, 19, 158))
 
     # 物量
-    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=40)
     chart = song_data["charts"][index]
     notes_x = 310
     notes_y = 1258
@@ -637,7 +639,7 @@ async def score_info(song_data, index):
     bg.paste(song_ver, (860, 768), song_ver)
 
     # 等级
-    ttf = ImageFont.truetype(ttf_heavy_path, size=36)
+    ttf = ImageFont.truetype(ttf_black_path, size=36)
     song_level = song_data["level"][index]
     level_color = [
         (14, 117, 54),
@@ -657,7 +659,7 @@ async def score_info(song_data, index):
     )
 
     # 分数
-    ttf = ImageFont.truetype(ttf_heavy_path, size=36)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=36)
     chart = song_data["charts"][index]
     notes = chart["notes"]
     if song_type == "SD":
@@ -701,7 +703,7 @@ async def score_info(song_data, index):
         score_y += 80
 
     # 物量
-    ttf = ImageFont.truetype(ttf_bold_path, size=40)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=40)
     notes_x = 251
     notes_y = 1778
     for note in notes:
@@ -710,6 +712,29 @@ async def score_info(song_data, index):
             notes_position, str(note), anchor="mm", font=ttf, fill=(28, 43, 110)
         )
         notes_x += 200
+
+    # 谱师
+    song_charters = chart["charter"]
+    ttf = ImageFont.truetype(ttf_regular_path, size=30)
+    artist_position = (545, 744)
+    text_bbox = drawtext.textbbox(artist_position, song_charters, font=ttf)
+    max_width = 1110
+    ellipsis = "..."
+    # 检查文本的宽度是否超过最大宽度
+    if text_bbox[2] <= max_width:
+        # 文本未超过最大宽度,直接绘制
+        drawtext.text(artist_position, song_charters, font=ttf, fill=(0, 0, 0))
+    else:
+        # 文本超过最大宽度,截断并添加省略符号
+        truncated_title = song_charters
+        while text_bbox[2] > max_width and len(truncated_title) > 0:
+            truncated_title = truncated_title[:-1]
+            text_bbox = drawtext.textbbox(
+                artist_position, truncated_title + ellipsis, font=ttf
+            )
+        drawtext.text(
+            artist_position, truncated_title + ellipsis, font=ttf, fill=(0, 0, 0)
+        )
 
     img_byte_arr = BytesIO()
     bg.save(img_byte_arr, format="PNG")

@@ -42,9 +42,10 @@ ratings = {
 }
 
 # 字体路径
-ttf_bold_path = font_path / "SourceHanSans-Bold.ttc"
-ttf_heavy_path = font_path / "SourceHanSans-Heavy.ttc"
-ttf_regular_path = font_path / "SourceHanSans-Regular.ttc"
+ttf_black_path = font_path / "NotoSansCJKjp-Black.otf"
+ttf_bold_path = font_path / "NotoSansCJKjp-Bold.otf"
+ttf_regular_path = font_path / "NotoSansCJKjp-Regular.otf"
+ttf2_bold_path = font_path / "Comfortaa-Bold.otf"
 
 
 # id查歌
@@ -346,7 +347,7 @@ async def music_to_part(
 
     # 歌名
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
-    text_position = (306, 14)
+    text_position = (306, 10)
     draw = ImageDraw.Draw(partbase)
     text_bbox = draw.textbbox(text_position, title, font=ttf)
     max_width = 750
@@ -367,37 +368,36 @@ async def music_to_part(
         draw.text(text_position, truncated_title + ellipsis, font=ttf, fill=color)
 
     # 达成率
-    ttf = ImageFont.truetype(ttf_heavy_path, size=73)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=80)
     draw = ImageDraw.Draw(partbase)
     if "." not in str(achievements):
         achievements = f"{achievements}.0"
     achievements = f"{achievements}".split(".")
-    achievements1 = f"{achievements[0]}.        %"
-    achievements2 = (str(achievements[1]).ljust(4, "0"))[:4]
-    text_position = (375, 68)
+    achievements1 = f"{achievements[0]}"
+    achievements2 = f".{achievements[1].ljust(4, "0")[:5]}"
+    text_position = (375, 86)
     text_content = f"{achievements1}"
     draw.text(text_position, text_content, font=ttf, fill=color)
-    ttf = ImageFont.truetype(ttf_heavy_path, size=55)
+    text_position = (text_position[0] + ttf.getlength(achievements[0]), 106)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=56)
     draw = ImageDraw.Draw(partbase)
-    match len(achievements[0]):
-        case 3:
-            text_position = (532, 88)
-        case 2:
-            text_position = (488, 88)
-        case 1:
-            text_position = (444, 88)
     text_content = f"{achievements2}"
+    draw.text(text_position, text_content, font=ttf, fill=color)
+    text_position = (text_position[0] + ttf.getlength(achievements[1]) + 12, 86)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=80)
+    draw = ImageDraw.Draw(partbase)
+    text_content = "%"
     draw.text(text_position, text_content, font=ttf, fill=color)
 
     # 一些信息
-    ttf = ImageFont.truetype(ttf_bold_path, size=30)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=30)
     # best序号
     ImageDraw.Draw(partbase).text(
-        (308, 238), f"#{index}", font=ttf, fill=(255, 255, 255)
+        (338, 260), f"#{index}", font=ttf, fill=(255, 255, 255), anchor="mm"
     )
     # 乐曲ID
     ImageDraw.Draw(partbase).text(
-        (388, 238), f"ID:{song_id}", font=ttf, fill=(28, 43, 120)
+        (388, 260), f"ID:{song_id}", font=ttf, fill=(28, 43, 120), anchor="lm"
     )
     # 定数和ra
     if b_type == "fit50":
@@ -405,10 +405,10 @@ async def music_to_part(
             ds_str = f"{ds}0"
         else:
             ds_str = str(ds)
-        ttf = ImageFont.truetype(ttf_bold_path, size=24)
+        ttf = ImageFont.truetype(ttf2_bold_path, size=24)
         diff = round(ds - s_ra, 2)
         ImageDraw.Draw(partbase).text(
-            (376, 168),
+            (376, 172),
             f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}",
             font=ttf,
             fill=color,
@@ -416,27 +416,27 @@ async def music_to_part(
         )
     else:
         ds_str = str(ds)
-    ttf = ImageFont.truetype(ttf_bold_path, size=34)
-    ImageDraw.Draw(partbase).text((376, 196), ds_str, font=ttf, fill=color, anchor="lm")
+    ttf = ImageFont.truetype(ttf2_bold_path, size=34)
+    ImageDraw.Draw(partbase).text((376, 202), ds_str, font=ttf, fill=color, anchor="lm")
     ImageDraw.Draw(partbase).text(
-        (549, 196), str(ra), font=ttf, fill=color, anchor="rm"
+        (550, 202), str(ra), font=ttf, fill=color, anchor="rm"
     )
     if b_type in ("cf50", "fd50"):
-        ttf = ImageFont.truetype(ttf_bold_path, size=24)
+        ttf = ImageFont.truetype(ttf2_bold_path, size=24)
         diff = ra - s_ra
         ImageDraw.Draw(partbase).text(
-            (549, 168),
+            (550, 172),
             f"{"+" if diff > 0 else "±" if diff == 0 else ""}{diff}",
             font=ttf,
             fill=color,
             anchor="rm",
         )
     # dx分数和星星
-    ttf = ImageFont.truetype(ttf_bold_path, size=30)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=30)
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
     ImageDraw.Draw(partbase).text(
-        (568, 236), f"{dxScore}/{sum_dxscore}", font=ttf, fill=(28, 43, 120)
+        (730, 260), f"{dxScore}/{sum_dxscore}", font=ttf, fill=(28, 43, 120), anchor="rm"
     )
     star_level, stars = dxscore_proc(dxScore, sum_dxscore)
     if star_level:
@@ -849,7 +849,7 @@ async def generate_wcb(
 
     # 页码
     page_text = f"{page} / {all_page_num}"
-    ttf = ImageFont.truetype(font=ttf_heavy_path, size=70)
+    ttf = ImageFont.truetype(font=ttf_black_path, size=70)
     ImageDraw.Draw(bg).text(
         (260, 850), page_text, font=ttf, fill=(255, 255, 255), anchor="mm"
     )
