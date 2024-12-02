@@ -691,7 +691,7 @@ async def generateb50(
     ttf = ImageFont.truetype(ttf_bold_path, size=14)
     ImageDraw.Draw(b50).text(
         (334, 154),
-        f"历史版本：{b35_ra} | 现行版本：{b15_ra}",
+        f"Best35：{b35_ra} | Best15：{b15_ra}" if type == "ya50" else f"历史版本：{b35_ra} | 现行版本：{b15_ra}",
         font=ttf,
         fill=(255, 255, 255),
         anchor="mm",
