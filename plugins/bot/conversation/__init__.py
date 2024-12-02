@@ -13,7 +13,7 @@ wxhn = on_regex(r"^(迪拉熊|dlx)我喜欢你$", re.I)
 wxhn2 = on_fullmatch("我喜欢你", rule=to_me())
 roll = on_regex(r"^(?:.*?是)(.+)(?:还是(.+))+$", rule=to_me())
 cum = on_regex(r"dlxcum", re.I)
-eatbreak = on_regex(r"^(绝赞(给|请)你吃|(给|请)你吃绝赞)$", rule=to_me())
+eatbreak = on_regex(r"绝赞(给|请)你吃|(给|请)你吃绝赞", rule=to_me())
 
 conversations = {
     1: "变态！！！",
@@ -103,7 +103,7 @@ async def _():
 async def _(event: GroupMessageEvent):
     msg = (
         MessageSegment.reply(event.message_id),
-        MessageSegment.text("谢谢~"),
+        MessageSegment.text("谢谢mai~"),
         MessageSegment.image(Path("./Static/EatBreak/0.png")),
     )
     await eatbreak.send(msg)

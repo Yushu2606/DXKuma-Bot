@@ -43,6 +43,7 @@ ap50 = on_regex(r"^dlxap(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 fc50 = on_regex(r"^dlxfc(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 cf50 = on_regex(r"^dlxcf(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)$", re.I)
 fd50 = on_regex(r"^dlxfd(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+ya50 = on_regex(r"^dlx(ya(50)|b)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( *\d+?)?$", re.I)
 locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
 
@@ -116,6 +117,7 @@ async def records_to_b50(
     is_fit: bool = False,
     is_fd: bool = False,
     is_dxs: bool = False,
+    is_ya: bool = False,
     dx_star_count: str | None = None,
 ):
     sd = []
@@ -176,10 +178,38 @@ async def records_to_b50(
                     continue
         if record["ra"] == 0 or record["achievements"] > 101:
             continue
-        if is_new:
+        if is_new or is_ya:
             dx.append(record)
         else:
             sd.append(record)
+    if is_ya:
+        all_records = sorted(
+            dx,
+            key=lambda x: (
+                (
+                    (x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"])
+                    if is_fd
+                    else x["ra"]
+                ),
+                x["ds"],
+                x["achievements"],
+            ),
+            reverse=True,
+        )
+        dx.clear()
+        for record in [i for i in all_records if i["ra"] >= all_records[50]["ra"]]:
+            song_id = record["song_id"]
+            song_data = [d for d in songList if d["id"] == str(song_id)][0]
+            is_new = song_data["basic_info"]["is_new"]
+            if is_new:
+                dx.append(record)
+                all_records.remove(record)
+                if len(dx) >= 15:
+                    break
+        if len(dx) < 15:
+            dx.extend(all_records[36:36+15-len(dx)])
+        sd = all_records[:35]
+        return sd, dx, mask_enabled
     b35 = (
         sorted(
             sd,
@@ -946,6 +976,67 @@ async def _(event: GroupMessageEvent):
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await fd50.send(msg)
+
+
+@ya50.handle()
+async def _(event: GroupMessageEvent):
+    target_qq = event.get_user_id()
+    for message in event.get_message():
+        if message.type != "at":
+            continue
+        target_qq = message.data["qq"]
+        if target_qq == event.get_user_id():
+            continue
+        with shelve.open("./data/maimai/b50_config.db") as config:
+            if (
+                target_qq not in config
+                or "allow_other" not in config[target_qq]
+                or config[target_qq]["allow_other"]
+            ):
+                break
+    else:
+        if target_qq != event.get_user_id():
+            msg = (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("他不允许其他人查询他的成绩"),
+            )
+            await ya50.finish(msg)
+    data, status = await get_player_records(target_qq)
+    if status == 400:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text(
+                f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
+            ),
+        )
+        await ya50.finish(msg)
+    records = data["records"]
+    if not records:
+        msg = MessageSegment.text(
+            f"{"你" if target_qq == event.get_user_id() else "他"}没有上传任何成绩"
+        )
+        await ya50.finish((MessageSegment.reply(event.message_id), msg))
+    songList = await get_music_data()
+    ya35, ya15, _ = await records_to_b50(records, songList)
+    await ya50.send(
+        (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+        )
+    )
+    nickname = data["nickname"]
+    dani = data["additional_rating"]
+    img = await generateb50(
+        b35=ya35,
+        b15=ya15,
+        nickname=nickname,
+        qq=target_qq,
+        dani=dani,
+        type="ya50",
+        songList=songList,
+    )
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await ya50.send(msg)
 
 
 @sunlist.handle()
