@@ -378,12 +378,12 @@ async def music_to_part(
     text_position = (375, 86)
     text_content = f"{achievements1}"
     draw.text(text_position, text_content, font=ttf, fill=color)
-    text_position = (text_position[0] + ttf.getlength(achievements[0]), 106)
+    text_position = (text_position[0] + ttf.getlength(text_content), 106)
     ttf = ImageFont.truetype(ttf2_bold_path, size=56)
     draw = ImageDraw.Draw(partbase)
     text_content = f"{achievements2}"
     draw.text(text_position, text_content, font=ttf, fill=color)
-    text_position = (text_position[0] + ttf.getlength(achievements[1]) + 12, 86)
+    text_position = (text_position[0] + ttf.getlength(text_content), 86)
     ttf = ImageFont.truetype(ttf2_bold_path, size=80)
     draw = ImageDraw.Draw(partbase)
     text_content = "%"
