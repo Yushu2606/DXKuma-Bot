@@ -4,9 +4,9 @@ admin = []
 dev_token = ""
 
 [log]
-# 0:DEBUG, 1: INFO, 2: SUCCESS, 3: WARNING
+# 0: DEBUG, 1: INFO, 2: SUCCESS, 3: WARNING
 # 4: FAIL, 5: ERROR, 6: CRITICAL
-log_level = 1
+log_level = "INFO"
 
 [backend]
 # 是否使用lagrange作为客户端

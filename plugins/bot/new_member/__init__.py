@@ -4,8 +4,8 @@ from nonebot import on_type, Bot
 from nonebot.adapters.onebot.v11 import (
     GroupIncreaseNoticeEvent,
     GroupDecreaseNoticeEvent,
+    MessageSegment,
 )
-from nonebot.adapters.onebot.v11 import MessageSegment
 
 groupIncrease = on_type(GroupIncreaseNoticeEvent)
 groupDecrease = on_type(GroupDecreaseNoticeEvent)

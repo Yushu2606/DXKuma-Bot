@@ -19,17 +19,17 @@ message_times = {}
 def message_preprocess(message: str):
     raw_message = message
     contained_images = {}
-    images = re.findall(r"\[CQ:image.*?]", message)
-    pattern = r"file=http://gchat.qpic.cn/gchatpic_new/\d+/\d+-\d+-(.*?)/.*?[,\]]"
+    images = re.findall(r"\[CQ:image.*?\]", message)
+    pattern = r"rkey=(.*?)[,\]&]"
 
     for i in images:
-        image_url = re.findall(r"url=(.*?)[,\]]", i)
+        image_url = re.findall(r"fileid=(.*?)[,\]&]", i)
         pattern_match = re.findall(pattern, i)
         if image_url and pattern_match:
             contained_images.update({i: [image_url[0], pattern_match[0]]})
 
     for i, v in contained_images.items():
-        message = message.replace(i, f"[{v[1]}]")
+        message = message.replace(i, f"[{v[0][2:35]}]")
 
     return message, raw_message
 
@@ -49,6 +49,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
             message_times[gid] += 1
         if message_times.get(gid) == config.shortest_times:
             await bot.send_group_msg(
-                group_id=event.group_id, message=raw_message, auto_escape=False
+                group_id=event.group_id, message=event.get_message(), auto_escape=False
             )
         last_message[gid] = message
