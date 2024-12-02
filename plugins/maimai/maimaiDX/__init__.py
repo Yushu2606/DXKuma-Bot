@@ -43,7 +43,7 @@ ap50 = on_regex(r"^dlxap(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 fc50 = on_regex(r"^dlxfc(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 cf50 = on_regex(r"^dlxcf(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)$", re.I)
 fd50 = on_regex(r"^dlxfd(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-ya50 = on_regex(r"^dlx(ya(50)|b)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+ya50 = on_regex(r"^dlx(ya(50)?|b)( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( *\d+?)?$", re.I)
 locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
 
