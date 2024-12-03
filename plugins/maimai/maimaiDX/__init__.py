@@ -365,6 +365,13 @@ async def _(event: GroupMessageEvent):
             ),
         )
         await best50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
+        )
+        await best50.finish(msg)
     songList = await get_music_data()
     charts = data["charts"]
     b35, b15 = sorted(
@@ -428,6 +435,13 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text(
                 f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
             ),
+        )
+        await ap50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await ap50.finish(msg)
     records = data["records"]
@@ -496,6 +510,13 @@ async def _(event: GroupMessageEvent):
             ),
         )
         await fc50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
+        )
+        await fc50.finish(msg)
     records = data["records"]
     if not records:
         msg = MessageSegment.text(
@@ -560,6 +581,13 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text(
                 f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
             ),
+        )
+        await fit50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await fit50.finish(msg)
     records = data["records"]
@@ -633,6 +661,13 @@ async def _(event: GroupMessageEvent):
             ),
         )
         await rate50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
+        )
+        await rate50.finish(msg)
     records = data["records"]
     if not records:
         msg = MessageSegment.text(
@@ -699,6 +734,13 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text(
                 f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
             ),
+        )
+        await dxs50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await dxs50.finish(msg)
     records = data["records"]
@@ -770,6 +812,13 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text(
                 f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
             ),
+        )
+        await star50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await star50.finish(msg)
     records = data["records"]
@@ -856,6 +905,13 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text("你在查分器启用了隐私或者没有同意查分器的用户协议"),
         )
         await cf50.finish(msg)
+    elif not sender_data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
+        )
+        await cf50.finish(msg)
     target_data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -867,6 +923,13 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("他在查分器启用了隐私或者没有同意查分器的用户协议"),
+        )
+        await cf50.finish(msg)
+    elif not target_data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await cf50.finish(msg)
     songList = await get_music_data()
@@ -937,6 +1000,13 @@ async def _(event: GroupMessageEvent):
             MessageSegment.text(
                 f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
             ),
+        )
+        await fd50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await fd50.finish(msg)
     records = data["records"]
@@ -1010,6 +1080,13 @@ async def _(event: GroupMessageEvent):
             ),
         )
         await ya50.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
+        )
+        await ya50.finish(msg)
     records = data["records"]
     if not records:
         msg = MessageSegment.text(
@@ -1047,6 +1124,13 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("迪拉熊没有找到你的信息"),
+        )
+        await sunlist.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await sunlist.finish(msg)
     records = data["records"]
@@ -1107,6 +1191,13 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("迪拉熊没有找到你的信息"),
+        )
+        await locklist.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await locklist.finish(msg)
     records = data["records"]
@@ -1170,6 +1261,13 @@ async def _(event: GroupMessageEvent):
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("迪拉熊没有找到你的信息"),
+        )
+        await wcb.finish(msg)
+    elif not data:
+        msg = (
+            MessageSegment.reply(event.message_id),
+            MessageSegment.text("（查分器出了点问题）"),
+            MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
         await wcb.finish(msg)
     records = data["records"]

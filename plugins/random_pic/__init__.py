@@ -10,6 +10,7 @@ import toml
 from dill import Pickler, Unpickler
 from nonebot import on_regex, Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from PIL import Image, UnidentifiedImageError
 
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
@@ -71,6 +72,19 @@ def gen_rank(data, time):
     return leaderboard[:5]
 
 
+def check_image(imgpath: Path):
+    try:
+        image = Image.open(imgpath)
+    except UnidentifiedImageError:
+        return False
+    try:
+        image.verify()
+    except OSError:
+        return False
+    image.close()
+    return True
+
+
 @kuma_pic.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     group_id = event.group_id
@@ -109,10 +123,20 @@ async def _(bot: Bot, event: GroupMessageEvent):
             MessageSegment.image(Path("./Static/Gallery/0.png")),
         )
         await kuma_pic.finish(msg)
-    file = random.choice(files)
-    pic_path = os.path.join(path, file)
+    for _ in range(3):
+        file = random.choice(files)
+        pic_path = os.path.join(path, file)
+        if check_image(pic_path):
+            break
+    else:
+        msg = (
+            MessageSegment.text("迪拉熊不准你看"),
+            MessageSegment.image(Path("./Static/Gallery/0.png")),
+        )
+        await kuma_pic.finish(msg)
+    with open(pic_path, "rb") as fd:
+        send_msg = await kuma_pic.send(MessageSegment.image(fd.read()))
     update_count(qq=qq, type=type)
-    send_msg = await kuma_pic.send(MessageSegment.image(Path(pic_path)))
     if type == "kuma_r18":
         msg_id = send_msg["message_id"]
         await asyncio.sleep(10)

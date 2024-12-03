@@ -230,8 +230,8 @@ async def play_info(song_data, qq: str):
             msg = "迪拉熊没有找到你在这首乐曲上的成绩"
             return msg
         records = data[song_data["id"]]
-    else:
-        msg = "迪拉熊没有找到你在这首乐曲上的成绩"
+    elif not data:
+        msg = "（查分器出了点问题）"
         return msg
 
     playdata = sorted(records, key=lambda x: x["level_index"])
