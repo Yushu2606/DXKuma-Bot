@@ -24,7 +24,7 @@ from ..maiWordle.GLOBAL_CONSTANT import version_df_maps
 random = SystemRandom()
 
 ratings = {
-    "ap+": [1.01, 0],
+    "app": [1.01, 0],
     "sssp": [1.005, 22.4],
     "sss": [1.0, 21.6],
     "ssp": [0.995, 21.1],
@@ -46,6 +46,8 @@ ttf_black_path = font_path / "rounded-x-mplus-1p-heavy.ttf"
 ttf_bold_path = font_path / "rounded-x-mplus-1p-bold.ttf"
 ttf_regular_path = font_path / "rounded-x-mplus-1p-medium.ttf"
 ttf2_bold_path = font_path / "Comfortaa-Bold.ttf"
+ttf3_bold_path = font_path / "NotoSansCJKsc-Bold.otf"
+ttf3_regular_path = font_path / "NotoSansCJKsc-Regular.otf"
 
 
 # id查歌
@@ -248,7 +250,7 @@ def dxscore_proc(dxscore, sum_dxscore):
 def rating_proc(ra: int, rate: str):
     try:
         if ra < 232:
-            return "------"
+            return "-----"
 
         achieve = ratings[rate][0]
         num = ratings[rate][1]
@@ -256,7 +258,7 @@ def rating_proc(ra: int, rate: str):
         result = math.ceil((ra / (achieve * num)) * 10) / 10
 
         if result > 15.0:
-            return "------"
+            return "-----"
 
         return result
     except (KeyError, ZeroDivisionError):
@@ -330,7 +332,7 @@ async def music_to_part(
     if not os.path.exists(jacket_path):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"https://www.diving-fish.com/covers/{str(song_id).zfill(5)}.png"
+                f"https://assets2.lxns.net/maimai/jacket/{song_id % 10000}.png"
             ) as resp:
                 with open(jacket_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
@@ -684,11 +686,11 @@ async def generateb50(
     b50.paste(num5, (308, 77), num5)
 
     # 名字
-    ttf = ImageFont.truetype(ttf_regular_path, size=24)
+    ttf = ImageFont.truetype(ttf3_regular_path, size=24)
     ImageDraw.Draw(b50).text((186, 108), nickname, font=ttf, fill=(0, 0, 0))
 
     # rating合计
-    ttf = ImageFont.truetype(ttf_bold_path, size=14)
+    ttf = ImageFont.truetype(ttf3_bold_path, size=14)
     ImageDraw.Draw(b50).text(
         (334, 154),
         f"Best35：{b35_ra} | Best15：{b15_ra}" if type == "ya50" else f"历史版本：{b35_ra} | 现行版本：{b15_ra}",
@@ -806,7 +808,7 @@ async def generate_wcb(
     bg.paste(num5, (308, 77), num5)
 
     # 名字
-    ttf = ImageFont.truetype(ttf_regular_path, size=24)
+    ttf = ImageFont.truetype(ttf3_regular_path, size=24)
     ImageDraw.Draw(bg).text((186, 108), nickname, font=ttf, fill=(0, 0, 0))
 
     if level:

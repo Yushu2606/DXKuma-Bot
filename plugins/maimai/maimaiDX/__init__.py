@@ -2,6 +2,7 @@ import math
 import os
 import re
 import shelve
+from datetime import date
 from pathlib import Path
 from random import SystemRandom
 
@@ -44,6 +45,7 @@ fc50 = on_regex(r"^dlxfc(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 cf50 = on_regex(r"^dlxcf(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)$", re.I)
 fd50 = on_regex(r"^dlxfd(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
 ya50 = on_regex(r"^dlx(ya(50)?|b)( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+rr50 = on_regex(r"^dlxrr(50)?$", re.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( *\d+?)?$", re.I)
 locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
 
@@ -110,7 +112,7 @@ async def find_songid_by_alias(name, song_list):
 
 
 async def records_to_b50(
-    records: list,
+    records: list | None,
     songList,
     fc_rules: list | None = None,
     rate_rules: list | None = None,
@@ -125,6 +127,28 @@ async def records_to_b50(
     if is_fit or is_fd:
         charts = await get_chart_stats()
     mask_enabled = False
+    if not records:
+        records = []
+        for song in songList:
+            if len(song["id"]) > 5:
+                continue
+            for i, j in enumerate(song["ds"]):
+                record = {
+                    "achievements": 101,
+                    "ds": j,
+                    "dxScore": sum(song["charts"][i]["notes"]) * 3,
+                    "fc": "fsdp",
+                    "fs": "app",
+                    "level": "",
+                    "level_index": i,
+                    "level_label": ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][i],
+                    "ra": int(j * 100.5 * 0.224),
+                    "rate": "sssp",
+                    "song_id": int(song["id"]),
+                    "title": song["title"],
+                    "type": song["type"],
+                }
+                records.append(record)
     for record in records:
         if record["level_label"] == "Utage":
             continue
@@ -1114,6 +1138,42 @@ async def _(event: GroupMessageEvent):
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
     await ya50.send(msg)
+
+
+@rr50.handle()
+async def _(event: GroupMessageEvent):
+    cache_dir = "./Cache/Riren/"
+    cache_path = f"{cache_dir}{date.today().isoformat()}.png"
+    if not os.path.exists(cache_path):
+        files = os.listdir(cache_dir)
+        songList = await get_music_data()
+        rr35, rr15, _ = await records_to_b50(None, songList)
+        await rr50.send(
+            (
+                MessageSegment.reply(event.message_id),
+                MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
+            )
+        )
+        nickname = "科技哥（？）"
+        dani = 22
+        img = await generateb50(
+            b35=rr35,
+            b15=rr15,
+            nickname=nickname,
+            qq="0",
+            dani=dani,
+            type="rr50",
+            songList=songList,
+        )
+        with open(cache_path, "wb") as fd:
+            fd.write(img)
+        if files:
+            for file in files:
+                os.remove(f"{cache_dir}{file}")
+    with open(cache_path, "rb") as fd:
+        img = fd.read()
+    msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
+    await rr50.send(msg)
 
 
 @sunlist.handle()
