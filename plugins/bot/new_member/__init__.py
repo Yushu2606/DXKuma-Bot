@@ -14,6 +14,8 @@ groupDecrease = on_type(GroupDecreaseNoticeEvent)
 @groupIncrease.handle()
 async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     qq = event.get_user_id()
+    if qq == bot.self_id:
+        return
     group_id = event.group_id
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"
@@ -34,6 +36,8 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
 @groupDecrease.handle()
 async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     qq = event.get_user_id()
+    if qq == bot.self_id:
+        return
     group_id = event.group_id
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"

@@ -1323,7 +1323,6 @@ async def _(event: GroupMessageEvent):
 
 @songinfo.handle()
 async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
     msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
     songList = await get_music_data()
@@ -1513,7 +1512,6 @@ async def _(event: GroupMessageEvent):
 
 @randomsong.handle()
 async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
     msg = event.get_plaintext()
     pattern = r"^随(?:个|歌) *(绿|黄|红|紫|白)? *((?:\d+)(?:\.\d|\+)?)"
     match = re.match(pattern, msg)
@@ -1571,7 +1569,6 @@ async def _(event: GroupMessageEvent):
 
 @whatSong.handle()
 async def _(event: GroupMessageEvent):
-    qq = event.get_user_id()
     msg = event.get_plaintext()
     match = re.match(r"/?(?:search|查歌) *(.*)|(.*?)是什么歌", msg, re.I)
     if match:
