@@ -17,10 +17,10 @@ from .Config import (
 from .GenB50 import get_fit_diff
 
 # 字体路径
-ttf_black_path = font_path / "NotoSansCJKjp-Black.otf"
-ttf_bold_path = font_path / "NotoSansCJKjp-Bold.otf"
-ttf_regular_path = font_path / "NotoSansCJKjp-Regular.otf"
-ttf2_bold_path = font_path / "Comfortaa-Bold.otf"
+ttf_black_path = font_path / "rounded-x-mplus-1p-heavy.ttf"
+ttf_bold_path = font_path / "rounded-x-mplus-1p-bold.ttf"
+ttf_regular_path = font_path / "rounded-x-mplus-1p-medium.ttf"
+ttf2_bold_path = font_path / "Comfortaa-Bold.ttf"
 
 
 def resize_image(image, scale):
