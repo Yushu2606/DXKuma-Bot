@@ -1,7 +1,6 @@
 from nonebot import on_command,on_message,on_regex
 import re
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message,MessageSegment,Bot
-from nonebot.params import CommandArg
+from nonebot.adapters.onebot.v11 import GroupMessageEvent,MessageSegment,Bot
 from .alias_db_handle import alias_handle as otherName
 from .maimaidx_music import total_list
 from nonebot.typing import T_State
@@ -13,9 +12,7 @@ start_open_chars = on_command('dlx猜歌')
 async def _(bot: Bot, event: GroupMessageEvent):
     group_id = event.group_id
     is_exist,game_data = openchars.start(group_id)
-    if is_exist:
-        await start_open_chars.send("游戏进行中，请不要再次开始噢~")
-    else:
+    if not is_exist:
         await start_open_chars.send("准备开始猜歌游戏~\n输入“开（字母）”开出字母\n输入“跳过猜歌”跳过\n输入“结束猜歌”结束\n直接发送别名或id即可猜歌")
         is_game_over,game_state,char_all_open,game_data = generate_message_state(game_data)
         # openchars.update_game_data(group_id,game_data)

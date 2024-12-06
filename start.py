@@ -74,7 +74,8 @@ if __name__ == "__main__":
     nonebot_init()
 
     def terminate_process():
-        logger.info("检测到进程即将退出，自动结束Lagrange")
-        process.terminate()
+        if config.is_lagrange:
+            logger.info("检测到进程即将退出，自动结束Lagrange")
+            process.terminate()
 
     atexit.register(terminate_process)

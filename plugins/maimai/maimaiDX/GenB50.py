@@ -349,11 +349,11 @@ async def music_to_part(
 
     # 歌名
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
-    text_position = (306, 10)
+    text_position = (302, 10)
     draw = ImageDraw.Draw(partbase)
     text_bbox = draw.textbbox(text_position, title, font=ttf)
     max_width = 750
-    ellipsis = "..."
+    ellipsis = "…"
 
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
