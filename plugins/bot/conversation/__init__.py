@@ -30,7 +30,7 @@ conversations = {
 
 
 @xc.handle()
-async def _():
+async def _(event: GroupMessageEvent):
     weights = [11, 11, 11, 11, 11, 11, 11, 11, 11, 1]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
@@ -90,7 +90,7 @@ async def _(event: GroupMessageEvent):
 
 
 @cum.handle()
-async def _():
+async def _(event: GroupMessageEvent):
     weight = random.randint(0, 9)
     imgpath = "./Static/Cum/0.png"
     if weight == 0:

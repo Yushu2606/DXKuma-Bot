@@ -4,6 +4,7 @@ from nonebot import on_type, Bot
 from nonebot.adapters.onebot.v11 import (
     GroupIncreaseNoticeEvent,
     GroupDecreaseNoticeEvent,
+    FriendAddNoticeEvent,
     FriendRequestEvent,
     GroupRequestEvent,
     MessageSegment,
@@ -11,6 +12,7 @@ from nonebot.adapters.onebot.v11 import (
 
 groupIncrease = on_type(GroupIncreaseNoticeEvent)
 groupDecrease = on_type(GroupDecreaseNoticeEvent)
+friendAdd = on_type(FriendAddNoticeEvent)
 friendRequest = on_type(FriendRequestEvent)
 groupRequest = on_type(GroupRequestEvent)
 
@@ -18,8 +20,6 @@ groupRequest = on_type(GroupRequestEvent)
 @groupIncrease.handle()
 async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     qq = event.get_user_id()
-    if qq == bot.self_id:
-        return
     group_id = event.group_id
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"
@@ -40,8 +40,6 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
 @groupDecrease.handle()
 async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     qq = event.get_user_id()
-    if qq == bot.self_id:
-        return
     group_id = event.group_id
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"
@@ -55,13 +53,21 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     )
 
 
+@friendAdd.handle()
+async def _():
+    msg = MessageSegment.text("恭喜你发现了迪拉熊宝藏地带，发送dlxhelp试一下吧~")
+    await friendAdd.send((msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))
+
+
 @friendRequest.handle()
 async def _(event: FriendRequestEvent):
     event.approve()
 
 
 @groupRequest.handle()
-async def _(event: GroupRequestEvent):
+async def _(bot: Bot, event: GroupRequestEvent):
     if event.sub_type != "invite":
         return
     event.approve()
+    msg = MessageSegment.text("迪拉熊加入了本群，发送dlxhelp和迪拉熊一起玩吧~")
+    await bot.send_msg(group_id=236030263, message=(msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))
