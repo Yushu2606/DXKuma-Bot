@@ -375,27 +375,27 @@ async def music_to_part(
     if "." not in str(achievements):
         achievements = f"{achievements}.0"
     achievements = f"{achievements}".split(".")
-    achievements1 = f"{achievements[0]}"
-    achievements2 = f".{achievements[1].ljust(4, "0")[:5]}"
-    text_position = (375, 86)
+    achievements1 = f"{achievements[0]}."
+    achievements2 = achievements[1].ljust(4, "0")[:4]
+    text_position = (375, 155)
     text_content = f"{achievements1}"
-    draw.text(text_position, text_content, font=ttf, fill=color)
-    text_position = (text_position[0] + ttf.getlength(text_content), 106)
+    draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
+    text_position = (text_position[0] + ttf.getlength(text_content), 155)
     ttf = ImageFont.truetype(ttf2_bold_path, size=56)
     draw = ImageDraw.Draw(partbase)
     text_content = f"{achievements2}"
-    draw.text(text_position, text_content, font=ttf, fill=color)
-    text_position = (text_position[0] + ttf.getlength(text_content), 86)
+    draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
+    text_position = (text_position[0] + ttf.getlength(text_content), 155)
     ttf = ImageFont.truetype(ttf2_bold_path, size=80)
     draw = ImageDraw.Draw(partbase)
     text_content = "%"
-    draw.text(text_position, text_content, font=ttf, fill=color)
+    draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
 
     # 一些信息
     ttf = ImageFont.truetype(ttf2_bold_path, size=30)
     # best序号
     ImageDraw.Draw(partbase).text(
-        (338, 260), f"#{index}", font=ttf, fill=(255, 255, 255), anchor="mm"
+        (336, 260), f"#{index}", font=ttf, fill=(255, 255, 255), anchor="mm"
     )
     # 乐曲ID
     ImageDraw.Draw(partbase).text(
@@ -419,12 +419,23 @@ async def music_to_part(
     else:
         ds_str = str(ds)
     ttf = ImageFont.truetype(ttf2_bold_path, size=34)
-    ImageDraw.Draw(partbase).text((376, 202), ds_str, font=ttf, fill=color, anchor="lm")
+    draw = ImageDraw.Draw(partbase)
+    ds_str = f"{ds_str}".split(".")
+    text_position = (376, 212)
+    text_content = f"{ds_str[0]}."
+    draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
+    text_position = (text_position[0] + ttf.getlength(text_content), 212)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=27)
+    draw = ImageDraw.Draw(partbase)
+    text_content = f"{ds_str[1]}"
+    draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
+
+    ttf = ImageFont.truetype(ttf2_bold_path, size=34)
     ImageDraw.Draw(partbase).text(
         (550, 202), str(ra), font=ttf, fill=color, anchor="rm"
     )
     if b_type in ("cf50", "fd50"):
-        ttf = ImageFont.truetype(ttf2_bold_path, size=24)
+        ttf = ImageFont.truetype(ttf2_bold_path, size=20)
         diff = ra - s_ra
         ImageDraw.Draw(partbase).text(
             (550, 172),
@@ -434,12 +445,19 @@ async def music_to_part(
             anchor="rm",
         )
     # dx分数和星星
-    ttf = ImageFont.truetype(ttf2_bold_path, size=30)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=24)
+    draw = ImageDraw.Draw(partbase)
+    text_position = (730, 270)
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
-    ImageDraw.Draw(partbase).text(
-        (730, 260), f"{dxScore}/{sum_dxscore}", font=ttf, fill=(28, 43, 120), anchor="rm"
-    )
+    text_content = f"{sum_dxscore}"
+    draw.text(text_position, text_content, font=ttf, fill=(28, 43, 120), anchor="rs")
+    text_position = (text_position[0] - ttf.getlength(text_content), 270)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=30)
+    draw = ImageDraw.Draw(partbase)
+    text_content = f"{dxScore}/"
+    draw.text(text_position, text_content, font=ttf, fill=(28, 43, 120), anchor="rs")
+
     star_level, stars = dxscore_proc(dxScore, sum_dxscore)
     if star_level:
         star_width = 30
