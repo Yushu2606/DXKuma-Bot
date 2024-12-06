@@ -4,11 +4,15 @@ from nonebot import on_type, Bot
 from nonebot.adapters.onebot.v11 import (
     GroupIncreaseNoticeEvent,
     GroupDecreaseNoticeEvent,
+    FriendRequestEvent,
+    GroupRequestEvent,
     MessageSegment,
 )
 
 groupIncrease = on_type(GroupIncreaseNoticeEvent)
 groupDecrease = on_type(GroupDecreaseNoticeEvent)
+friendRequest = on_type(FriendRequestEvent)
+groupRequest = on_type(GroupRequestEvent)
 
 
 @groupIncrease.handle()
@@ -49,3 +53,15 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     await groupDecrease.send(
         (msg, MessageSegment.image(Path("./Static/MemberChange/1.png")))
     )
+
+
+@friendRequest.handle()
+async def _(event: FriendRequestEvent):
+    event.approve()
+
+
+@groupRequest.handle()
+async def _(event: GroupRequestEvent):
+    if event.sub_type != "invite":
+        return
+    event.approve()

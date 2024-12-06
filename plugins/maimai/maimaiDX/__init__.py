@@ -8,7 +8,7 @@ from random import SystemRandom
 
 import aiohttp
 from nonebot import on_regex, on_fullmatch
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 
 from util.Data import (
     get_chart_stats,
@@ -52,7 +52,7 @@ locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
 songinfo = on_regex(r"^id *\d+$", re.I)
 playinfo = on_regex(r"^info *.+$", re.I)
 scoreinfo = on_regex(r"^(score|分数表) *(绿|黄|红|紫|白) *\d+$", re.I)
-playmp3 = on_regex(r"^dlx点歌 *.+$", re.I)
+# playmp3 = on_regex(r"^dlx点歌 *.+$", re.I)
 randomsong = on_regex(r"^随(个|歌) *(绿|黄|红|紫|白)? *\d+(\.\d|\+)?$")
 maiwhat = on_fullmatch("mai什么")
 
@@ -350,7 +350,7 @@ def get_ra_in(rate: str) -> float:
 
 
 @best50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -430,7 +430,7 @@ async def _(event: GroupMessageEvent):
 
 
 @ap50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -503,7 +503,7 @@ async def _(event: GroupMessageEvent):
 
 
 @fc50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -576,7 +576,7 @@ async def _(event: GroupMessageEvent):
 
 
 @fit50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -654,7 +654,7 @@ async def _(event: GroupMessageEvent):
 
 
 @rate50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -729,7 +729,7 @@ async def _(event: GroupMessageEvent):
 
 
 @dxs50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -807,7 +807,7 @@ async def _(event: GroupMessageEvent):
 
 
 @star50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -888,7 +888,7 @@ async def _(event: GroupMessageEvent):
 
 
 @cf50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     sender_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -995,7 +995,7 @@ async def _(event: GroupMessageEvent):
 
 
 @fd50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -1073,7 +1073,7 @@ async def _(event: GroupMessageEvent):
 
 
 @ya50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
         if message.type != "at":
@@ -1141,7 +1141,7 @@ async def _(event: GroupMessageEvent):
 
 
 @rr50.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     cache_dir = "./Cache/Riren/"
     cache_path = f"{cache_dir}{date.today().isoformat()}.png"
     if not os.path.exists(cache_path):
@@ -1177,7 +1177,7 @@ async def _(event: GroupMessageEvent):
 
 
 @sunlist.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     data, status = await get_player_records(qq)
     if status == 400:
@@ -1244,7 +1244,7 @@ async def _(event: GroupMessageEvent):
 
 
 @locklist.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     data, status = await get_player_records(qq)
     if status == 400:
@@ -1311,7 +1311,7 @@ async def _(event: GroupMessageEvent):
 
 
 @wcb.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     pattern = r"(?:list|完成表) *(?:((?:\d+)(?:\.\d|\+)?)|(真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|舞|熊|华|爽|煌|宙|星|祭|祝|双))(?: *(\d+))?"
@@ -1382,7 +1382,7 @@ async def _(event: GroupMessageEvent):
 
 
 @songinfo.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
     songList = await get_music_data()
@@ -1405,7 +1405,7 @@ async def _(event: GroupMessageEvent):
 
 
 @playinfo.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     song = msg.replace("info", "").strip()
@@ -1480,7 +1480,7 @@ async def _(event: GroupMessageEvent):
 
 
 @scoreinfo.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     msg = event.get_plaintext()
     type_index = ["绿", "黄", "红", "紫", "白"].index(
         re.search(r"绿|黄|红|紫|白", msg).group(0)
@@ -1506,72 +1506,72 @@ async def _(event: GroupMessageEvent):
     await scoreinfo.send((MessageSegment.reply(event.message_id), msg))
 
 
-@playmp3.handle()
-async def _(event: GroupMessageEvent):
-    msg = event.get_plaintext()
-    song = msg.replace("dlx点歌", "").strip()
-    if not song:
-        await playmp3.finish(
-            (
-                MessageSegment.reply(event.message_id),
-                MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
-            )
-        )
-    songList = await get_music_data()
-    rep_ids = await find_songid_by_alias(song, songList)
-    if rep_ids:
-        songinfo = find_song_by_id(song_id=rep_ids[0], songList=songList)
-        if not songinfo:
-            await playmp3.finish(
-                (
-                    MessageSegment.reply(event.message_id),
-                    MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
-                )
-            )
-        songname = songinfo["title"]
-        await playmp3.send(
-            MessageSegment.text(f"迪拉熊找到啦~\n开始播放{songinfo["id"]}——{songname}")
-        )
-        music_path = f"./Cache/Music/{rep_ids[0][-4:].lstrip("0")}.mp3"
-        if not os.path.exists(music_path):
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"https://assets2.lxns.net/maimai/music/{rep_ids[0][-4:].lstrip("0")}.mp3"
-                ) as resp:
-                    with open(music_path, "wb") as fd:
-                        async for chunk in resp.content.iter_chunked(1024):
-                            fd.write(chunk)
-        await playmp3.send(MessageSegment.record(music_path))
-    else:
-        songinfo = find_song_by_id(song, songList)
-        if songinfo:
-            songname = songinfo["title"]
-            await playmp3.send(
-                MessageSegment.text(
-                    f"迪拉熊找到啦~\n开始播放{songinfo["id"]}——{songname}"
-                )
-            )
-            music_path = f"./Cache/Music/{song[-4:].lstrip("0")}.mp3"
-            if not os.path.exists(music_path):
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        f"https://assets2.lxns.net/maimai/music/{song[-4:].lstrip("0")}.mp3"
-                    ) as resp:
-                        with open(music_path, "wb") as fd:
-                            async for chunk in resp.content.iter_chunked(1024):
-                                fd.write(chunk)
-            await playmp3.send(MessageSegment.record(music_path))
-        else:
-            await playmp3.send(
-                (
-                    MessageSegment.reply(event.message_id),
-                    MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
-                )
-            )
+# @playmp3.handle()
+# async def _(event: GroupMessageEvent):
+#     msg = event.get_plaintext()
+#     song = msg.replace("dlx点歌", "").strip()
+#     if not song:
+#         await playmp3.finish(
+#             (
+#                 MessageSegment.reply(event.message_id),
+#                 MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
+#             )
+#         )
+#     songList = await get_music_data()
+#     rep_ids = await find_songid_by_alias(song, songList)
+#     if rep_ids:
+#         songinfo = find_song_by_id(song_id=rep_ids[0], songList=songList)
+#         if not songinfo:
+#             await playmp3.finish(
+#                 (
+#                     MessageSegment.reply(event.message_id),
+#                     MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
+#                 )
+#             )
+#         songname = songinfo["title"]
+#         await playmp3.send(
+#             MessageSegment.text(f"迪拉熊找到啦~\n开始播放{songinfo["id"]}——{songname}")
+#         )
+#         music_path = f"./Cache/Music/{rep_ids[0][-4:].lstrip("0")}.mp3"
+#         if not os.path.exists(music_path):
+#             async with aiohttp.ClientSession() as session:
+#                 async with session.get(
+#                     f"https://assets2.lxns.net/maimai/music/{rep_ids[0][-4:].lstrip("0")}.mp3"
+#                 ) as resp:
+#                     with open(music_path, "wb") as fd:
+#                         async for chunk in resp.content.iter_chunked(1024):
+#                             fd.write(chunk)
+#         await playmp3.send(MessageSegment.record(music_path))
+#     else:
+#         songinfo = find_song_by_id(song, songList)
+#         if songinfo:
+#             songname = songinfo["title"]
+#             await playmp3.send(
+#                 MessageSegment.text(
+#                     f"迪拉熊找到啦~\n开始播放{songinfo["id"]}——{songname}"
+#                 )
+#             )
+#             music_path = f"./Cache/Music/{song[-4:].lstrip("0")}.mp3"
+#             if not os.path.exists(music_path):
+#                 async with aiohttp.ClientSession() as session:
+#                     async with session.get(
+#                         f"https://assets2.lxns.net/maimai/music/{song[-4:].lstrip("0")}.mp3"
+#                     ) as resp:
+#                         with open(music_path, "wb") as fd:
+#                             async for chunk in resp.content.iter_chunked(1024):
+#                                 fd.write(chunk)
+#             await playmp3.send(MessageSegment.record(music_path))
+#         else:
+#             await playmp3.send(
+#                 (
+#                     MessageSegment.reply(event.message_id),
+#                     MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
+#                 )
+#             )
 
 
 @randomsong.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     msg = event.get_plaintext()
     pattern = r"^随(?:个|歌) *(绿|黄|红|紫|白)? *((?:\d+)(?:\.\d|\+)?)"
     match = re.match(pattern, msg)
@@ -1616,7 +1616,7 @@ async def _(event: GroupMessageEvent):
 
 
 @maiwhat.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     songList = await get_music_data()
     song = random.choice(songList)
     if song["basic_info"]["genre"] == "宴会場":
@@ -1628,7 +1628,7 @@ async def _(event: GroupMessageEvent):
 
 
 @whatSong.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     msg = event.get_plaintext()
     match = re.match(r"/?(?:search|查歌) *(.*)|(.*?)是什么歌", msg, re.I)
     if match:
@@ -1698,7 +1698,7 @@ async def _(event: GroupMessageEvent):
 
 # 查看别名
 @aliasSearch.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     msg = event.get_plaintext()
     song_id = re.search(r"\d+", msg).group(0)
 
@@ -1735,7 +1735,7 @@ async def _():
 
 
 @set_plate.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
@@ -1771,7 +1771,7 @@ async def _(event: GroupMessageEvent):
 
 
 @set_frame.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
     id = re.search(r"\d+", msg).group(0)
@@ -1797,7 +1797,7 @@ async def _(event: GroupMessageEvent):
 
 
 @ratj_on.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
@@ -1815,7 +1815,7 @@ async def _(event: GroupMessageEvent):
 
 
 @ratj_off.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
@@ -1833,7 +1833,7 @@ async def _(event: GroupMessageEvent):
 
 
 @allow_other_on.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:
@@ -1851,7 +1851,7 @@ async def _(event: GroupMessageEvent):
 
 
 @allow_other_off.handle()
-async def _(event: GroupMessageEvent):
+async def _(event: MessageEvent):
     qq = event.get_user_id()
     with shelve.open("./data/maimai/b50_config.db") as config:
         if qq not in config:

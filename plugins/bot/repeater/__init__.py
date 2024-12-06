@@ -49,6 +49,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
             message_times[gid] += 1
         if message_times.get(gid) == config.shortest_times:
             await bot.send_group_msg(
-                group_id=event.group_id, message=event.get_message(), auto_escape=False
+                group_id=event.group_id, message=event.get_message()
             )
         last_message[gid] = message

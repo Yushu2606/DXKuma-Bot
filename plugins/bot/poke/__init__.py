@@ -26,7 +26,9 @@ conversations = {
 
 
 @poke.handle()
-async def _():
+async def _(event: PokeNotifyEvent):
+    if not event.group_id:
+        return
     weights = [9, 9, 9, 9, 9, 9, 9, 9, 4, 4]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
     text = conversations[ran_number]
