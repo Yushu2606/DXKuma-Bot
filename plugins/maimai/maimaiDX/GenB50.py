@@ -326,6 +326,7 @@ async def music_to_part(
     # 根据难度 底图
     partbase_path = maimai_Static / f"PartBase_{level_label}.png"
     partbase = Image.open(partbase_path)
+    draw = ImageDraw.Draw(partbase)
 
     # 歌曲封面
     jacket_path = f"./Cache/Jacket/{song_id % 10000}.png"
@@ -350,7 +351,6 @@ async def music_to_part(
     # 歌名
     ttf = ImageFont.truetype(ttf_bold_path, size=40)
     text_position = (302, 10)
-    draw = ImageDraw.Draw(partbase)
     text_bbox = draw.textbbox(text_position, title, font=ttf)
     max_width = 750
     ellipsis = "…"
@@ -364,6 +364,7 @@ async def music_to_part(
         truncated_title = title
         while text_bbox[2] > max_width and len(truncated_title) > 0:
             truncated_title = truncated_title[:-1]
+            truncated_title.strip()
             text_bbox = draw.textbbox(
                 text_position, truncated_title + ellipsis, font=ttf
             )
@@ -371,7 +372,6 @@ async def music_to_part(
 
     # 达成率
     ttf = ImageFont.truetype(ttf2_bold_path, size=80)
-    draw = ImageDraw.Draw(partbase)
     if "." not in str(achievements):
         achievements = f"{achievements}.0"
     achievements = f"{achievements}".split(".")
@@ -382,25 +382,35 @@ async def music_to_part(
     draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
     text_position = (text_position[0] + ttf.getlength(text_content), 155)
     ttf = ImageFont.truetype(ttf2_bold_path, size=56)
-    draw = ImageDraw.Draw(partbase)
     text_content = f"{achievements2}"
     draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
     text_position = (text_position[0] + ttf.getlength(text_content), 155)
     ttf = ImageFont.truetype(ttf2_bold_path, size=80)
-    draw = ImageDraw.Draw(partbase)
     text_content = "%"
     draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
 
     # 一些信息
-    ttf = ImageFont.truetype(ttf2_bold_path, size=30)
     # best序号
-    ImageDraw.Draw(partbase).text(
-        (336, 260), f"#{index}", font=ttf, fill=(255, 255, 255), anchor="mm"
-    )
+    ttf1 = ImageFont.truetype(ttf2_bold_path, size=24)
+    text_position = (336, 270)
+    text_content1 = "#"
+    text_len = ttf1.getlength(text_content1)
+    ttf2 = ImageFont.truetype(ttf2_bold_path, size=30)
+    text_content2 = f"{index}"
+    xdiff = (text_len + ttf2.getlength(text_content2)) / 2
+    text_position = (text_position[0] - int(xdiff), 270)
+    draw.text(text_position, text_content1, font=ttf1, fill=(255, 255, 255), anchor="ls")
+    text_position = (text_position[0] + int(text_len), 270)
+    draw.text(text_position, text_content2, font=ttf2, fill=(255, 255, 255), anchor="ls")
     # 乐曲ID
-    ImageDraw.Draw(partbase).text(
-        (388, 260), f"ID:{song_id}", font=ttf, fill=(28, 43, 120), anchor="lm"
-    )
+    ttf = ImageFont.truetype(ttf2_bold_path, size=24)
+    text_position = (388, 270)
+    text_content = "ID:"
+    draw.text(text_position, text_content, font=ttf, fill=(28, 43, 120), anchor="ls")
+    text_position = (text_position[0] + ttf.getlength(text_content), 270)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=30)
+    text_content = f"{song_id}"
+    draw.text(text_position, text_content, font=ttf, fill=(28, 43, 120), anchor="ls")
     # 定数和ra
     if b_type == "fit50":
         if ((ds * 10) % 1) == 0:
@@ -419,14 +429,12 @@ async def music_to_part(
     else:
         ds_str = str(ds)
     ttf = ImageFont.truetype(ttf2_bold_path, size=34)
-    draw = ImageDraw.Draw(partbase)
     ds_str = f"{ds_str}".split(".")
     text_position = (376, 212)
     text_content = f"{ds_str[0]}."
     draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
     text_position = (text_position[0] + ttf.getlength(text_content), 212)
     ttf = ImageFont.truetype(ttf2_bold_path, size=27)
-    draw = ImageDraw.Draw(partbase)
     text_content = f"{ds_str[1]}"
     draw.text(text_position, text_content, font=ttf, fill=color, anchor="ls")
 
@@ -446,7 +454,6 @@ async def music_to_part(
         )
     # dx分数和星星
     ttf = ImageFont.truetype(ttf2_bold_path, size=24)
-    draw = ImageDraw.Draw(partbase)
     text_position = (730, 270)
     song_data = [d for d in songList if d["id"] == str(song_id)][0]
     sum_dxscore = sum(song_data["charts"][level_index]["notes"]) * 3
@@ -454,7 +461,6 @@ async def music_to_part(
     draw.text(text_position, text_content, font=ttf, fill=(28, 43, 120), anchor="rs")
     text_position = (text_position[0] - ttf.getlength(text_content), 270)
     ttf = ImageFont.truetype(ttf2_bold_path, size=30)
-    draw = ImageDraw.Draw(partbase)
     text_content = f"{dxScore}/"
     draw.text(text_position, text_content, font=ttf, fill=(28, 43, 120), anchor="rs")
 

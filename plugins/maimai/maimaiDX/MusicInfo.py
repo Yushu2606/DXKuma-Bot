@@ -70,7 +70,7 @@ async def music_info(song_data):
     title_position = (545, 626)
     text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -93,7 +93,7 @@ async def music_info(song_data):
     artist_position = (545, 694)
     text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -258,7 +258,7 @@ async def play_info(song_data, qq: str):
     title_position = (545, 626)
     text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -281,7 +281,7 @@ async def play_info(song_data, qq: str):
     artist_position = (545, 694)
     text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -446,7 +446,7 @@ async def utage_music_info(song_data, index=0):
     title_position = (545, 626)
     text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -469,7 +469,7 @@ async def utage_music_info(song_data, index=0):
     artist_position = (545, 694)
     text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -572,7 +572,7 @@ async def score_info(song_data, index):
     title_position = (545, 626)
     text_bbox = drawtext.textbbox(title_position, song_title, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -595,7 +595,7 @@ async def score_info(song_data, index):
     artist_position = (545, 694)
     text_bbox = drawtext.textbbox(artist_position, song_artist, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
@@ -719,7 +719,7 @@ async def score_info(song_data, index):
     artist_position = (545, 744)
     text_bbox = drawtext.textbbox(artist_position, song_charters, font=ttf)
     max_width = 1110
-    ellipsis = "..."
+    ellipsis = "…"
     # 检查文本的宽度是否超过最大宽度
     if text_bbox[2] <= max_width:
         # 文本未超过最大宽度,直接绘制
