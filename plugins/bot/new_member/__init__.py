@@ -60,14 +60,14 @@ async def _():
 
 
 @friendRequest.handle()
-async def _(event: FriendRequestEvent):
-    event.approve()
+async def _(bot: Bot, event: FriendRequestEvent):
+    event.approve(bot)
 
 
 @groupRequest.handle()
 async def _(bot: Bot, event: GroupRequestEvent):
     if event.sub_type != "invite":
         return
-    event.approve()
+    event.approve(bot)
     msg = MessageSegment.text("迪拉熊加入了本群，发送dlxhelp和迪拉熊一起玩吧~")
-    await bot.send_msg(group_id=236030263, message=(msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))
+    await bot.send_msg(group_id=event.group_id, message=(msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))

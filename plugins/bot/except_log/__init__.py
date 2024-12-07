@@ -5,7 +5,7 @@ from pathlib import Path
 
 from aiohttp import ClientError
 from nonebot import get_bot
-from nonebot.adapters.onebot.v11 import MessageSegment, Event
+from nonebot.adapters.onebot.v11 import MessageSegment, Event, MessageEvent
 from nonebot.adapters.onebot.v11.exception import OneBotV11AdapterException
 from nonebot.internal.matcher import Matcher
 from nonebot.message import run_postprocessor
@@ -40,7 +40,7 @@ async def _(event: Event, matcher: Matcher, exception: Exception | None):
     bot = get_bot()
     trace = "".join(traceback.format_exception(exception)).replace("\\n", "\n")
     msg = MessageSegment.text(
-        f"{trace}{event.get_plaintext()}\n{event.get_session_id()}"
+        f"{trace}{event.get_plaintext() if isinstance(exception, MessageEvent) else event.get_type()}\n{event.get_session_id()}"
     )
     await bot.send_msg(group_id=236030263, message=msg)
     path = KUMAPIC
