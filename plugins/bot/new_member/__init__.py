@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from nonebot import on_type, Bot
+from nonebot import on_type
 from nonebot.adapters.onebot.v11 import (
+    Bot,
     GroupIncreaseNoticeEvent,
     GroupDecreaseNoticeEvent,
     FriendAddNoticeEvent,
@@ -20,6 +21,8 @@ groupRequest = on_type(GroupRequestEvent)
 @groupIncrease.handle()
 async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     qq = event.get_user_id()
+    if qq == bot.self_id:
+        return
     group_id = event.group_id
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"
@@ -63,16 +66,21 @@ async def _():
 
 @friendRequest.handle()
 async def _(bot: Bot, event: FriendRequestEvent):
-    event.approve(bot)
+    await event.approve(bot)
 
 
 @groupRequest.handle()
 async def _(bot: Bot, event: GroupRequestEvent):
     if event.sub_type != "invite":
         return
-    event.approve(bot)
-    msg = MessageSegment.text("迪拉熊加入了本群，发送dlxhelp和迪拉熊一起玩吧~")
+    await event.approve(bot)
+    qq = event.get_user_id()
+    group_id = event.group_id
+    user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
+        "nickname"
+    ]
+    msg = MessageSegment.text(f"迪拉熊由{user_name}（{qq}）邀请加入了本群，发送dlxhelp和迪拉熊一起玩吧~")
     await bot.send_msg(
-        group_id=event.group_id,
+        group_id=group_id,
         message=(msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))),
     )

@@ -9,8 +9,8 @@ from random import SystemRandom
 import toml
 from PIL import Image, UnidentifiedImageError
 from dill import Pickler, Unpickler
-from nonebot import on_regex, Bot
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from nonebot import on_regex
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
 
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
