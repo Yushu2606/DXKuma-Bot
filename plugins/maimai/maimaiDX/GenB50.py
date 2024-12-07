@@ -399,9 +399,13 @@ async def music_to_part(
     text_content2 = f"{index}"
     xdiff = (text_len + ttf2.getlength(text_content2)) / 2
     text_position = (text_position[0] - int(xdiff), 270)
-    draw.text(text_position, text_content1, font=ttf1, fill=(255, 255, 255), anchor="ls")
+    draw.text(
+        text_position, text_content1, font=ttf1, fill=(255, 255, 255), anchor="ls"
+    )
     text_position = (text_position[0] + int(text_len), 270)
-    draw.text(text_position, text_content2, font=ttf2, fill=(255, 255, 255), anchor="ls")
+    draw.text(
+        text_position, text_content2, font=ttf2, fill=(255, 255, 255), anchor="ls"
+    )
     # 乐曲ID
     ttf = ImageFont.truetype(ttf2_bold_path, size=24)
     text_position = (388, 270)
@@ -717,7 +721,11 @@ async def generateb50(
     ttf = ImageFont.truetype(ttf3_bold_path, size=14)
     ImageDraw.Draw(b50).text(
         (334, 154),
-        f"Best35：{b35_ra} | Best15：{b15_ra}" if type == "ya50" else f"历史版本：{b35_ra} | 现行版本：{b15_ra}",
+        (
+            f"Best35：{b35_ra} | Best15：{b15_ra}"
+            if type == "ya50"
+            else f"历史版本：{b35_ra} | 现行版本：{b15_ra}"
+        ),
         font=ttf,
         fill=(255, 255, 255),
         anchor="mm",

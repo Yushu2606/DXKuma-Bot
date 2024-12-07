@@ -1,15 +1,15 @@
 import os
-from random import SystemRandom
 import traceback
 from pathlib import Path
+from random import SystemRandom
 
+from PIL import Image, UnidentifiedImageError
 from aiohttp import ClientError
 from nonebot import get_bot
 from nonebot.adapters.onebot.v11 import MessageSegment, Event, MessageEvent
 from nonebot.adapters.onebot.v11.exception import OneBotV11AdapterException
 from nonebot.internal.matcher import Matcher
 from nonebot.message import run_postprocessor
-from PIL import Image, UnidentifiedImageError
 
 random = SystemRandom()
 

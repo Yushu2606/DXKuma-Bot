@@ -141,7 +141,13 @@ async def records_to_b50(
                     "fs": "app",
                     "level": "",
                     "level_index": i,
-                    "level_label": ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"][i],
+                    "level_label": [
+                        "Basic",
+                        "Advanced",
+                        "Expert",
+                        "Master",
+                        "Re:MASTER",
+                    ][i],
                     "ra": int(j * 100.5 * 0.224),
                     "rate": "sssp",
                     "song_id": int(song["id"]),
@@ -221,7 +227,7 @@ async def records_to_b50(
             reverse=True,
         )
         dx.clear()
-        for record in [i for i in all_records if i["ra"] >= all_records[50]["ra"]]:
+        for record in [i for i in all_records if i["ra"] >= all_records[49]["ra"]]:
             song_id = record["song_id"]
             song_data = [d for d in songList if d["id"] == str(song_id)][0]
             is_new = song_data["basic_info"]["is_new"]
@@ -231,7 +237,7 @@ async def records_to_b50(
                 if len(dx) >= 15:
                     break
         if len(dx) < 15:
-            dx.extend(all_records[36:36+15-len(dx)])
+            dx.extend(all_records[36 : 51 - len(dx)])
         sd = all_records[:35]
         return sd, dx, mask_enabled
     b35 = (

@@ -7,10 +7,10 @@ from pathlib import Path
 from random import SystemRandom
 
 import toml
+from PIL import Image, UnidentifiedImageError
 from dill import Pickler, Unpickler
 from nonebot import on_regex, Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
-from PIL import Image, UnidentifiedImageError
 
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler

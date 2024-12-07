@@ -56,7 +56,9 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
 @friendAdd.handle()
 async def _():
     msg = MessageSegment.text("恭喜你发现了迪拉熊宝藏地带，发送dlxhelp试一下吧~")
-    await friendAdd.send((msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))
+    await friendAdd.send(
+        (msg, MessageSegment.image(Path("./Static/MemberChange/0.png")))
+    )
 
 
 @friendRequest.handle()
@@ -70,4 +72,7 @@ async def _(bot: Bot, event: GroupRequestEvent):
         return
     event.approve(bot)
     msg = MessageSegment.text("迪拉熊加入了本群，发送dlxhelp和迪拉熊一起玩吧~")
-    await bot.send_msg(group_id=event.group_id, message=(msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))))
+    await bot.send_msg(
+        group_id=event.group_id,
+        message=(msg, MessageSegment.image(Path("./Static/MemberChange/0.png"))),
+    )
