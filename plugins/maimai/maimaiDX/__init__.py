@@ -63,11 +63,11 @@ wcb = on_regex(
 whatSong = on_regex(r"^((search|查歌) *.+|.+是什么歌)$", re.I)
 aliasSearch = on_regex(r"^(查看?别名 *\d+|\d+有什么别名)$")
 
-all_plate = on_regex(r"^(plate|看牌子)$", re.I)
-all_frame = on_regex(r"^(frame|看底板)$", re.I)
+all_plate = on_regex(r"^(plate|看姓名框)$", re.I)
+all_frame = on_regex(r"^(frame|看背景)$", re.I)
 
-set_plate = on_regex(r"^(setplate|设置?牌子) *\d{6}$", re.I)
-set_frame = on_regex(r"^(setframe|设置?底板) *\d{6}$", re.I)
+set_plate = on_regex(r"^(setplate|设置?姓名框) *\d{6}$", re.I)
+set_frame = on_regex(r"^(setframe|设置?背景) *\d{6}$", re.I)
 
 ratj_on = on_regex(r"^(开启?|启用)分数推荐$")
 ratj_off = on_regex(r"^(关闭?|禁用)分数推荐$")

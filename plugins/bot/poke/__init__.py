@@ -2,7 +2,7 @@ from pathlib import Path
 from random import SystemRandom
 
 from nonebot import on_type
-from nonebot.adapters.onebot.v11 import MessageSegment, PokeNotifyEvent
+from nonebot.adapters.onebot.v11 import Bot, MessageSegment, PokeNotifyEvent
 from nonebot.rule import to_me
 
 random = SystemRandom()
@@ -26,8 +26,9 @@ conversations = {
 
 
 @poke.handle()
-async def _(event: PokeNotifyEvent):
-    if not event.group_id:
+async def _(bot: Bot, event: PokeNotifyEvent):
+    qq = event.get_user_id()
+    if not event.group_id or qq == bot.self_id:
         return
     weights = [9, 9, 9, 9, 9, 9, 9, 9, 4, 4]
     ran_number = random.choices(range(1, 11), weights=weights, k=1)[0]
