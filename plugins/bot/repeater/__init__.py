@@ -1,7 +1,5 @@
-import re
-
 from nonebot import on_message
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message
 
 from . import config
 
@@ -16,22 +14,20 @@ message_times = {}
 
 
 # 消息预处理
-def message_preprocess(message: str):
-    raw_message = message
-    contained_images = {}
-    images = re.findall(r"\[CQ:image.*?\]", message)
-    pattern = r"rkey=(.*?)[,\]&]"
+def message_preprocess(message: Message):
+    message_str = str(message)
+    contained_images = []
+    for i in message:
+        if i.type != "image":
+            continue
 
-    for i in images:
-        image_url = re.findall(r"fileid=(.*?)[,\]&]", i)
-        pattern_match = re.findall(pattern, i)
-        if image_url and pattern_match:
-            contained_images.update({i: [image_url[0], pattern_match[0]]})
+        file_unique = i.data["file_unique"]
+        contained_images.append((str(i), file_unique))
 
-    for i, v in contained_images.items():
-        message = message.replace(i, f"[{v[0][2:35]}]")
+    for i, v in contained_images:
+        message_str = message_str.replace(i, v)
 
-    return message, raw_message
+    return message_str, message
 
 
 @m.handle()
@@ -42,13 +38,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
     gid = str(event.group_id)
     if gid in repeater_group or "all" in repeater_group:
         global last_message, message_times
-        message, raw_message = message_preprocess(event.raw_message)
+        message_str, message = message_preprocess(event.get_message())
         qq = event.get_user_id()
-        if last_message.get(gid) != message:
+        if last_message.get(gid) != message_str:
             message_times[gid] = set()
         message_times[gid].add(hash(qq))
         if len(message_times.get(gid)) == config.shortest_times:
             await bot.send_group_msg(
-                group_id=event.group_id, message=event.get_message()
+                group_id=event.group_id, message=message
             )
-        last_message[gid] = message
+        last_message[gid] = message_str

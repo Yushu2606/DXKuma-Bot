@@ -168,7 +168,7 @@ async def _(bot: Bot):
 async def _(event: GroupMessageEvent):
     if event.group_id != 236030263:  # 不被限制的 group_id
         return
-    gid = int(re.search(r"加色图 (\d+)", event.get_plaintext()).group(1))
+    gid = int(re.search(r"\d+", event.get_plaintext()).group())
     config["nsfw_groups"].append(gid)
     with open("./dxkuma.toml", "w") as f:
         toml.dump(config, f)

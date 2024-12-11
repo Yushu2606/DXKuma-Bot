@@ -723,7 +723,7 @@ async def generateb50(
         (334, 154),
         (
             f"Best35：{b35_ra} | Best15：{b15_ra}"
-            if type == "ya50"
+            if type == "all50"
             else f"历史版本：{b35_ra} | 现行版本：{b15_ra}"
         ),
         font=ttf,

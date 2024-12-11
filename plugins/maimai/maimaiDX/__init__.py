@@ -7,7 +7,7 @@ from pathlib import Path
 from random import SystemRandom
 
 import aiohttp
-from nonebot import on_regex, on_fullmatch
+from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 
 from util.Data import (
@@ -32,19 +32,19 @@ from .MusicInfo import music_info, play_info, utage_music_info, score_info
 
 random = SystemRandom()
 
-best50 = on_regex(r"^dlxb?50( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-fit50 = on_regex(r"^dlxf50( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-dxs50 = on_regex(r"^dlxs50( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-star50 = on_regex(r"^dlxx50( *[1-5])+( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+best50 = on_regex(r"^dlxb?50( *\[CQ:at.*?\] *)?$", re.I)
+fit50 = on_regex(r"^dlxf50( *\[CQ:at.*?\] *)?$", re.I)
+dxs50 = on_regex(r"^dlxs50( *\[CQ:at.*?\] *)?$", re.I)
+star50 = on_regex(r"^dlxx50( *[1-5])+( *\[CQ:at.*?\] *)?$", re.I)
 rate50 = on_regex(
-    r"^dlxr50( *(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( *\[CQ:at,qq=\d+,name=@.+\] *)?$",
+    r"^dlxr50( *(s{1,3}(p|\+)?|a{1,3}|b{1,3}|[cd]))+?( *\[CQ:at.*?\] *)?$",
     re.I,
 )
-ap50 = on_regex(r"^dlxap(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-fc50 = on_regex(r"^dlxfc(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-cf50 = on_regex(r"^dlxcf(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)$", re.I)
-fd50 = on_regex(r"^dlxfd(50)?( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
-ya50 = on_regex(r"^dlx(ya(50)?|b)( *\[CQ:at,qq=\d+,name=@.+\] *)?$", re.I)
+ap50 = on_regex(r"^dlxap(50)?( *\[CQ:at.*?\] *)?$", re.I)
+fc50 = on_regex(r"^dlxfc(50)?( *\[CQ:at.*?\] *)?$", re.I)
+cf50 = on_regex(r"^dlxcf(50)?( *\[CQ:at.*?\] *)$", re.I)
+fd50 = on_regex(r"^dlxfd(50)?( *\[CQ:at.*?\] *)?$", re.I)
+all50 = on_regex(r"^dlx(all?(50)?|b)( *\[CQ:at.*?\] *)?$", re.I)
 rr50 = on_regex(r"^dlxrr(50)?$", re.I)
 sunlist = on_regex(r"^dlx([sc]un|寸|🤏)( *\d+?)?$", re.I)
 locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
@@ -120,7 +120,7 @@ async def records_to_b50(
     is_fit: bool = False,
     is_fd: bool = False,
     is_dxs: bool = False,
-    is_ya: bool = False,
+    is_all: bool = False,
     dx_star_count: str | None = None,
 ):
     sd = []
@@ -209,11 +209,11 @@ async def records_to_b50(
                     continue
         if record["ra"] == 0 or record["achievements"] > 101:
             continue
-        if is_new or is_ya:
+        if is_new or is_all:
             dx.append(record)
         else:
             sd.append(record)
-    if is_ya:
+    if is_all:
         all_records = sorted(
             dx,
             key=lambda x: (
@@ -859,7 +859,7 @@ async def _(event: MessageEvent):
         )
         await star50.finish((MessageSegment.reply(event.message_id), msg))
     songList = await get_music_data()
-    find = re.search(r"dlxx50((?: *[1-5])+)", event.get_plaintext())
+    find = re.fullmatch(r"dlxx50((?: *[1-5])+)", event.get_plaintext(), re.I)
     star35, star15, mask_enabled = await records_to_b50(
         records, songList, is_dxs=True, dx_star_count=find.group(1)
     )
@@ -1079,7 +1079,7 @@ async def _(event: MessageEvent):
     await fd50.send(msg)
 
 
-@ya50.handle()
+@all50.handle()
 async def _(event: MessageEvent):
     target_qq = event.get_user_id()
     for message in event.get_message():
@@ -1101,7 +1101,7 @@ async def _(event: MessageEvent):
                 MessageSegment.reply(event.message_id),
                 MessageSegment.text("他不允许其他人查询他的成绩"),
             )
-            await ya50.finish(msg)
+            await all50.finish(msg)
     data, status = await get_player_records(target_qq)
     if status == 400:
         msg = (
@@ -1110,23 +1110,23 @@ async def _(event: MessageEvent):
                 f"迪拉熊没有找到{"你" if target_qq == event.get_user_id() else "他"}的信息"
             ),
         )
-        await ya50.finish(msg)
+        await all50.finish(msg)
     elif not data:
         msg = (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("（查分器出了点问题）"),
             MessageSegment.image(Path("./Static/maimai/-1.png")),
         )
-        await ya50.finish(msg)
+        await all50.finish(msg)
     records = data["records"]
     if not records:
         msg = MessageSegment.text(
             f"{"你" if target_qq == event.get_user_id() else "他"}没有上传任何成绩"
         )
-        await ya50.finish((MessageSegment.reply(event.message_id), msg))
+        await all50.finish((MessageSegment.reply(event.message_id), msg))
     songList = await get_music_data()
-    ya35, ya15, _ = await records_to_b50(records, songList)
-    await ya50.send(
+    all35, all15, _ = await records_to_b50(records, songList, is_all=True)
+    await all50.send(
         (
             MessageSegment.reply(event.message_id),
             MessageSegment.text("迪拉熊绘制中，稍等一下mai~"),
@@ -1135,16 +1135,16 @@ async def _(event: MessageEvent):
     nickname = data["nickname"]
     dani = data["additional_rating"]
     img = await generateb50(
-        b35=ya35,
-        b15=ya15,
+        b35=all35,
+        b15=all15,
         nickname=nickname,
         qq=target_qq,
         dani=dani,
-        type="ya50",
+        type="all50",
         songList=songList,
     )
     msg = (MessageSegment.reply(event.message_id), MessageSegment.image(img))
-    await ya50.send(msg)
+    await all50.send(msg)
 
 
 @rr50.handle()
@@ -1215,7 +1215,7 @@ async def _(event: MessageEvent):
             msg = MessageSegment.text("你没有上传任何匹配的成绩")
         await sunlist.finish((MessageSegment.reply(event.message_id), msg))
     msg = event.get_plaintext()
-    pattern = r"\d+?"
+    pattern = r"\d+"
     match = re.search(pattern, msg)
     if match:
         page = int(match.group())
@@ -1282,7 +1282,7 @@ async def _(event: MessageEvent):
             msg = MessageSegment.text("你没有上传任何匹配的成绩")
         await locklist.finish((MessageSegment.reply(event.message_id), msg))
     msg = event.get_plaintext()
-    pattern = r"\d+?"
+    pattern = r"\d+"
     match = re.search(pattern, msg)
     if match:
         page = int(match.group())
@@ -1321,8 +1321,8 @@ async def _(event: MessageEvent):
 async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    pattern = r"(?:list|完成表) *(?:((?:\d+)(?:\.\d|\+)?)|(真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|舞|熊|华|爽|煌|宙|星|祭|祝|双))(?: *(\d+))?"
-    match = re.match(pattern, msg)
+    pattern = r"(?:((?:\d+)(?:\.\d|\+)?)|(真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|舞|熊|华|爽|煌|宙|星|祭|祝|双))(?: *(\d+))?"
+    match = re.search(pattern, msg)
     data, status = await get_player_records(qq)
     if status == 400:
         msg = (
@@ -1391,7 +1391,7 @@ async def _(event: MessageEvent):
 @songinfo.handle()
 async def _(event: MessageEvent):
     msg = event.get_plaintext()
-    song_id = re.search(r"\d+", msg).group(0)
+    song_id = re.search(r"\d+", msg).group()
     songList = await get_music_data()
     song_info = find_song_by_id(song_id, songList)
     if not song_info:
@@ -1415,7 +1415,8 @@ async def _(event: MessageEvent):
 async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    song = msg.replace("info", "").strip()
+    match = re.fullmatch(r"info *(.+)", msg, re.I)
+    song = match.group(1)
     if not song:
         await playinfo.finish(
             (
@@ -1489,10 +1490,10 @@ async def _(event: MessageEvent):
 @scoreinfo.handle()
 async def _(event: MessageEvent):
     msg = event.get_plaintext()
-    type_index = ["绿", "黄", "红", "紫", "白"].index(
-        re.search(r"绿|黄|红|紫|白", msg).group(0)
-    )
-    song_id = re.search(r"\d+", msg).group(0)
+    pattern = r"(绿|黄|红|紫|白) *(\d+)"
+    match = re.search(pattern, msg)
+    type_index = ["绿", "黄", "红", "紫", "白"].index(match.group(1))
+    song_id = match.group(2)
     songList = await get_music_data()
     song_info = find_song_by_id(song_id, songList)
     if (
@@ -1580,18 +1581,11 @@ async def _(event: MessageEvent):
 @randomsong.handle()
 async def _(event: MessageEvent):
     msg = event.get_plaintext()
-    pattern = r"^随(?:个|歌) *(绿|黄|红|紫|白)? *((?:\d+)(?:\.\d|\+)?)"
-    match = re.match(pattern, msg)
+    pattern = r"(绿|黄|红|紫|白)? *((?:\d+)(?:\.\d|\+)?)"
+    match = re.search(pattern, msg)
     level_label = match.group(1)
     if level_label:
-        level_index = (
-            level_label.replace("绿", "0")
-            .replace("黄", "1")
-            .replace("红", "2")
-            .replace("紫", "3")
-            .replace("白", "4")
-        )
-        level_index = int(level_index)
+        level_index = ["绿", "黄", "红", "紫", "白"].index(level_label)
     else:
         level_index = None
     level = match.group(2)
@@ -1637,7 +1631,7 @@ async def _(event: MessageEvent):
 @whatSong.handle()
 async def _(event: MessageEvent):
     msg = event.get_plaintext()
-    match = re.match(r"/?(?:search|查歌) *(.*)|(.*?)是什么歌", msg, re.I)
+    match = re.fullmatch(r"(?:search|查歌) *(.+)|(.+)是什么歌", msg, re.I)
     if match:
         if match.group(1):
             name = match.group(1)
@@ -1707,7 +1701,7 @@ async def _(event: MessageEvent):
 @aliasSearch.handle()
 async def _(event: MessageEvent):
     msg = event.get_plaintext()
-    song_id = re.search(r"\d+", msg).group(0)
+    song_id = re.search(r"\d+", msg).group()
 
     alias = set()
     alias_list = await get_alias_list_lxns()
@@ -1745,7 +1739,7 @@ async def _():
 async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    id = re.search(r"\d+", msg).group(0)
+    id = re.search(r"\d+", msg).group()
     plate_path = f"./Cache/Plate/{id}.png"
     if not os.path.exists(plate_path):
         async with aiohttp.ClientSession() as session:
@@ -1781,7 +1775,7 @@ async def _(event: MessageEvent):
 async def _(event: MessageEvent):
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    id = re.search(r"\d+", msg).group(0)
+    id = re.search(r"\d+", msg).group()
     dir_path = "./Static/maimai/Frame/"
     file_name = f"UI_Frame_{id}.png"
     file_path = Path(dir_path) / file_name
