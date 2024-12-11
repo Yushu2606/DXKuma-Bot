@@ -21,6 +21,7 @@ ttf_black_path = font_path / "rounded-x-mplus-1p-heavy.ttf"
 ttf_bold_path = font_path / "rounded-x-mplus-1p-bold.ttf"
 ttf_regular_path = font_path / "rounded-x-mplus-1p-medium.ttf"
 ttf2_bold_path = font_path / "Comfortaa-Bold.ttf"
+ttf3_bold_path = font_path / "NotoSansCJKsc-Bold.otf"
 
 
 def resize_image(image, scale):
@@ -121,10 +122,12 @@ async def music_info(song_data):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
+    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
+    ttf = ImageFont.truetype(ttf_bold_path, size=28)
     song_type = song_data["type"]
     type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
@@ -309,10 +312,12 @@ async def play_info(song_data, qq: str):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
+    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
+    ttf = ImageFont.truetype(ttf_bold_path, size=28)
     song_type = song_data["type"]
     type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
@@ -497,10 +502,12 @@ async def utage_music_info(song_data, index=0):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
+    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
+    ttf = ImageFont.truetype(ttf_bold_path, size=28)
     song_type = song_data["type"]
     type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)
@@ -623,10 +630,12 @@ async def score_info(song_data, index):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
+    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 谱面类型
+    ttf = ImageFont.truetype(ttf_bold_path, size=28)
     song_type = song_data["type"]
     type_path = maimai_MusicType / f"{song_type}.png"
     type = Image.open(type_path)

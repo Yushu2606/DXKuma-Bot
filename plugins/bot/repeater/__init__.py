@@ -43,11 +43,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if gid in repeater_group or "all" in repeater_group:
         global last_message, message_times
         message, raw_message = message_preprocess(event.raw_message)
+        qq = event.get_user_id()
         if last_message.get(gid) != message:
-            message_times[gid] = 1
-        else:
-            message_times[gid] += 1
-        if message_times.get(gid) == config.shortest_times:
+            message_times[gid] = set()
+        message_times[gid].add(hash(qq))
+        if len(message_times.get(gid)) == config.shortest_times:
             await bot.send_group_msg(
                 group_id=event.group_id, message=event.get_message()
             )
