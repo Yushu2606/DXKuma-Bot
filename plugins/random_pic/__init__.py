@@ -19,7 +19,7 @@ random = SystemRandom()
 
 kuma_pic = on_regex(r"^(随机)?(迪拉熊|dlx)((涩|色|瑟)图|st)?$", re.I)
 rank = on_regex(r"^(迪拉熊|dlx)(排行榜|rank)$", re.I)
-addNSFW = on_regex(r"^加色图 (\d+)$", re.I)
+addNSFW = on_regex(r"^加色图 *(\d+)$")
 
 KUMAPIC = "./Static/Gallery/SFW"
 KUMAPIC_R18 = "./Static/Gallery/NSFW"

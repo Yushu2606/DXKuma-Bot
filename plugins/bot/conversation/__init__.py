@@ -11,8 +11,8 @@ random = SystemRandom()
 xc = on_regex(r"^(香草|想草|xc)(迪拉熊|dlx)$", re.I)
 wxhn = on_regex(r"^(迪拉熊|dlx)我喜欢你$", re.I)
 wxhn2 = on_fullmatch("我喜欢你", rule=to_me())
-roll = on_regex(r"^(?:.*?是)(.+)(?:还是(.+))+$", rule=to_me())
-cum = on_regex(r"dlxcum", re.I)
+roll = on_regex(r"是.+还是.", rule=to_me())
+cum = on_regex(r"^dlxcum$", re.I)
 eatbreak = on_regex(r"绝赞(给|请)你吃|(给|请)你吃绝赞", rule=to_me())
 
 conversations = {
@@ -65,7 +65,7 @@ async def _(event: GroupMessageEvent):
 @roll.handle()
 async def _(event: GroupMessageEvent):
     text = event.get_plaintext()
-    roll_list = re.search(r"是(.+)", text).group(1).split("还是")
+    roll_list = re.findall(r"(?<=是)(.+?)(?=还|$)", text)
     if not roll_list:
         msg = (
             MessageSegment.reply(event.message_id),

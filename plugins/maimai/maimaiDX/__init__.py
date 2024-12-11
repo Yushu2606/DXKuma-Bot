@@ -54,10 +54,11 @@ playinfo = on_regex(r"^info *.+$", re.I)
 scoreinfo = on_regex(r"^(score|分数表) *(绿|黄|红|紫|白) *\d+$", re.I)
 # playmp3 = on_regex(r"^dlx点歌 *.+$", re.I)
 randomsong = on_regex(r"^随(个|歌) *(绿|黄|红|紫|白)? *\d+(\.\d|\+)?$")
-maiwhat = on_fullmatch("mai什么")
+maiwhat = on_regex(r"^mai什么$", re.I)
 
 wcb = on_regex(
-    r"^(list|完成表) *(\d+(\.\d|\+)?|真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|舞|熊|华|爽|煌|宙|星|祭|祝|双)( +\d+)?$"
+    r"^(list|完成表) *(\d+(\.\d|\+)?|真|超|檄|橙|晓|桃|樱|紫|堇|白|雪|辉|舞|熊|华|爽|煌|宙|星|祭|祝|双)( +\d+)?$",
+    re.I
 )
 
 whatSong = on_regex(r"^((search|查歌) *.+|.+是什么歌)$", re.I)
