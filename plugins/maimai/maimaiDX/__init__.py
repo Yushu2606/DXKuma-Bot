@@ -52,8 +52,8 @@ locklist = on_regex(r"^dlx(suo|锁|🔒)( *\d+?)?$", re.I)
 songinfo = on_regex(r"^id *\d+$", re.I)
 playinfo = on_regex(r"^info *.+$", re.I)
 scoreinfo = on_regex(r"^(score|分数表) *(绿|黄|红|紫|白) *\d+$", re.I)
-# playmp3 = on_regex(r"^dlx点歌 *.+$", re.I)
-randomsong = on_regex(r"^随(个|歌) *(绿|黄|红|紫|白)? *\d+(\.\d|\+)?$")
+# playmp3 = on_regex(r"^mai点歌 *.+$", re.I)
+randomsong = on_regex(r"^随(歌|个|首|张) *(绿|黄|红|紫|白)? *\d+(\.\d|\+)?$")
 maiwhat = on_regex(r"^mai什么$", re.I)
 
 wcb = on_regex(
