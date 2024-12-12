@@ -20,8 +20,7 @@ from .GenB50 import get_fit_diff
 ttf_black_path = font_path / "rounded-x-mplus-1p-heavy.ttf"
 ttf_bold_path = font_path / "rounded-x-mplus-1p-bold.ttf"
 ttf_regular_path = font_path / "rounded-x-mplus-1p-medium.ttf"
-ttf2_bold_path = font_path / "Comfortaa-Bold.ttf"
-ttf3_bold_path = font_path / "NotoSansCJKsc-Bold.otf"
+ttf2_bold_path = font_path / "NotoSansCJKsc-Bold.otf"
 
 
 def resize_image(image, scale):
@@ -122,7 +121,7 @@ async def music_info(song_data):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
-    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
@@ -165,7 +164,7 @@ async def music_info(song_data):
         level_x += 170
 
     # 定数->ra
-    ttf = ImageFont.truetype(ttf2_bold_path, size=16)
+    ttf = ImageFont.truetype(ttf_bold_path, size=16)
     songs_ds = song_data["ds"]
     ds_x = 395
     ds_y = 1124
@@ -182,7 +181,7 @@ async def music_info(song_data):
         ds_x += 170
 
     # 物量
-    ttf = ImageFont.truetype(ttf2_bold_path, size=40)
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
     song_charts = song_data["charts"]
     notes_x = 395
     for chart in song_charts:
@@ -312,7 +311,7 @@ async def play_info(song_data, qq: str):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
-    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
@@ -387,7 +386,7 @@ async def play_info(song_data, qq: str):
         drawtext.text((level_x, level_y), level, font=ttf, fill=color, anchor="mm")
 
         # 达成率
-        ttf = ImageFont.truetype(ttf2_bold_path, size=43)
+        ttf = ImageFont.truetype(ttf_bold_path, size=43)
         drawtext.text(
             (achieve_x, achieve_y), achieve, font=ttf, fill=color, anchor="mm"
         )
@@ -412,7 +411,7 @@ async def play_info(song_data, qq: str):
             bg.paste(fs, (fs_x, fs_y), fs)
 
         # 定数->ra
-        ttf = ImageFont.truetype(ttf2_bold_path, size=20)
+        ttf = ImageFont.truetype(ttf_bold_path, size=20)
         drawtext.text(
             (dsra_x, dsra_y), f"{ds}->{ra}", font=ttf, fill=color, anchor="mm"
         )
@@ -502,7 +501,7 @@ async def utage_music_info(song_data, index=0):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
-    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
@@ -525,7 +524,7 @@ async def utage_music_info(song_data, index=0):
     drawtext.text((650, 1046), song_level, anchor="mm", font=ttf, fill=(131, 19, 158))
 
     # 物量
-    ttf = ImageFont.truetype(ttf2_bold_path, size=40)
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
     chart = song_data["charts"][index]
     notes_x = 310
     notes_y = 1258
@@ -630,7 +629,7 @@ async def score_info(song_data, index):
     bpm_position = (341, 872)
     drawtext.text(bpm_position, song_bpm, anchor="mm", font=ttf, fill=(28, 43, 110))
     # 分类
-    ttf = ImageFont.truetype(ttf3_bold_path, size=28)
+    ttf = ImageFont.truetype(ttf2_bold_path, size=28)
     song_genre = song_data["basic_info"]["genre"]
     genre_position = (544, 872)
     drawtext.text(genre_position, song_genre, anchor="mm", font=ttf, fill=(28, 43, 110))
@@ -668,7 +667,7 @@ async def score_info(song_data, index):
     )
 
     # 分数
-    ttf = ImageFont.truetype(ttf2_bold_path, size=36)
+    ttf = ImageFont.truetype(ttf_bold_path, size=36)
     chart = song_data["charts"][index]
     notes = chart["notes"]
     if song_type == "SD":
@@ -712,7 +711,7 @@ async def score_info(song_data, index):
         score_y += 80
 
     # 物量
-    ttf = ImageFont.truetype(ttf2_bold_path, size=40)
+    ttf = ImageFont.truetype(ttf_bold_path, size=40)
     notes_x = 251
     notes_y = 1778
     for note in notes:

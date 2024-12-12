@@ -35,6 +35,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     # 检查是否在黑名单中
     if event.raw_message in blacklist:
         return
+
     gid = str(event.group_id)
     if gid in repeater_group or "all" in repeater_group:
         global last_message, message_times
@@ -42,9 +43,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
         qq = event.get_user_id()
         if last_message.get(gid) != message_str:
             message_times[gid] = set()
+
         message_times[gid].add(hash(qq))
         if len(message_times.get(gid)) == config.shortest_times:
             await bot.send_group_msg(
                 group_id=event.group_id, message=message
             )
+
         last_message[gid] = message_str
