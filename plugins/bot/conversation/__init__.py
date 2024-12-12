@@ -3,8 +3,10 @@ from pathlib import Path
 from random import SystemRandom
 
 from nonebot import on_regex, on_fullmatch
-from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent
+from nonebot.adapters.onebot.v11 import Bot, MessageSegment, GroupMessageEvent
 from nonebot.rule import to_me
+
+from util.Config import config
 
 random = SystemRandom()
 
@@ -90,7 +92,9 @@ async def _(event: GroupMessageEvent):
 
 
 @cum.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
+    if bot.self_id not in config.allowed_accounts:
+        return
     weight = random.randint(0, 9)
     imgpath = "./Static/Cum/0.png"
     if weight == 0:

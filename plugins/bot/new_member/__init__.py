@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import toml
 from nonebot import on_type
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -12,13 +11,13 @@ from nonebot.adapters.onebot.v11 import (
     MessageSegment,
 )
 
+from util.Config import config
+
 groupIncrease = on_type(GroupIncreaseNoticeEvent)
 groupDecrease = on_type(GroupDecreaseNoticeEvent)
 friendAdd = on_type(FriendAddNoticeEvent)
 friendRequest = on_type(FriendRequestEvent)
 groupRequest = on_type(GroupRequestEvent)
-
-config = toml.load("./dxkuma.toml")
 
 
 @groupIncrease.handle()
@@ -30,7 +29,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"
     ]
-    if group_id == config["special_group"]:
+    if group_id == config.special_group:
         msg = MessageSegment.text(
             f"恭喜{user_name}（{qq}）发现了迪拉熊宝藏地带，发送dlxhelp试一下吧~"
         )
@@ -50,7 +49,7 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     user_name = (await bot.get_stranger_info(user_id=int(qq), no_cache=False))[
         "nickname"
     ]
-    if group_id == config["special_group"]:
+    if group_id == config.special_group:
         msg = MessageSegment.text(f"很遗憾，{user_name}（{qq}）离开了迪拉熊的小窝QAQ")
     else:
         msg = MessageSegment.text(f"{user_name}（{qq}）离开了迪拉熊QAQ")
@@ -74,6 +73,8 @@ async def _(bot: Bot, event: FriendRequestEvent):
 
 @groupRequest.handle()
 async def _(bot: Bot, event: GroupRequestEvent):
+    if bot.self_id in config.allowed_accounts:   # 支持nsfw内容的账号需要审核
+        return
     if event.sub_type != "invite":
         return
     await event.approve(bot)

@@ -16,7 +16,7 @@ async def get_player_data(qq: str):
 
 
 async def get_player_records(qq: str):
-    headers = {"Developer-Token": config.dev_token}
+    headers = {"Developer-Token": config.df_token}
     payload = {"qq": qq}
     async with ClientSession() as session:
         async with session.get(
@@ -31,7 +31,7 @@ async def get_player_records(qq: str):
 
 
 async def get_player_record(qq: str, music_id: str | int):
-    headers = {"Developer-Token": config.dev_token}
+    headers = {"Developer-Token": config.df_token}
     payload = {"qq": qq, "music_id": music_id}
     async with ClientSession() as session:
         async with session.post(

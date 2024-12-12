@@ -6,13 +6,12 @@ import shelve
 from pathlib import Path
 from random import SystemRandom
 
-import toml
 from PIL import Image, UnidentifiedImageError
 from dill import Pickler, Unpickler
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
 
-from util import Config
+from util.Config import config
 
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
@@ -26,8 +25,6 @@ addNSFW = on_regex(r"^加色图 *(\d+)$")
 PICPATH = "./Static/Gallery/SFW"
 PICPATH_NSFW = "./Static/Gallery/NSFW"
 DATA_PATH = "./data/random_pic/count.db"
-
-config = toml.load("./dxkuma.toml")
 
 
 def get_time():
@@ -97,18 +94,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if re.search(r"(涩|色|瑟)图|st", msg, re.I):
         type = "nsfw"
         path = PICPATH_NSFW
-        if bot.self_id not in config["allowed_accounts"]:
-            return
-    if group_id == config["special_group"]:  # 不被限制的 group_id
+    if (
+        type == "nsfw" and bot.self_id not in config.allowed_accounts
+    ):  # type 为 'nsfw' 且非指定机器人
+        return
+    elif group_id == config.special_group:  # 不被限制的 group_id
         pass
-    elif (
-        type == "nsfw" and group_id not in config["nsfw_groups"]
-    ):  # type 为 'nsfw' 且非指定 group_id
-        msg = (
-            MessageSegment.text("迪拉熊不准你看"),
-            MessageSegment.image(Path("./Static/Gallery/0.png")),
-        )
-        await rand_pic.finish(msg)
     else:
         weight = random.randint(0, 9)
         if weight == 0:
@@ -166,19 +157,3 @@ async def _(bot: Bot):
     msg = "\n".join(leaderboard_output)
     msg = f"本周迪拉熊厨力最高的人是……\n{msg}\n迪拉熊给上面{count}个宝宝一个大大的拥抱~\n（积分每周一重算）"
     await rank.finish(msg)
-
-
-@addNSFW.handle()
-async def _(event: GroupMessageEvent):
-    if event.group_id != Config.config.dev_group:
-        return
-    gid = int(re.search(r"\d+", event.get_plaintext()).group())
-    config["nsfw_groups"].append(gid)
-    with open("./dxkuma.toml", "w") as f:
-        toml.dump(config, f)
-        f.close()
-    msg = (
-        MessageSegment.reply(event.message_id),
-        MessageSegment.text("成功"),
-    )
-    await addNSFW.finish(msg)
