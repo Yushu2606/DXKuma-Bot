@@ -19,12 +19,12 @@ shelve.Unpickler = Unpickler
 
 random = SystemRandom()
 
-kuma_pic = on_regex(r"^(随机)?(迪拉熊|dlx)((涩|色|瑟)图|st)?$", re.I)
+rand_pic = on_regex(r"^(随机)?(迪拉熊|dlx)((涩|色|瑟)图|st)?$", re.I)
 rank = on_regex(r"^(迪拉熊|dlx)(排行榜|rank)$", re.I)
 addNSFW = on_regex(r"^加色图 *(\d+)$")
 
-KUMAPIC = "./Static/Gallery/SFW"
-KUMAPIC_R18 = "./Static/Gallery/NSFW"
+PICPATH = "./Static/Gallery/SFW"
+PICPATH_NSFW = "./Static/Gallery/NSFW"
 DATA_PATH = "./data/random_pic/count.db"
 
 config = toml.load("./dxkuma.toml")
@@ -53,7 +53,7 @@ def update_count(qq: str, type: str):
         else:
             count = count_data[qq]
         if time not in count:
-            times = count.setdefault(time, {"kuma": 0, "kuma_r18": 0})
+            times = count.setdefault(time, {"sfw": 0, "nsfw": 0})
         else:
             times = count[time]
 
@@ -66,7 +66,7 @@ def gen_rank(data, time):
 
     for qq, qq_data in data.items():
         if time in qq_data:
-            total_count = qq_data[time]["kuma"] + qq_data[time]["kuma_r18"]
+            total_count = qq_data[time]["sfw"] + qq_data[time]["nsfw"]
             leaderboard.append((qq, total_count))
 
     leaderboard.sort(key=lambda x: x[1], reverse=True)
@@ -87,36 +87,38 @@ def check_image(imgpath: Path):
     return True
 
 
-@kuma_pic.handle()
+@rand_pic.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     group_id = event.group_id
     qq = event.get_user_id()
     msg = event.get_plaintext()
-    type = "kuma"
-    path = KUMAPIC
-    if "涩图" in msg or "色图" in msg or "瑟图" in msg or "st" in msg:
-        type = "kuma_r18"
-        path = KUMAPIC_R18
+    type = "sfw"
+    path = PICPATH
+    if re.search(r"(涩|色|瑟)图|st", msg, re.I):
+        type = "nsfw"
+        path = PICPATH_NSFW
+        if bot.self_id not in config["allowed_accounts"]:
+            return
     if group_id == config["special_group"]:  # 不被限制的 group_id
         pass
     elif (
-        type == "kuma_r18" and group_id not in config["nsfw_groups"]
-    ):  # type 为 'kuma_r18' 且非指定 group_id
+        type == "nsfw" and group_id not in config["nsfw_groups"]
+    ):  # type 为 'nsfw' 且非指定 group_id
         msg = (
             MessageSegment.text("迪拉熊不准你看"),
             MessageSegment.image(Path("./Static/Gallery/0.png")),
         )
-        await kuma_pic.finish(msg)
+        await rand_pic.finish(msg)
     else:
         weight = random.randint(0, 9)
         if weight == 0:
-            if type == "kuma":
+            if type == "sfw":
                 msg = MessageSegment.text(
                     "迪拉熊提醒你：不要发太多刷屏啦，休息下再试试吧~"
                 )
-            elif type == "kuma_r18":
+            elif type == "nsfw":
                 msg = MessageSegment.text("迪拉熊关心你的身体健康，所以图就先不发了~")
-            await kuma_pic.finish(msg)
+            await rand_pic.finish(msg)
 
     files = os.listdir(path)
     if not files:
@@ -124,7 +126,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             MessageSegment.text("迪拉熊不准你看"),
             MessageSegment.image(Path("./Static/Gallery/0.png")),
         )
-        await kuma_pic.finish(msg)
+        await rand_pic.finish(msg)
     for _ in range(3):
         file = random.choice(files)
         pic_path = os.path.join(path, file)
@@ -135,11 +137,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
             MessageSegment.text("迪拉熊不准你看"),
             MessageSegment.image(Path("./Static/Gallery/0.png")),
         )
-        await kuma_pic.finish(msg)
+        await rand_pic.finish(msg)
     with open(pic_path, "rb") as fd:
-        send_msg = await kuma_pic.send(MessageSegment.image(fd.read()))
+        send_msg = await rand_pic.send(MessageSegment.image(fd.read()))
     update_count(qq=qq, type=type)
-    if type == "kuma_r18":
+    if type == "nsfw":
         msg_id = send_msg["message_id"]
         await asyncio.sleep(10)
         await bot.delete_msg(message_id=msg_id)

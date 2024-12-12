@@ -11,9 +11,11 @@ from nonebot.adapters.onebot.v11.exception import OneBotV11AdapterException
 from nonebot.internal.matcher import Matcher
 from nonebot.message import run_postprocessor
 
+from util.Config import config
+
 random = SystemRandom()
 
-KUMAPIC = "./Static/Gallery/SFW"
+PICPATH = "./Static/Gallery/SFW"
 
 
 def check_image(imgpath: Path):
@@ -42,8 +44,8 @@ async def _(event: Event, matcher: Matcher, exception: Exception | None):
     msg = MessageSegment.text(
         f"{trace}{event.get_plaintext() if isinstance(exception, MessageEvent) else event.get_type()}\n{event.get_session_id()}"
     )
-    await bot.send_msg(group_id=236030263, message=msg)
-    path = KUMAPIC
+    await bot.send_msg(group_id=config.dev_group, message=msg)
+    path = PICPATH
     files = os.listdir(path)
     if not files:
         feedback = (
