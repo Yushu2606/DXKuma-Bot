@@ -12,6 +12,8 @@ from dill import Pickler, Unpickler
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
 
+from util import Config
+
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
 
@@ -95,7 +97,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if "涩图" in msg or "色图" in msg or "瑟图" in msg or "st" in msg:
         type = "kuma_r18"
         path = KUMAPIC_R18
-    if group_id == 967611986:  # 不被限制的 group_id
+    if group_id == config["special_group"]:  # 不被限制的 group_id
         pass
     elif (
         type == "kuma_r18" and group_id not in config["nsfw_groups"]
@@ -166,7 +168,7 @@ async def _(bot: Bot):
 
 @addNSFW.handle()
 async def _(event: GroupMessageEvent):
-    if event.group_id != 236030263:  # 不被限制的 group_id
+    if event.group_id != Config.config.dev_group:
         return
     gid = int(re.search(r"\d+", event.get_plaintext()).group())
     config["nsfw_groups"].append(gid)

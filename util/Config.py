@@ -10,7 +10,8 @@ class Config:
             shutil.copyfile("./config_example.toml", "./config.toml")
         # info
         self.admin = None
-        self.dev_token = None
+        self.dev_group = None
+        self.df_token = None
         # log
         self.log_level = None
         # backend
@@ -26,7 +27,8 @@ class Config:
     def read_config(self):
         data = toml.load("./config.toml")
         self.admin = data["info"]["admin"]
-        self.dev_token = data["info"]["dev_token"]
+        self.dev_group = data["info"]["dev_group"]
+        self.df_token = data["info"]["df_token"]
         self.log_level = data["log"]["log_level"]
         self.is_lagrange = data["backend"]["is_lagrange"]
         self.listen_host = data["nonebot"]["listen_host"]

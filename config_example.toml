@@ -1,7 +1,8 @@
 [info]
 # Bot名称和版本，一般不需要修改
 admin = []
-dev_token = ""
+dev_group = 0
+df_token = ""
 
 [log]
 # 0: DEBUG, 1: INFO, 2: SUCCESS, 3: WARNING
