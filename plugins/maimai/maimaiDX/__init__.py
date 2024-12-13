@@ -246,7 +246,7 @@ async def records_to_b50(
             sd,
             key=lambda x: (
                 (
-                    (x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"])
+                    ((x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]), x["ra"])
                     if is_fd
                     else x["ra"]
                 ),
@@ -261,7 +261,7 @@ async def records_to_b50(
             dx,
             key=lambda x: (
                 (
-                    (x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"])
+                    ((x["ra"] - x["s_ra"]) * x["ds"] * get_ra_in(record["rate"]), x["ra"])
                     if is_fd
                     else x["ra"]
                 ),
