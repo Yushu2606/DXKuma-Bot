@@ -1379,6 +1379,7 @@ async def _(event: MessageEvent):
     img = await generate_wcb(
         qq=qq,
         level=level,
+        ds=ds,
         gen=gen,
         page=page,
         nickname=nickname,

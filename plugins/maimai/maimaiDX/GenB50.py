@@ -213,10 +213,12 @@ def records_filter(
     return filted_records, mask_enabled
 
 
-def song_list_filter(songList, level: str | None = None, gen: str | None = None):
+def song_list_filter(songList, level: str | None = None, ds: float | None = None, gen: str | None = None):
     count = 0
     for song in songList:
         if level and level in song["level"]:
+            count += song["level"].count(level)
+        if ds and ds in song["ds"]:
             count += song["level"].count(level)
         if gen and song["basic_info"]["from"] in version_df_maps[gen]:
             count += len(song["level"]) if gen == "舞" else 4
@@ -755,6 +757,7 @@ async def generate_wcb(
     all_page_num,
     songList,
     level: str | None = None,
+    ds: float | None = None,
     gen: str | None = None,
     rate_count=None,
 ):
@@ -763,7 +766,7 @@ async def generate_wcb(
             plate = "000101"
         else:
             plate = config[qq]["plate"]
-        if not level and not gen:
+        if not level and not ds and not gen:
             if qq not in config or "frame" not in config[qq]:
                 frame = "200502"
             else:
@@ -772,7 +775,7 @@ async def generate_wcb(
     bg = Image.open("./Static/maimai/wcb_bg.png")
 
     # 底板
-    if level or gen:
+    if level or ds or gen:
         frame_path = "./Static/maimai/wcb_frame.png"
     else:
         frame_path = maimai_Frame / f"UI_Frame_{frame}.png"
@@ -850,9 +853,9 @@ async def generate_wcb(
         level_icon = resize_image(level_icon, 0.70)
         bg.paste(level_icon, (755 - (len(level) * 8), 45), level_icon)
 
-    if level or gen:
+    if level or ds or gen:
         # 绘制各达成数目
-        all_count = song_list_filter(songList, level, gen)
+        all_count = song_list_filter(songList, level, ds, gen)
         ttf = ImageFont.truetype(font=ttf_bold_path, size=20)
         rate_list = ["sssp", "sss", "ssp", "ss", "sp", "s", "clear"]
         fcfs_list = ["app", "ap", "fcp", "fc", "fsdp", "fsd", "fsp", "fs"]
