@@ -1343,9 +1343,14 @@ async def _(event: MessageEvent):
         await wcb.finish((MessageSegment.reply(event.message_id), msg))
     songList = await get_music_data()
     level = match.group(1)
+    if "." in level:
+        ds = float(level)
+        level = None
+    else:
+        ds = None
     gen = match.group(2)
     filted_records, _ = records_filter(
-        records=records, level=level, gen=gen, songList=songList
+        records=records, level=level, ds=ds, gen=gen, songList=songList
     )
     if len(filted_records) == 0:
         msg = MessageSegment.text("你没有上传任何匹配的成绩")

@@ -166,6 +166,7 @@ def get_min_score(notes: list[int]):
 def records_filter(
     records: list,
     level: str | None = None,
+    ds: float | None = None,
     gen: str | None = None,
     is_sun: bool = False,
     is_lock: bool = False,
@@ -177,6 +178,8 @@ def records_filter(
         if record["level_label"] == "Utage":
             continue
         if level and record["level"] != level:
+            continue
+        if ds and record["ds"] != ds:
             continue
         song_data = find_song_by_id(str(record["song_id"]), songList)
         if gen and ((song_data["basic_info"]["from"] not in version_df_maps[gen]) or (gen != "舞" and record["level_index"] == 4)):
