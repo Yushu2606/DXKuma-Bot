@@ -229,9 +229,12 @@ async def play_info(song_data, qq: str):
         return msg
     if status == 200:
         if not data:
-            msg = "迪拉熊没有找到你在这首乐曲上的成绩"
+            msg = "迪拉熊没有找到匹配的乐曲"
             return msg
         records = data[song_data["id"]]
+        if not records:
+            msg = "迪拉熊没有找到你在这首乐曲上的成绩"
+            return msg
     elif not data:
         msg = "（查分器出了点问题）"
         return msg

@@ -1672,7 +1672,7 @@ async def _(event: MessageEvent):
                 if other_info:
                     rep_ids.append(other_id)
         if not rep_ids:
-            await playinfo.finish(
+            await whatSong.finish(
                 (
                     MessageSegment.reply(event.message_id),
                     MessageSegment.text("迪拉熊没有找到匹配的乐曲"),
