@@ -12,6 +12,7 @@ from nonebot.internal.matcher import Matcher
 from nonebot.message import run_postprocessor
 
 from util.Config import config
+from util.exceptions import NotAllowedException
 
 random = SystemRandom()
 
@@ -37,6 +38,7 @@ async def _(event: Event, matcher: Matcher, exception: Exception | None):
         not exception
         or isinstance(exception, OneBotV11AdapterException)
         or isinstance(exception, ClientError)
+        or isinstance(exception, NotAllowedException)
     ):
         return
     bot = get_bot()

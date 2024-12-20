@@ -7,6 +7,7 @@ from nonebot.adapters.onebot.v11 import Bot, MessageSegment, GroupMessageEvent
 from nonebot.rule import to_me
 
 from util.Config import config
+from util.exceptions import NotAllowedException
 
 random = SystemRandom()
 
@@ -94,7 +95,7 @@ async def _(event: GroupMessageEvent):
 @cum.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     if bot.self_id not in config.allowed_accounts:
-        return
+        raise NotAllowedException
     weight = random.randint(0, 9)
     imgpath = "./Static/Cum/0.png"
     if weight == 0:

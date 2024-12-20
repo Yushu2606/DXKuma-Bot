@@ -65,7 +65,7 @@ def resize_image(image, scale):
     height = int(image.height * scale)
 
     # 缩放图像
-    resized_image = image.resize((width, height))
+    resized_image = image.resize((width, height), Image.Resampling.LANCZOS)
 
     return resized_image
 
@@ -498,7 +498,7 @@ async def music_to_part(
         fs = resize_image(fs, 76 / 61)
         partbase.paste(fs, (875, 191), fs)
 
-    partbase = partbase.resize((340, 110))
+    partbase = partbase.resize((340, 110), Image.Resampling.LANCZOS)
     return partbase
 
 
@@ -670,7 +670,7 @@ async def generateb50(
             f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
         ) as resp:
             icon = await resp.read()
-    icon = Image.open(BytesIO(icon)).resize((88, 88))
+    icon = Image.open(BytesIO(icon)).resize((88, 88), Image.Resampling.LANCZOS)
     b50.paste(icon, (73, 75))
 
     # 姓名框
@@ -703,11 +703,11 @@ async def generateb50(
 
     # rating数字
     rating_str = str(rating).zfill(5)
-    num1 = Image.open(f"./Static/maimai/number/{rating_str[0]}.png").resize((18, 21))
-    num2 = Image.open(f"./Static/maimai/number/{rating_str[1]}.png").resize((18, 21))
-    num3 = Image.open(f"./Static/maimai/number/{rating_str[2]}.png").resize((18, 21))
-    num4 = Image.open(f"./Static/maimai/number/{rating_str[3]}.png").resize((18, 21))
-    num5 = Image.open(f"./Static/maimai/number/{rating_str[4]}.png").resize((18, 21))
+    num1 = Image.open(f"./Static/maimai/number/{rating_str[0]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num2 = Image.open(f"./Static/maimai/number/{rating_str[1]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num3 = Image.open(f"./Static/maimai/number/{rating_str[2]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num4 = Image.open(f"./Static/maimai/number/{rating_str[3]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num5 = Image.open(f"./Static/maimai/number/{rating_str[4]}.png").resize((18, 21), Image.Resampling.LANCZOS)
 
     b50.paste(num1, (253, 77), num1)
     b50.paste(num2, (267, 77), num2)
@@ -807,7 +807,7 @@ async def generate_wcb(
             f"http://q.qlogo.cn/headimg_dl?dst_uin={qq}&spec=640&img_type=png"
         ) as resp:
             icon = await resp.read()
-    icon = Image.open(BytesIO(icon)).resize((88, 88))
+    icon = Image.open(BytesIO(icon)).resize((88, 88), Image.Resampling.LANCZOS)
     bg.paste(icon, (73, 75))
 
     # 姓名框
@@ -830,11 +830,11 @@ async def generate_wcb(
 
     # rating数字
     rating_str = str(rating).zfill(5)
-    num1 = Image.open(f"./Static/maimai/number/{rating_str[0]}.png").resize((18, 21))
-    num2 = Image.open(f"./Static/maimai/number/{rating_str[1]}.png").resize((18, 21))
-    num3 = Image.open(f"./Static/maimai/number/{rating_str[2]}.png").resize((18, 21))
-    num4 = Image.open(f"./Static/maimai/number/{rating_str[3]}.png").resize((18, 21))
-    num5 = Image.open(f"./Static/maimai/number/{rating_str[4]}.png").resize((18, 21))
+    num1 = Image.open(f"./Static/maimai/number/{rating_str[0]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num2 = Image.open(f"./Static/maimai/number/{rating_str[1]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num3 = Image.open(f"./Static/maimai/number/{rating_str[2]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num4 = Image.open(f"./Static/maimai/number/{rating_str[3]}.png").resize((18, 21), Image.Resampling.LANCZOS)
+    num5 = Image.open(f"./Static/maimai/number/{rating_str[4]}.png").resize((18, 21), Image.Resampling.LANCZOS)
 
     bg.paste(num1, (253, 77), num1)
     bg.paste(num2, (267, 77), num2)

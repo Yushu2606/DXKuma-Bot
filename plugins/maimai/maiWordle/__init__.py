@@ -1,4 +1,4 @@
-from nonebot import on_command,on_message,on_regex
+from nonebot import on_fullmatch,on_message,on_regex
 import re
 from nonebot.adapters.onebot.v11 import GroupMessageEvent,MessageSegment,Bot
 from .alias_db_handle import alias_handle as otherName
@@ -7,7 +7,7 @@ from nonebot.typing import T_State
 from .database import openchars
 from .utils import generate_message_state,check_music_id,generate_success_state
 
-start_open_chars = on_command('dlx猜歌')
+start_open_chars = on_regex('dlx猜歌', re.I)
 @start_open_chars.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     group_id = event.group_id
@@ -51,10 +51,10 @@ async def _(event: GroupMessageEvent):
 all_message_handle = on_message(priority=18,block=False)
 @all_message_handle.handle()
 async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
-    msg_content = event.get_plaintext()
     group_id = event.group_id
     game_data = openchars.get_game_data(group_id)
     if game_data:
+        msg_content = event.get_plaintext()
         songinfo = total_list.by_id(msg_content)
         if songinfo:
             music_ids = [int(songinfo.id)]
@@ -75,7 +75,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
                 await start_open_chars.send(game_state)
 
 
-pass_game = on_command('跳过猜歌',priority=20)
+pass_game = on_fullmatch('跳过猜歌',priority=20)
 @pass_game.handle()
 async def _(event: GroupMessageEvent):
     group_id = event.group_id

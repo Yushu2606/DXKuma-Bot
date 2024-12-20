@@ -29,7 +29,7 @@ def resize_image(image, scale):
     height = int(image.height * scale)
 
     # 缩放图像
-    resized_image = image.resize((width, height))
+    resized_image = image.resize((width, height), Image.Resampling.LANCZOS)
 
     return resized_image
 
@@ -61,7 +61,7 @@ async def music_info(song_data):
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
                         fd.write(chunk)
-    cover = Image.open(cover_path).resize((295, 295))
+    cover = Image.open(cover_path).resize((295, 295), Image.Resampling.LANCZOS)
     bg.paste(cover, (204, 440), cover)
 
     # 绘制标题
@@ -254,7 +254,7 @@ async def play_info(song_data, qq: str):
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
                         fd.write(chunk)
-    cover = Image.open(cover_path).resize((295, 295))
+    cover = Image.open(cover_path).resize((295, 295), Image.Resampling.LANCZOS)
     bg.paste(cover, (204, 440), cover)
 
     # 绘制标题
@@ -442,7 +442,7 @@ async def utage_music_info(song_data, index=0):
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
                         fd.write(chunk)
-    cover = Image.open(cover_path).resize((295, 295))
+    cover = Image.open(cover_path).resize((295, 295), Image.Resampling.LANCZOS)
     bg.paste(cover, (204, 440), cover)
 
     # 绘制标题
@@ -572,7 +572,7 @@ async def score_info(song_data, index):
                 with open(cover_path, "wb") as fd:
                     async for chunk in resp.content.iter_chunked(1024):
                         fd.write(chunk)
-    cover = Image.open(cover_path).resize((295, 295))
+    cover = Image.open(cover_path).resize((295, 295), Image.Resampling.LANCZOS)
     bg.paste(cover, (204, 440), cover)
 
     # 绘制标题

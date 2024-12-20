@@ -12,6 +12,7 @@ from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
 
 from util.Config import config
+from util.exceptions import NotAllowedException
 
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
@@ -97,7 +98,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if (
         type == "nsfw" and bot.self_id not in config.allowed_accounts
     ):  # type 为 'nsfw' 且非指定机器人
-        return
+        raise NotAllowedException
     elif group_id == config.special_group:  # 不被限制的 group_id
         pass
     else:
